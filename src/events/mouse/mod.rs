@@ -7,10 +7,10 @@ pub use point::*;
 use button::MouseButton;
 use point::MousePoint;
 
-/// The event is for the on_mouse_click method of *Component*.
+/// The event is for the `on_mouse_click` method of `Component`.
 /// This event indicates that the user clicked *on* the component.
 /// 
-/// Use *MouseClickOutEvent* and the corresponding on_mouse_click_out method
+/// Use `MouseClickOutEvent` and the corresponding `on_mouse_click_out` method
 /// to keep track of mouse clicks outside the component.
 pub struct MouseClickEvent {
 
@@ -20,7 +20,7 @@ pub struct MouseClickEvent {
 
 impl MouseClickEvent {
 
-    /// Constructs a new *MouseClickEvent* with the given relative mouse
+    /// Constructs a new `MouseClickEvent` with the given relative mouse
     /// cursor position (point) and the given button
     pub fn new(point: MousePoint, button: MouseButton) -> Self {
         Self { point, button }
@@ -38,14 +38,14 @@ impl MouseClickEvent {
     }
 }
 
-/// This event is for the on_mouse_click_out method of *Component*. 
+/// This event is for the `on_mouse_click_out` method of `Component`. 
 /// This event indicates that the user clicked somewhere, but not on
 /// the component. 
 /// 
-/// Use *MouseClickEvent* and the corresponding on_mouse_click method to
+/// Use `MouseClickEvent` and the corresponding `on_mouse_click` method to
 /// keep track of mouse clicks *on* the component.
 /// 
-/// Unlike MouseClickEvent, this event doesn't know the mouse position,
+/// Unlike `MouseClickEvent`, this event doesn't know the mouse position,
 /// but only which mouse button was used.
 pub struct MouseClickOutEvent {
     
@@ -60,19 +60,19 @@ impl MouseClickOutEvent {
     pub fn get_button(&self) -> MouseButton { self.button }
 }
 
-/// This method is for the on_mouse_move method of *Component*. It indicates
+/// This method is for the on_mouse_move method of `Component`. It indicates
 /// that the user moved the mouse *within* the component: both the position
 /// the mouse came from and the position the mouse went to are in the component.
 /// 
 /// If the user moved the mouse from a position *f* inside the component to a 
-/// position *t* outside the component, a MouseMoveEvent will be fired from *f*
+/// position *t* outside the component, a `MouseMoveEvent` will be fired from *f*
 /// to the border *b* of the component where the mouse left the component. 
-/// Additionally, a MouseLeaveEvent with position *b* will be fired.
+/// Additionally, a `MouseLeaveEvent` with position *b* will be fired.
 /// 
 /// If the user moved the mouse from a position *f* outside the component to a
-/// position *t* inside the component, a MouseMoveEvent will be fired from the
+/// position *t* inside the component, a `MouseMoveEvent` will be fired from the
 /// border *b* of the component where the mouse came in to *t*. Additionally,
-/// a MouseEnterEvent with position *b* will be fired.
+/// a `MouseEnterEvent` with position *b* will be fired.
 pub struct MouseMoveEvent {
 
     from: MousePoint,
@@ -90,7 +90,7 @@ impl MouseMoveEvent {
     pub fn get_to(&self) -> MousePoint { self.to }
 }
 
-/// The event for the on_mouse_enter method of *Component*. It indicates that the
+/// The event for the on_mouse_enter method of `Component`. It indicates that the
 /// user just moved the mouse inside the component.
 /// 
 /// This event captures the entrance_point, a position at the border of the 
@@ -110,7 +110,7 @@ impl MouseEnterEvent {
     pub fn get_entrance_point(&self) -> MousePoint { self.entrance_point }
 }
 
-/// The event for the on_mouse_leave method of *Component*. This event indicates
+/// The event for the on_mouse_leave method of `Component`. This event indicates
 /// that the user just moved the mouse cursor outside the component. 
 /// 
 /// This event captures the exit_point, a position at the border of the component

@@ -4,9 +4,9 @@
 /// This struct is typically used for mouse events to indicate which button
 /// was clicked or pressed.
 /// 
-/// Most users would simply use the is_left, is_right
-/// and is_wheel methods to check which mouse button it was, but there is
-/// also a get_index method to get the numerical index of the button. That
+/// Most users would simply use the `is_left`, `is_right`
+/// and `is_wheel` methods to check which mouse button it was, but there is
+/// also a `get_index` method to get the numerical index of the button. That
 /// method can be used to track for instance macro mouse buttons.
 #[derive(Clone,Copy,PartialEq,Eq,Debug)]
 pub struct MouseButton {
@@ -25,7 +25,7 @@ impl MouseButton {
     /// indicate that some other button was used, for instance a macro button. 
     /// 
     /// If you are only interested in the common mouse buttons (left, wheel
-    /// and right), you can use the is_left, is_right and is_wheel methods
+    /// and right), you can use the `is_left`, `is_right` and `is_wheel` methods
     /// instead of this method.
     pub fn get_index(&self) -> u8 { self.index }
 
