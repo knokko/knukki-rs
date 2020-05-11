@@ -1,5 +1,11 @@
 use crate::*;
 
+mod area;
+mod buddy;
+
+pub use area::*;
+pub use buddy::*;
+
 /// The core trait of this crate. `Component`s are basically event handlers for
 /// gui events like mouse events and keyboard events, but most importantly render
 /// events to draw themselves on a WebGl context.
