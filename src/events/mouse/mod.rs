@@ -4,9 +4,6 @@ mod point;
 pub use button::*;
 pub use point::*;
 
-use button::MouseButton;
-use point::MousePoint;
-
 /// The event is for the `on_mouse_click` method of `Component`.
 /// This event indicates that the user clicked *on* the component.
 /// 
