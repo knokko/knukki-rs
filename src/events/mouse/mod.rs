@@ -38,7 +38,7 @@ impl Mouse {
     }
 }
 
-/// The event is for the `on_mouse_click` method of `Component`.
+/// This event is for the `on_mouse_click` method of `Component`.
 /// This event indicates that the user clicked *on* the component.
 /// 
 /// Use `MouseClickOutEvent` and the corresponding `on_mouse_click_out` method

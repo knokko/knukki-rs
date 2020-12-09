@@ -37,6 +37,16 @@ pub trait ComponentBuddy {
 
     // TODO Add show_modal
 
+    /// Prompts the user to type some text for the component.
+    /// 
+    /// This method will work even if there is no keyboard, but it will always
+    /// block the entire application until the user finishes typing.
+    /// 
+    /// The user will be asked to modify the `start_text`. The user will be
+    /// able to either change the start_text and return `Some` replacement
+    /// text, or cancel and return `None`.
+    fn request_text_input(&self, start_text: String) -> Option<String>;
+
     /// Requests to re-render this component (by calling its render method) 
     /// during the next frame.
     /// 
@@ -98,9 +108,18 @@ pub trait ComponentBuddy {
     /// Cancels the components subscription for the `MouseLeaveEvent`
     fn unsubscribe_mouse_leave(&self);
 
+    /// Subscribes the component for the `CharTypeEvent`. This method will return
+    /// `Ok` if a keyboard is available, and `Err` if not. If this method returns
+    /// `Err`, but the component really needs text input, it should call
+    /// `request_text_input`.
+    fn subscribe_char_type(&self) -> Result<(), ()>;
+
+    /// Cancels the subscription of the component for the `CharTypeEvent`.
+    fn unsubscribe_char_type(&self);
+
     // Read methods
 
-    /// Gets the mouse position relative to the component. 
+    /// Gets the position of the given `Mouse` relative to the component. 
     /// 
     /// If the mouse cursor is currently hovering over the component, it will
     /// return Some with the relative mouse position. See the documentation of
@@ -108,15 +127,24 @@ pub trait ComponentBuddy {
     /// 
     /// If the mouse cursor is currently not hovering over the component, this 
     /// method will return None.
-    fn get_mouse_position(&self) -> Option<MousePoint>;
+    fn get_mouse_position(&self, mouse: Mouse) -> Option<MousePoint>;
 
-    /// Checks if the given mouse button is currently being pressed/down. This
-    /// method can be called during any event. 
+    /// Checks if the given button of the given mouse is currently being 
+    /// pressed/down. This method can be called during any event. 
     /// 
-    /// The constants `LEFT_MOUSE_BUTTON`, `RIGHT_MOUSE_BUTTON` and 
-    /// `MOUSE_WHEEL_BUTTON` can be used as parameter for this method, but you
-    /// can also create your own instances of `MouseButton` and use those.
-    fn is_mouse_down(button: MouseButton) -> bool;
+    /// If you want to check whether the *primary* button of the given mouse is
+    /// pressed, the `is_primary_mouse_down` should be more convenient.
+    fn is_mouse_down(&self, mouse: Mouse, button: MouseButton) -> bool;
+
+    /// Checks if the primary button of the given mouse is currently being
+    /// pressed/down. This method can be called during any event.
+    fn is_primary_mouse_down(&self, mouse: Mouse) -> bool;
+
+    /// Gets all `Mouse`s that are currently hovering over this component
+    fn get_local_mouses(&self) -> Vec<Mouse>;
+
+    /// Gets all `Mouse`s that are hovering somewhere over the application window.
+    fn get_all_mouses(&self) -> Vec<Mouse>;
 
     /// Gets the aspect ratio of the domain of the component, that is, the width
     /// of the domain divided by the height of the domain. 
