@@ -12,3 +12,18 @@ pub struct CharTypeEvent {
 
     text: String
 }
+
+impl CharTypeEvent {
+
+    /// Constructs a new `CharTypeEvent` with the given `text`. This function
+    /// should normally only be used by the *provider*.
+    pub fn new(text: String) -> CharTypeEvent {
+        Self { text }
+    }
+
+    /// Gets the character (or more accurately: grapheme cluster) that was
+    /// typed by the user.
+    pub fn get_text(&self) -> &str {
+        &self.text
+    }
+}
