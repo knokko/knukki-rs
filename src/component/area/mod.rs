@@ -9,10 +9,16 @@ use std::fmt::Debug;
 /// This trait is used to let `Component`s tell which part of their domain they
 /// are using at the moment.
 /// 
+/// ### Coordinate definitions
 /// An x-coordinate of 0.0 indicates the left border of the component domain and
 /// an x-coordinate of 1.0 indicates the right border of the component domain. 
 /// Similarly, a y-coordinate of 0.0 indicates the bottom border of the component
 /// domain and a y-coordinate of 1.0 indicates the top border of the component.
+/// 
+/// ### Implementations
+/// The simplest implementation of this trait is `RectangleComponentArea`. I am
+/// planning to add more implementations in the future. You can also create
+/// your own implementations to define more complex shapes.
 pub trait ComponentArea : Debug {
 
     /// Checks if the point (x, y) is inside this area and returns true if
@@ -43,19 +49,4 @@ pub trait ComponentArea : Debug {
     /// false for any point that is above the right bound (whose
     /// y-coordinate is larger than the result of this method).
     fn get_top(&self) -> f32;
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn compile_test() {
-
-        let nope: Option<Box<dyn ComponentArea>> = None;
-        dummy_function(nope);
-    }
-
-    fn dummy_function(_maybe_area: Option<Box<dyn ComponentArea>>) {}
 }
