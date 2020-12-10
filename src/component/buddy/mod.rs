@@ -24,18 +24,22 @@ use crate::*;
 /// actually being used. 
 pub trait ComponentBuddy {
 
-    /// Requests to change the parent menu component to *new_menu*. If this
-    /// component doesn't have a parent menu component (for instance because
-    /// it is the root component of wasmuri), a request will be made to change
-    /// the root component of wasmuri to *new_menu*. 
+    /// Requests to change the parent menu component (possibly the *root*
+    /// component) to the component returned by the *create_new_menu*
+    /// function. 
     /// 
+    /// ### Current menu
+    /// That function should, given the *current* parent menu, create the 
+    /// component (menu) to replace it with. The current menu can be very
+    /// useful to implement 'Back' buttons or modals (so it knows which
+    /// component should be drawn in the background).
+    /// 
+    /// ### Request
     /// Like the docs above suggest, it is a *request*: it might not happen in
     /// some rare cases (when multiple components request to change the menu at
     /// the same time, only one of them can be chosen). The buddy might reject
     /// the request for other reasons as well, but this should be uncommon.
-    fn change_menu(&self, new_menu: Box<dyn Component>);
-
-    // TODO Add show_modal
+    fn change_menu(&self, create_new_menu: impl Fn(Box<dyn Component>) -> Box<dyn Component>);
 
     /// Prompts the user to type some text for the component.
     /// 
