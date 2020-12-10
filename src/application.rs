@@ -1,4 +1,5 @@
 use crate::*;
+use golem::Context;
 
 /// The `Application` is the 'highest' object that is cross-platform. It
 /// encapsulates all the components and their buddies.
@@ -32,9 +33,46 @@ impl Application {
         }
     }
 
+    fn work_after_events(&mut self) {
+        if self.root_buddy.has_next_menu() {
+            self.root_component.on_detach(&mut self.root_buddy);
+
+            // Work around because self.root_component must have some value at all times
+            let mut replacement_helper: Box<dyn Component> = Box::new(DummyComponent {});
+            std::mem::swap(&mut replacement_helper, &mut self.root_component);
+            self.root_component = self.root_buddy.create_next_menu(replacement_helper);
+
+            self.root_component.on_attach(&mut self.root_buddy);
+        }
+    }
+
+    /// Gives the `Application` the opportunity to render its components, or
+    /// even `force`s it to do so.
+    /// 
+    /// ### Provider
+    /// The *provider* should make sure that this method is called frequently
+    /// (typically 60 times per second). If the window resized or lost its
+    /// previous pixels, the `force` should be set to true to inform the
+    /// application that it should really use this opportunity to render.
+    /// 
+    /// ### Optional
+    /// If the `force` is false, rendering is truly optional: the application can
+    /// choose whether or not it wants to redraw itself. To spare power and gpu
+    /// time, the application should only do this if something changed. If
+    /// nothing changed, the window will keep showing the results of the previous
+    /// time the application *did* render.
+    pub fn render(&mut self, golem: &Context, force: bool) {
+        if force || self.root_buddy.did_request_render() {
+            self.root_buddy.clear_render_request();
+            self.root_component.render(golem, &mut self.root_buddy);
+            self.work_after_events();
+        }
+    }
+
     pub fn fire_mouse_click_event(&mut self, event: MouseClickEvent) {
         if self.root_buddy.get_subscriptions().mouse_click {
             self.root_component.on_mouse_click(event, &mut self.root_buddy);
+            self.work_after_events();
         }
     }
 }

@@ -1,10 +1,13 @@
 use crate::*;
+use golem::Context;
 
 mod area;
 mod buddy;
+mod dummy;
 
 pub use area::*;
 pub use buddy::*;
+pub use dummy::*;
 
 /// The core trait of this crate. `Component`s are basically event handlers for
 /// gui events like mouse events and keyboard events, but most importantly render
@@ -22,6 +25,8 @@ pub use buddy::*;
 pub trait Component {
 
     fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+    fn render(&mut self, _golem: &Context, _buddy: &mut dyn ComponentBuddy) {}
 
     fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {}
 

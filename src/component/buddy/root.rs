@@ -4,6 +4,8 @@ pub struct RootComponentBuddy {
 
     subscriptions: ComponentSubscriptions,
 
+    create_next_menu: Option<Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>>,
+
     requested_render: bool
 }
 
@@ -12,6 +14,7 @@ impl RootComponentBuddy {
     pub fn new() -> Self {
         Self {
             subscriptions: ComponentSubscriptions::new(),
+            create_next_menu: None,
             requested_render: false
         }
     }
@@ -26,6 +29,17 @@ impl RootComponentBuddy {
 
     pub fn clear_render_request(&mut self) {
         self.requested_render = false;
+    }
+
+    pub fn has_next_menu(&self) -> bool {
+        self.create_next_menu.is_some()
+    }
+
+    pub fn create_next_menu(&mut self, current_menu: Box<dyn Component>) -> Box<dyn Component> {
+        let new_menu = self.create_next_menu.as_ref()
+                .expect("Only call this method after has_next_menu returned true")(current_menu);
+        self.create_next_menu = None;
+        new_menu
     }
 }
 
