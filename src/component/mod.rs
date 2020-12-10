@@ -22,17 +22,19 @@ pub use buddy::*;
 /// menu component that propagates the events to its child components.
 pub trait Component {
 
-    fn on_attach(&mut self);
+    fn on_attach(&mut self) {}
 
-    fn on_mouse_click(&mut self, event: MouseClickEvent);
+    fn on_mouse_click(&mut self, _event: MouseClickEvent) {}
 
-    fn on_mouse_click_out(&mut self, event: MouseClickOutEvent);
+    fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent) {}
 
-    fn on_mouse_move(&mut self, event: MouseMoveEvent);
+    fn on_mouse_move(&mut self, _event: MouseMoveEvent) {}
 
-    fn on_mouse_enter(&mut self, event: MouseEnterEvent);
+    fn on_mouse_enter(&mut self, _event: MouseEnterEvent) {}
 
-    fn on_mouse_leave(&mut self, event: MouseLeaveEvent);
+    fn on_mouse_leave(&mut self, _event: MouseLeaveEvent) {}
 
-    fn on_detach(&mut self);
+    fn on_char_type(&mut self, _event: &CharTypeEvent) {}
+
+    fn on_detach(&mut self) {}
 }
