@@ -2,7 +2,7 @@ use crate::*;
 
 /// Every `Component` will be assigned a *buddy*. This buddy will be passed as
 /// parameter to every method of the `Component` trait. The buddy is the primary
-/// way the component can interact with its parent menu, or the root of wasmuri
+/// way the component can interact with its parent menu, or the root of knukki 
 /// if there is no parent menu. `ComponentBuddy` has subscribe methods, read 
 /// methods and others methods. 
 /// 
@@ -65,8 +65,8 @@ pub trait ComponentBuddy {
     /// Notifies this buddy that the used area of the component has been changed.
     /// 
     /// To elaborate a bit: every `Component` will get a domain (a part of the
-    /// browser window) in which it can render and receive events. For the root
-    /// component, that will be the entire browser window. 
+    /// window/screen) in which it can render and receive events. For the root
+    /// component, that will be the entire window/screen. 
     /// 
     /// However, components do not have to use their entire domain the whole time: 
     /// they might also only use a part of it or let it vary over time. For

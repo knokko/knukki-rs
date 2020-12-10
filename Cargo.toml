@@ -1,5 +1,5 @@
 [package]
-name = "wasmuri"
+name = "knukki"
 version = "0.1.0"
 authors = ["knokko <knokogator@hotmail.com>"]
 edition = "2018"
