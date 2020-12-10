@@ -21,9 +21,9 @@ pub use buddy::*;
 /// only receive the events that are propagated to them by the *root*.
 pub trait Component {
 
-    fn on_attach(&mut self) {}
+    fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
-    fn on_mouse_click(&mut self, _event: MouseClickEvent) {}
+    fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {}
 
     fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent) {}
 
@@ -35,5 +35,5 @@ pub trait Component {
 
     fn on_char_type(&mut self, _event: &CharTypeEvent) {}
 
-    fn on_detach(&mut self) {}
+    fn on_detach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 }

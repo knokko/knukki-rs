@@ -1,3 +1,9 @@
+mod root;
+mod subscriptions;
+
+pub use root::*;
+pub use subscriptions::*;
+
 use crate::*;
 
 /// Every `Component` will be assigned a *buddy*. This buddy will be passed as
@@ -39,7 +45,7 @@ pub trait ComponentBuddy {
     /// some rare cases (when multiple components request to change the menu at
     /// the same time, only one of them can be chosen). The buddy might reject
     /// the request for other reasons as well, but this should be uncommon.
-    fn change_menu(&self, create_new_menu: impl Fn(Box<dyn Component>) -> Box<dyn Component>);
+    fn change_menu(&self, create_new_menu: &dyn Fn(Box<dyn Component>) -> Box<dyn Component>);
 
     /// Prompts the user to type some text for the component.
     /// 
@@ -60,7 +66,7 @@ pub trait ComponentBuddy {
     /// 
     /// Note that this component might be re-rendered even if this method is
     /// not called, for instance when the window is resized.
-    fn request_render(&self);
+    fn request_render(&mut self);
 
     /// Notifies this buddy that the used area of the component has been changed.
     /// 
@@ -83,10 +89,10 @@ pub trait ComponentBuddy {
     // Subscribe methods
 
     /// Subscribes the component for the `MouseClickEvent`
-    fn subscribe_mouse_click(&self);
+    fn subscribe_mouse_click(&mut self);
 
     /// Cancels the components subscription for the `MouseClickEvent`
-    fn unsubscribe_mouse_click(&self);
+    fn unsubscribe_mouse_click(&mut self);
 
     /// Subscribes the component for the `MouseClickOutEvent`
     fn subscribe_mouse_click_out(&self);
