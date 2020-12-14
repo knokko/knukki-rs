@@ -45,7 +45,7 @@ pub trait ComponentBuddy {
     /// some rare cases (when multiple components request to change the menu at
     /// the same time, only one of them can be chosen). The buddy might reject
     /// the request for other reasons as well, but this should be uncommon.
-    fn change_menu(&self, create_new_menu: &dyn Fn(Box<dyn Component>) -> Box<dyn Component>);
+    fn change_menu(&mut self, create_new_menu: Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>);
 
     /// Prompts the user to type some text for the component.
     /// 
@@ -84,7 +84,7 @@ pub trait ComponentBuddy {
     /// component is currently using and should be called again whenever this part
     /// changes. Giving accurate component areas and calling this method on time will
     /// improve the accuracy of the ui.
-    fn set_used_area(&self, area: Box<dyn ComponentArea>);
+    fn set_used_area(&mut self, area: Box<dyn ComponentArea>);
 
     // Subscribe methods
 

@@ -49,4 +49,12 @@ pub trait ComponentArea : Debug {
     /// false for any point that is above the right bound (whose
     /// y-coordinate is larger than the result of this method).
     fn get_top(&self) -> f32;
+
+    fn get_width(&self) -> f32 {
+        self.get_right() - self.get_left()
+    }
+
+    fn get_height(&self) -> f32 {
+        self.get_top() - self.get_bottom()
+    }
 }

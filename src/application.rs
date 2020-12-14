@@ -55,22 +55,38 @@ impl Application {
     /// previous pixels, the `force` should be set to true to inform the
     /// application that it should really use this opportunity to render.
     /// 
+    /// ### Region
+    /// The *provider* can use the *region* parameter to tell the application
+    /// where it should render itself within the given golem `Context`. This
+    /// should normally cover the entire inner window, but the provider is
+    /// allowed to choose a different region.
+    /// 
     /// ### Optional
     /// If the `force` is false, rendering is truly optional: the application can
     /// choose whether or not it wants to redraw itself. To spare power and gpu
     /// time, the application should only do this if something changed. If
     /// nothing changed, the window will keep showing the results of the previous
     /// time the application *did* render.
-    pub fn render(&mut self, golem: &Context, force: bool) {
+    pub fn render(&mut self, golem: &Context, region: RenderRegion, force: bool) {
         if force || self.root_buddy.did_request_render() {
             self.root_buddy.clear_render_request();
-            self.root_component.render(golem, &mut self.root_buddy);
+
+            // Make sure we draw onto the right area
+            let area = self.root_buddy.get_used_area();
+            let root_region = region.child_region(area.get_left(), area.get_bottom(), area.get_right(), area.get_top());
+            root_region.set_viewport(golem);
+
+            // Let the root component render itself
+            self.root_component.render(golem, region, &mut self.root_buddy);
+
+            // Check if the root component requested anything while rendering
             self.work_after_events();
         }
     }
 
     pub fn fire_mouse_click_event(&mut self, event: MouseClickEvent) {
         if self.root_buddy.get_subscriptions().mouse_click {
+            // TODO Check used area!
             self.root_component.on_mouse_click(event, &mut self.root_buddy);
             self.work_after_events();
         }

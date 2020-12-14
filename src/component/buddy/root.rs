@@ -4,6 +4,8 @@ pub struct RootComponentBuddy {
 
     subscriptions: ComponentSubscriptions,
 
+    used_area: Box<dyn ComponentArea>,
+
     create_next_menu: Option<Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>>,
 
     requested_render: bool
@@ -14,6 +16,7 @@ impl RootComponentBuddy {
     pub fn new() -> Self {
         Self {
             subscriptions: ComponentSubscriptions::new(),
+            used_area: Box::new(RectangleComponentArea::new(0.0, 0.0, 1.0, 1.0)),
             create_next_menu: None,
             requested_render: false
         }
@@ -21,6 +24,10 @@ impl RootComponentBuddy {
 
     pub fn get_subscriptions(&self) -> &ComponentSubscriptions {
         &self.subscriptions
+    }
+
+    pub fn get_used_area(&self) -> &dyn ComponentArea {
+        self.used_area.as_ref()
     }
 
     pub fn did_request_render(&self) -> bool {
@@ -45,8 +52,8 @@ impl RootComponentBuddy {
 
 impl ComponentBuddy for RootComponentBuddy {
     
-    fn change_menu(&self, create_new_menu: &dyn Fn(Box<dyn Component>) -> Box<dyn Component>) {
-        unimplemented!()
+    fn change_menu(&mut self, create_new_menu: Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>) {
+        self.create_next_menu = Some(create_new_menu);
     }
 
     fn request_text_input(&self, start_text: String) -> Option<String> {
@@ -57,8 +64,8 @@ impl ComponentBuddy for RootComponentBuddy {
         self.requested_render = true;
     }
 
-    fn set_used_area(&self, area: Box<dyn ComponentArea>) {
-        unimplemented!()
+    fn set_used_area(&mut self, area: Box<dyn ComponentArea>) {
+        self.used_area = area;
     }
 
     fn subscribe_mouse_click(&mut self) {
