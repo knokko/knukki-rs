@@ -1,24 +1,22 @@
 use crate::*;
 
 pub struct RootComponentBuddy {
-
     subscriptions: ComponentSubscriptions,
 
     last_render_result: Option<RenderResult>,
 
     create_next_menu: Option<Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>>,
 
-    requested_render: bool
+    requested_render: bool,
 }
 
 impl RootComponentBuddy {
-
     pub fn new() -> Self {
         Self {
             subscriptions: ComponentSubscriptions::new(),
             last_render_result: None,
             create_next_menu: None,
-            requested_render: false
+            requested_render: false,
         }
     }
 
@@ -47,16 +45,22 @@ impl RootComponentBuddy {
     }
 
     pub fn create_next_menu(&mut self, current_menu: Box<dyn Component>) -> Box<dyn Component> {
-        let new_menu = self.create_next_menu.as_ref()
-                .expect("Only call this method after has_next_menu returned true")(current_menu);
+        let new_menu = self
+            .create_next_menu
+            .as_ref()
+            .expect("Only call this method after has_next_menu returned true")(
+            current_menu
+        );
         self.create_next_menu = None;
         new_menu
     }
 }
 
 impl ComponentBuddy for RootComponentBuddy {
-    
-    fn change_menu(&mut self, create_new_menu: Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>) {
+    fn change_menu(
+        &mut self,
+        create_new_menu: Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>,
+    ) {
         self.create_next_menu = Some(create_new_menu);
     }
 

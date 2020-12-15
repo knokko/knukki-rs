@@ -3,19 +3,19 @@ use golem::Context;
 /// Describe the region of the viewport where a `Component` is allowed to render
 /// itself. This is normally the *used area* (see the `set_used_area` method of
 /// `ComponentBuddy`) of the component *within* the *domain* of the component.
-/// 
+///
 /// The render region of the component will be given as parameter to its `render`
 /// method. The parent component or provider will ensure that the viewport is set
 /// to that render region before calling the `render` method.
-/// 
+///
 /// ### Methods
 /// The component is free to query the properties of the render region (like its
 /// width, minimum y coordinate, aspect ratio...), but most components should
 /// have no need for this.
-/// 
+///
 /// This struct also has a `child_region` method, which can be useful for menu
 /// components to create regions for its child components.
-/// 
+///
 /// ### Note
 /// This struct describes a framebuffer region rather than a relative region
 /// (used in the rest of this crate).
@@ -25,28 +25,31 @@ use golem::Context;
 /// the top of the screen.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct RenderRegion {
-
     min_x: u32,
     min_y: u32,
     width: u32,
-    height: u32
+    height: u32,
 }
 
 impl RenderRegion {
-
     /// Constructs a new `RenderRegion` with the given minimum x-coordinate,
     /// minimum y-coordinate, width, and height.
     pub fn with_size(min_x: u32, min_y: u32, width: u32, height: u32) -> Self {
-        Self { min_x, min_y, width, height }
+        Self {
+            min_x,
+            min_y,
+            width,
+            height,
+        }
     }
 
     /// Constructs a new `RenderRegion` with the given minimum x-coordinate,
     /// minimum y-coordinate, bound x-coordinate, and bound y-coordinate.
-    /// 
+    ///
     /// The bound x-coordinate is the x-coordinate that comes right after the
     /// maximum (right) x-coordinate and the bound y-coordinate is the y-coordinate
     /// that comes right after the maximum (bottom) y-coordinate.
-    /// 
+    ///
     /// ### Panic
     /// This function will panic if *bound_x* < *min_x* or *bound_y* < *min_y*
     pub fn between(min_x: u32, min_y: u32, bound_x: u32, bound_y: u32) -> Self {
@@ -56,7 +59,12 @@ impl RenderRegion {
         if bound_y < min_y {
             panic!("Bound y is {}, but min y is {}", bound_y, min_y);
         }
-        Self { min_x, min_y, width: bound_x - min_x, height: bound_y - min_y }
+        Self {
+            min_x,
+            min_y,
+            width: bound_x - min_x,
+            height: bound_y - min_y,
+        }
     }
 
     /// Gets the minimum x-coordinate of this region. This is the x-coordinate of
@@ -115,29 +123,32 @@ impl RenderRegion {
 
     /// Creates a child/sub region within this region with the given *relative*
     /// coordinates within this region.
-    /// 
+    ///
     /// As example, using (0.0, 0.0, 1.0, 1.0) would return a copy of this region
     /// and using (0.0, 0.0, 0.5, 0.5) would return the bottom-left quarter of this
     /// region. See the Examples for details.
-    /// 
+    ///
     /// ### Note
     /// Since this method takes *relative* coordinates and the properties of this
     /// struct are framebuffer coordinates, this method acts a bit 'upside-down'.
-    /// 
+    ///
     /// ### Examples
     /// ```
     /// use knukki::RenderRegion;
-    /// 
+    ///
     /// let region = RenderRegion::between(20, 20, 30, 30);
     /// assert_eq!(region, region.child_region(0.0, 0.0, 1.0, 1.0));
     /// assert_eq!(
-    ///     RenderRegion::between(20, 25, 25, 30), 
+    ///     RenderRegion::between(20, 25, 25, 30),
     ///     region.child_region(0.0, 0.0, 0.5, 0.5)
     /// );
     /// ```
     pub fn child_region(
-        &self, relative_min_x: f32, relative_min_y: f32,
-        relative_max_x: f32, relative_max_y: f32
+        &self,
+        relative_min_x: f32,
+        relative_min_y: f32,
+        relative_max_x: f32,
+        relative_max_y: f32,
     ) -> Self {
         let relative_width = relative_max_x - relative_min_x;
         let relative_height = relative_max_y - relative_min_y;
@@ -146,14 +157,20 @@ impl RenderRegion {
         let height = (self.get_height() as f32 * relative_height).round() as u32;
 
         let min_x = self.get_min_x() + (self.get_width() as f32 * relative_min_x).round() as u32;
-        let min_y = self.get_min_y() + (self.get_height() as f32 * (1.0 - relative_max_y)).round() as u32;
+        let min_y =
+            self.get_min_y() + (self.get_height() as f32 * (1.0 - relative_max_y)).round() as u32;
 
         return Self::with_size(min_x, min_y, width, height);
     }
 
     /// Sets the viewport of the given golem `Context` to this render region.
     pub fn set_viewport(&self, golem: &Context) {
-        golem.set_viewport(self.get_min_x(), self.get_min_y(), self.get_width(), self.get_height());
+        golem.set_viewport(
+            self.get_min_x(),
+            self.get_min_y(),
+            self.get_width(),
+            self.get_height(),
+        );
     }
 }
 

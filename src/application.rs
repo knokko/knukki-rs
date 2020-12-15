@@ -3,34 +3,32 @@ use golem::Context;
 
 /// The `Application` is the 'highest' object that is cross-platform. It
 /// encapsulates all the components and their buddies.
-/// 
+///
 /// The application has methods to fire events to the components and to
 /// render them. It is the responsibility of the *provider* to make
 /// sure these methods are called when appropriate.
-/// 
+///
 /// The application knows nothing about the *provider*: it doesn't even
 /// know whether it is being controlled by a real user or an automatic
 /// testing program (except that the latter one will probably not call
 /// the render method).
-/// 
+///
 /// This has the interesting implication that an application can be tested
 /// with regular unit tests, without needing any kind of window or
 /// browser environment.
 pub struct Application {
-
     root_component: Box<dyn Component>,
-    root_buddy: RootComponentBuddy
+    root_buddy: RootComponentBuddy,
 }
 
 impl Application {
-
     pub fn new(mut initial_root_component: Box<dyn Component>) -> Self {
         let mut root_buddy = RootComponentBuddy::new();
         initial_root_component.on_attach(&mut root_buddy);
         root_buddy.request_render();
         let mut result = Self {
             root_component: initial_root_component,
-            root_buddy
+            root_buddy,
         };
         result.work_after_events();
         result
@@ -55,19 +53,19 @@ impl Application {
 
     /// Gives the `Application` the opportunity to render its components, or
     /// even `force`s it to do so.
-    /// 
+    ///
     /// ### Provider
     /// The *provider* should make sure that this method is called frequently
     /// (typically 60 times per second). If the window resized or lost its
     /// previous pixels, the `force` should be set to true to inform the
     /// application that it should really use this opportunity to render.
-    /// 
+    ///
     /// ### Region
     /// The *provider* can use the *region* parameter to tell the application
     /// where it should render itself within the given golem `Context`. This
     /// should normally cover the entire inner window, but the provider is
     /// allowed to choose a different region.
-    /// 
+    ///
     /// ### Optional
     /// If the `force` is false, rendering is truly optional: the application can
     /// choose whether or not it wants to redraw itself. To spare power and gpu
@@ -82,7 +80,9 @@ impl Application {
             region.set_viewport(golem);
 
             // Let the root component render itself
-            let result = self.root_component.render(golem, region, &mut self.root_buddy);
+            let result = self
+                .root_component
+                .render(golem, region, &mut self.root_buddy);
             self.root_buddy.set_last_render_result(result);
 
             // Check if the root component requested anything while rendering
@@ -97,19 +97,21 @@ impl Application {
             let maybe_render_result = self.root_buddy.get_last_render_result();
 
             // Don't pass on any click events until the component has been
-            // rendered for the first time. 
+            // rendered for the first time.
             if let Some(render_result) = maybe_render_result {
-
                 // If we should filter mouse actions, we need to do an additional check
                 if render_result.filter_mouse_actions {
-                    fire = render_result.drawn_region.is_inside(point.get_x(), point.get_y());
+                    fire = render_result
+                        .drawn_region
+                        .is_inside(point.get_x(), point.get_y());
                 } else {
                     fire = true;
                 }
             }
 
             if fire {
-                self.root_component.on_mouse_click(event, &mut self.root_buddy);
+                self.root_component
+                    .on_mouse_click(event, &mut self.root_buddy);
                 self.work_after_events();
             }
         }
@@ -118,7 +120,6 @@ impl Application {
 }
 
 impl Drop for Application {
-
     fn drop(&mut self) {
         self.root_component.on_detach();
     }

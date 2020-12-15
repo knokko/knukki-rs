@@ -15,16 +15,15 @@ use std::fmt::Debug;
 ///
 /// ### Coordinate definitions
 /// An x-coordinate of 0.0 indicates the left border of the component domain and
-/// an x-coordinate of 1.0 indicates the right border of the component domain. 
+/// an x-coordinate of 1.0 indicates the right border of the component domain.
 /// Similarly, a y-coordinate of 0.0 indicates the bottom border of the component
 /// domain and a y-coordinate of 1.0 indicates the top border of the component.
-/// 
+///
 /// ### Implementations
 /// The simplest implementation of this trait is `RectangularDrawnRegion`. I am
 /// planning to add more implementations in the future. You can also create
 /// your own implementations to define more complex shapes.
 pub trait DrawnRegion: Debug {
-
     /// Checks if the point (x, y) is inside this region and returns true if
     /// (and only if) so
     fn is_inside(&self, x: f32, y: f32) -> bool;

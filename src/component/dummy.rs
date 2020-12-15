@@ -7,7 +7,6 @@ use golem::Context;
 pub struct DummyComponent {}
 
 impl Component for DummyComponent {
-
     fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {
         panic!("Dummy components shouldn't be attached");
     }
@@ -17,8 +16,10 @@ impl Component for DummyComponent {
     }
 
     fn render(
-        &mut self, _golem: &Context, _region: RenderRegion, 
-        _buddy: &mut dyn ComponentBuddy
+        &mut self,
+        _golem: &Context,
+        _region: RenderRegion,
+        _buddy: &mut dyn ComponentBuddy,
     ) -> RenderResult {
         panic!("Dummy components shouldn't be asked to render itself");
     }

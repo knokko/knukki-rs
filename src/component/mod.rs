@@ -12,30 +12,29 @@ pub use render::*;
 /// The core trait of this crate. `Component`s are basically event handlers for
 /// gui events like mouse events and keyboard events, but most importantly render
 /// events to draw themselves on a Golem context.
-/// 
+///
 /// There are simple components like buttons and checkboxes, but also complicated
-/// menu components that are composed of multiple other 'child' components. 
+/// menu components that are composed of multiple other 'child' components.
 /// Such menu components would propagate the events it receives to its child
 /// components.
-/// 
+///
 /// In running knukki applications, there will be a single *root* component
 /// that will be drawn over the entire window or screen. This is the only
 /// component that will receive events directly: all other components can
 /// only receive the events that are propagated to them by the *root*.
 pub trait Component {
-
     fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy);
 
     fn on_resize(&mut self, buddy: &mut dyn ComponentBuddy);
 
     /// Lets this component render itself, and returns some information about the rendering.
-    /// 
+    ///
     /// ### The rendering
     /// Whenever this method is called, the component should render itself using
     /// the given golem `Context`. The given `region` is just for the information
     /// of the component: it can ignore it because the caller must ensure that the
     /// viewport is set accordingly.
-    /// 
+    ///
     /// ### When this method will be called
     /// This method will only be called if the component asked for it via the
     /// `request_render` method of its buddy, or the parent (or provider)
@@ -45,7 +44,7 @@ pub trait Component {
     /// `buddy` during this method call (which basically requests to be rendered
     /// again as soon as possible). This method will also be called soon
     /// after the component is attached.
-    /// 
+    ///
     /// ### The return value
     /// #### The drawn area
     /// For the sake of optimization, it is very interesting for the caller to
@@ -70,8 +69,10 @@ pub trait Component {
     /// there. This can be convenient for many clickable components that don't
     /// always use their full component domain.
     fn render(
-        &mut self, golem: &Context, region: RenderRegion, 
-        buddy: &mut dyn ComponentBuddy
+        &mut self,
+        golem: &Context,
+        region: RenderRegion,
+        buddy: &mut dyn ComponentBuddy,
     ) -> RenderResult;
 
     fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
@@ -105,6 +106,9 @@ pub trait Component {
 }
 
 fn forgot(event_name: &'static str) -> ! {
-    panic!("This component registered itself for the {}Event, 
-    but didn't implement the event handler for it", event_name)
+    panic!(
+        "This component registered itself for the {}Event, 
+    but didn't implement the event handler for it",
+        event_name
+    )
 }
