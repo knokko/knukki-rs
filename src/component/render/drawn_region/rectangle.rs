@@ -2,10 +2,10 @@ use std::fmt::Debug;
 
 use super::*;
 
-/// Represents an unrotated rectangular component area. This is one of the simplest
-/// implementations of ComponentArea.
+/// Represents an unrotated rectangular drawn region. This is one of the simplest
+/// implementations of `DrawnRegion`.
 #[derive(Clone,Copy,Debug)]
-pub struct RectangleComponentArea {
+pub struct RectangularDrawnRegion {
 
     left: f32,
     bottom: f32,
@@ -13,22 +13,22 @@ pub struct RectangleComponentArea {
     top: f32
 }
 
-impl RectangleComponentArea {
+impl RectangularDrawnRegion {
 
-    /// Constructs a new RectangleComponentArea with the given left bound, bottom
+    /// Constructs a new `RectangularDrawnRegion` with the given left bound, bottom
     /// bound, right bound and top bound.
     pub fn new(left: f32, bottom: f32, right: f32, top: f32) -> Self {
         Self { left, bottom, right, top }
     }
 }
 
-impl ComponentArea for RectangleComponentArea {
+impl DrawnRegion for RectangularDrawnRegion {
 
     fn is_inside(&self, x: f32, y: f32) -> bool {
         x >= self.left && x <= self.right && y >= self.bottom && y <= self.top
     }
 
-    fn clone(&self) -> Box<dyn ComponentArea> {
+    fn clone(&self) -> Box<dyn DrawnRegion> {
         Box::new(*self)
     }
 
@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn test_is_inside() {
 
-        let rect = RectangleComponentArea::new(-0.2, -0.4, 0.6, 1.0);
+        let rect = RectangularDrawnRegion::new(-0.2, -0.4, 0.6, 1.0);
 
         // Boundary cases
         assert!(rect.is_inside(-0.2, -0.4));
@@ -73,7 +73,7 @@ mod tests {
     #[test]
     fn test_invalid() {
 
-        let rect = RectangleComponentArea::new(1.0, 1.0, -1.0, -1.0);
+        let rect = RectangularDrawnRegion::new(1.0, 1.0, -1.0, -1.0);
 
         assert!(!rect.is_inside(0.0, 0.0));
         assert!(!rect.is_inside(1.0, 1.0));
@@ -82,7 +82,7 @@ mod tests {
     #[test]
     fn test_bounds() {
 
-        let rect = RectangleComponentArea::new(0.3, 0.8, 1.0, 1.5);
+        let rect = RectangularDrawnRegion::new(0.3, 0.8, 1.0, 1.5);
 
         assert_eq!(0.3, rect.get_left());
         assert_eq!(0.8, rect.get_bottom());

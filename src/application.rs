@@ -27,22 +27,29 @@ impl Application {
     pub fn new(mut initial_root_component: Box<dyn Component>) -> Self {
         let mut root_buddy = RootComponentBuddy::new();
         initial_root_component.on_attach(&mut root_buddy);
-        Self {
+        root_buddy.request_render();
+        let mut result = Self {
             root_component: initial_root_component,
             root_buddy
-        }
+        };
+        result.work_after_events();
+        result
     }
 
     fn work_after_events(&mut self) {
         if self.root_buddy.has_next_menu() {
-            self.root_component.on_detach(&mut self.root_buddy);
+            self.root_component.on_detach();
 
             // Work around because self.root_component must have some value at all times
             let mut replacement_helper: Box<dyn Component> = Box::new(DummyComponent {});
             std::mem::swap(&mut replacement_helper, &mut self.root_component);
             self.root_component = self.root_buddy.create_next_menu(replacement_helper);
 
+            // A fresh main component requires a fresh buddy
+            self.root_buddy = RootComponentBuddy::new();
             self.root_component.on_attach(&mut self.root_buddy);
+            self.work_after_events();
+            self.root_buddy.request_render();
         }
     }
 
@@ -72,12 +79,11 @@ impl Application {
             self.root_buddy.clear_render_request();
 
             // Make sure we draw onto the right area
-            let area = self.root_buddy.get_used_area();
-            let root_region = region.child_region(area.get_left(), area.get_bottom(), area.get_right(), area.get_top());
-            root_region.set_viewport(golem);
+            region.set_viewport(golem);
 
             // Let the root component render itself
-            self.root_component.render(golem, region, &mut self.root_buddy);
+            let result = self.root_component.render(golem, region, &mut self.root_buddy);
+            self.root_buddy.set_last_render_result(result);
 
             // Check if the root component requested anything while rendering
             self.work_after_events();
@@ -86,16 +92,34 @@ impl Application {
 
     pub fn fire_mouse_click_event(&mut self, event: MouseClickEvent) {
         if self.root_buddy.get_subscriptions().mouse_click {
-            // TODO Check used area!
-            self.root_component.on_mouse_click(event, &mut self.root_buddy);
-            self.work_after_events();
+            let point = event.get_point();
+            let mut fire = false;
+            let maybe_render_result = self.root_buddy.get_last_render_result();
+
+            // Don't pass on any click events until the component has been
+            // rendered for the first time. 
+            if let Some(render_result) = maybe_render_result {
+
+                // If we should filter mouse actions, we need to do an additional check
+                if render_result.filter_mouse_actions {
+                    fire = render_result.drawn_region.is_inside(point.get_x(), point.get_y());
+                } else {
+                    fire = true;
+                }
+            }
+
+            if fire {
+                self.root_component.on_mouse_click(event, &mut self.root_buddy);
+                self.work_after_events();
+            }
         }
+        // TODO Handle mouse click out
     }
 }
 
 impl Drop for Application {
 
     fn drop(&mut self) {
-        self.root_component.on_detach(&mut self.root_buddy);
+        self.root_component.on_detach();
     }
 }

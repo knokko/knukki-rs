@@ -20,14 +20,12 @@ use crate::*;
 /// there is also an unsubscribe method to cancel the event listen subscription.
 /// 
 /// The read methods can be used to query information from the parent, mostly 
-/// information about the state of the keyboard and the mouse.
+/// information about the state of the keyboard and the mouse(s).
 /// 
 /// There are also methods that are neither subscription or read methods, the
-/// remaining methods. These methods have all kinds of purposes. The import ones
-/// are `request_render` and `set_used_area`. `request_render` is needed to make
-/// sure the component will be re-rendered the next frame and `set_used_area`
-/// should be used to tell the parent what part of the component domain is
-/// actually being used. 
+/// remaining methods. These methods have all kinds of purposes. The most important 
+/// one is `request_render`, which is needed if the component wants to render itself
+/// again (because of some state change for instance).
 pub trait ComponentBuddy {
 
     /// Requests to change the parent menu component (possibly the *root*
@@ -67,25 +65,7 @@ pub trait ComponentBuddy {
     /// Note that this component might be re-rendered even if this method is
     /// not called, for instance when the window is resized.
     fn request_render(&mut self);
-
-    /// Notifies this buddy that the used area of the component has been changed.
-    /// 
-    /// To elaborate a bit: every `Component` will get a domain (a part of the
-    /// window/screen) in which it can render and receive events. For the root
-    /// component, that will be the entire window/screen. 
-    /// 
-    /// However, components do not have to use their entire domain the whole time: 
-    /// they might also only use a part of it or let it vary over time. For
-    /// instance, text components will typically try to prevent their text from
-    /// being 'stretched out' by not using the full horizontal or vertical range of
-    /// their domain.
-    /// 
-    /// This method should be used to let its buddy know which part of the domain the
-    /// component is currently using and should be called again whenever this part
-    /// changes. Giving accurate component areas and calling this method on time will
-    /// improve the accuracy of the ui.
-    fn set_used_area(&mut self, area: Box<dyn ComponentArea>);
-
+    
     // Subscribe methods
 
     /// Subscribes the component for the `MouseClickEvent`
@@ -155,17 +135,4 @@ pub trait ComponentBuddy {
 
     /// Gets all `Mouse`s that are hovering somewhere over the application window.
     fn get_all_mouses(&self) -> Vec<Mouse>;
-
-    /// Gets the aspect ratio of the domain of the component, that is, the width
-    /// of the domain divided by the height of the domain. 
-    /// 
-    /// Components can use the aspect ratio to draw shapes without distortion
-    /// (to make sure that the squares they draw have the same width as height on
-    /// the screen). 
-    /// 
-    /// The size of the domain (for instance in pixels) will *not* be made 
-    /// available: the aspect ratio is all information components can get.
-    /// This is intentional because components should normally not need such
-    /// information (but this might change in the future).
-    fn get_aspect_ratio(&self) -> f32;
 }

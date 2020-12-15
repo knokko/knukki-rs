@@ -4,7 +4,7 @@ pub struct RootComponentBuddy {
 
     subscriptions: ComponentSubscriptions,
 
-    used_area: Box<dyn ComponentArea>,
+    last_render_result: Option<RenderResult>,
 
     create_next_menu: Option<Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>>,
 
@@ -16,7 +16,7 @@ impl RootComponentBuddy {
     pub fn new() -> Self {
         Self {
             subscriptions: ComponentSubscriptions::new(),
-            used_area: Box::new(RectangleComponentArea::new(0.0, 0.0, 1.0, 1.0)),
+            last_render_result: None,
             create_next_menu: None,
             requested_render: false
         }
@@ -26,12 +26,16 @@ impl RootComponentBuddy {
         &self.subscriptions
     }
 
-    pub fn get_used_area(&self) -> &dyn ComponentArea {
-        self.used_area.as_ref()
-    }
-
     pub fn did_request_render(&self) -> bool {
         self.requested_render
+    }
+
+    pub fn get_last_render_result(&self) -> &Option<RenderResult> {
+        &self.last_render_result
+    }
+
+    pub fn set_last_render_result(&mut self, result: RenderResult) {
+        self.last_render_result = Some(result);
     }
 
     pub fn clear_render_request(&mut self) {
@@ -62,10 +66,6 @@ impl ComponentBuddy for RootComponentBuddy {
 
     fn request_render(&mut self) {
         self.requested_render = true;
-    }
-
-    fn set_used_area(&mut self, area: Box<dyn ComponentArea>) {
-        self.used_area = area;
     }
 
     fn subscribe_mouse_click(&mut self) {
@@ -133,10 +133,6 @@ impl ComponentBuddy for RootComponentBuddy {
     }
 
     fn get_all_mouses(&self) -> Vec<Mouse> {
-        unimplemented!()
-    }
-
-    fn get_aspect_ratio(&self) -> f32 {
         unimplemented!()
     }
 }

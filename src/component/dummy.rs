@@ -16,7 +16,10 @@ impl Component for DummyComponent {
         panic!("Dummy components shouldn't receive actual events");
     }
 
-    fn render(&mut self, _golem: &Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) {
+    fn render(
+        &mut self, _golem: &Context, _region: RenderRegion, 
+        _buddy: &mut dyn ComponentBuddy
+    ) -> RenderResult {
         panic!("Dummy components shouldn't be asked to render itself");
     }
 }
