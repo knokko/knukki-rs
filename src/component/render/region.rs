@@ -1,17 +1,18 @@
 use golem::Context;
 
 /// Describe the region of the viewport where a `Component` is allowed to render
-/// itself. This is normally the *used area* (see the `set_used_area` method of
-/// `ComponentBuddy`) of the component *within* the *domain* of the component.
-///
+/// itself. This is normally the *domain* of the component.
+/// 
 /// The render region of the component will be given as parameter to its `render`
 /// method. The parent component or provider will ensure that the viewport is set
 /// to that render region before calling the `render` method.
 ///
 /// ### Methods
 /// The component is free to query the properties of the render region (like its
-/// width, minimum y coordinate, aspect ratio...), but most components should
-/// have no need for this.
+/// width, minimum y coordinate, aspect ratio...). Especially the aspect ratio
+/// should be useful for many components, because that is the only way they can
+/// prevent distortion. Most components should have no need for the other
+/// properties.
 ///
 /// This struct also has a `child_region` method, which can be useful for menu
 /// components to create regions for its child components.
