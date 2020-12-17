@@ -99,10 +99,7 @@ pub trait Component {
         _region: RenderRegion,
         _buddy: &mut dyn ComponentBuddy
     ) -> RenderResult {
-        RenderResult {
-            drawn_region: Box::new(RectangularDrawnRegion::new(0.0, 0.0, 1.0, 0.0)),
-            filter_mouse_actions: false
-        }
+        RenderResult::entire()
     }
 
     fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
