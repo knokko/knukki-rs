@@ -90,6 +90,25 @@ impl Application {
         }
     }
 
+    /// Let the `Application` pretend like it received a `render` call. But
+    /// unlike a real `render` call, nothing will be rendered.
+    /// 
+    /// ### Purpose
+    /// The purpose of this method is to make unit tests easier: no real
+    /// Golem rendering context is necessary. If the components of the
+    /// application use reasonable implementations of `simulate_render`,
+    /// the testing will still be very accurate.
+    pub fn simulate_render(&mut self, region: RenderRegion, force: bool) {
+        if force || self.root_buddy.did_request_render() {
+            self.root_buddy.clear_render_request();
+
+            let result = self.root_component.simulate_render(region, &mut self.root_buddy);
+            self.root_buddy.set_last_render_result(result);
+
+            self.work_after_events();
+        }
+    }
+
     pub fn fire_mouse_click_event(&mut self, event: MouseClickEvent) {
         if self.root_buddy.get_subscriptions().mouse_click {
             let point = event.get_point();

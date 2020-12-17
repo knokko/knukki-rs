@@ -75,6 +75,36 @@ pub trait Component {
         buddy: &mut dyn ComponentBuddy,
     ) -> RenderResult;
 
+    /// Let this component pretend that it renders, and tries to return the same
+    /// `RenderResult`.
+    /// 
+    /// ### Purpose
+    /// Currently, this method is only meant to be used as alternative for the
+    /// real `render` method in unit tests. This makes unit tests easier to run
+    /// because it no longer needs to obtain a Golem rendering context (which
+    /// might be inconvenient on headless testing systems). This method should
+    /// *not* be called in production environments.
+    /// 
+    /// ### Default implementation
+    /// The default implementation of this method will just return a `RenderResult`
+    /// with the *full* `drawn_region` (the rectangle from 0.0 to 1.0). In other
+    /// words, the component will claim that it used its entire *domain* for
+    /// drawing. For simple components, this could even be quite accurate. But,
+    /// this is probably not accurate for menu components.
+    /// 
+    /// If you like unit testing, you should override this with a better
+    /// implementation, especially for menu components.
+    fn simulate_render(
+        &mut self,
+        _region: RenderRegion,
+        _buddy: &mut dyn ComponentBuddy
+    ) -> RenderResult {
+        RenderResult {
+            drawn_region: Box::new(RectangularDrawnRegion::new(0.0, 0.0, 1.0, 0.0)),
+            filter_mouse_actions: false
+        }
+    }
+
     fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
         forgot("MouseClick")
     }
