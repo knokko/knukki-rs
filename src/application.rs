@@ -143,3 +143,102 @@ impl Drop for Application {
         self.root_component.on_detach();
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use crate::*;
+
+    use golem::Context;
+
+    use std::cell::Cell;
+    use std::rc::Rc;
+
+    struct CountingComponent {
+        counter: Rc<Cell<u32>>
+    }
+
+    impl Component for CountingComponent {
+        fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+            self.counter.set(self.counter.get() + 1);
+            buddy.subscribe_mouse_click();
+        }
+
+        fn on_resize(&mut self, _buddy: &mut dyn ComponentBuddy) {
+            self.counter.set(self.counter.get() + 2);
+        }
+
+        fn render(&mut self, _golem: &Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            self.counter.set(self.counter.get() + 3);
+            RenderResult::entire()
+        }
+
+        fn simulate_render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            self.counter.set(self.counter.get() + 3);
+            RenderResult::entire()
+        }
+
+        fn on_detach(&mut self) {
+            self.counter.set(self.counter.get() + 4);
+        }
+
+        fn on_mouse_click(&mut self, event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
+            if event.get_point().get_x() > 0.3 {
+                buddy.request_render();
+            }
+            self.counter.set(self.counter.get() + 5);
+        }
+    }
+
+    #[test]
+    fn test_initial_attach_and_detach() {
+        let counter = Rc::new(Cell::new(0));
+        let component = CountingComponent { counter: Rc::clone(&counter) };
+        {
+            let _application = Application::new(Box::new(component));
+
+            // The component should have been attached by now
+            assert_eq!(1, counter.get());
+        }
+
+        // The application (and component) should have been dropped by now
+        assert_eq!(1, Rc::strong_count(&counter));
+        // And the component should have been detached
+        assert_eq!(5, counter.get());
+    }
+
+    #[test]
+    fn test_render() {
+        let counter = Rc::new(Cell::new(0));
+        let component = CountingComponent { counter: Rc::clone(&counter) };
+        let mut application = Application::new(Box::new(component));
+
+        let dummy_region = RenderRegion::with_size(0, 0, 150, 100);
+
+        // The component should have been attached, so the counter should be 1
+        assert_eq!(1, counter.get());
+
+        // If we simulate 1 render call, the component should draw once
+        application.simulate_render(dummy_region, false);
+        assert_eq!(4, counter.get());
+
+        // But, rendering again shouldn't change anything because the component
+        // didn't request another render
+        application.simulate_render(dummy_region, false);
+        assert_eq!(4, counter.get());
+
+        // Unless we force it to do so...
+        application.simulate_render(dummy_region, true);
+        assert_eq!(7, counter.get());
+
+        // After we forced it, things should continue normally...
+        application.simulate_render(dummy_region, false);
+        assert_eq!(7, counter.get());
+
+        // And no matter how often we request without force, nothing will happen
+        for _counter in 0 .. 100 {
+            application.simulate_render(dummy_region, false);
+            assert_eq!(7, counter.get());
+        }
+    }
+}
