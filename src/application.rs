@@ -241,4 +241,50 @@ mod tests {
             assert_eq!(7, counter.get());
         }
     }
+
+    #[test]
+    fn test_click_and_render() {
+        let counter = Rc::new(Cell::new(0));
+        let component = CountingComponent { counter: Rc::clone(&counter) };
+        let mut application = Application::new(Box::new(component));
+
+        let dummy_region = RenderRegion::between(100, 100, 200, 200);
+        let hit_event = MouseClickEvent::new(
+            Mouse::new(0), 
+            MousePoint::new(0.5, 0.5), 
+            MouseButton::primary()
+        );
+        let miss_event = MouseClickEvent::new(
+            Mouse::new(0),
+            MousePoint::new(0.0, 0.0),
+            MouseButton::primary()
+        );
+
+        // The counter should be 1 because the component should only have been attached
+        assert_eq!(1, counter.get());
+
+        // Rendering 10 times should only increase it once by 3
+        for _counter in 0 .. 10 {
+            application.simulate_render(dummy_region, false);
+        }
+        assert_eq!(4, counter.get());
+
+        // If we click (even when we miss), the counter should be increased by 5
+        application.fire_mouse_click_event(miss_event);
+        assert_eq!(9, counter.get());
+        // But rendering won't have effect because we missed
+        application.simulate_render(dummy_region, false);
+        assert_eq!(9, counter.get());
+
+        // If we hit, the counter should also be increased by 5
+        application.fire_mouse_click_event(hit_event);
+        assert_eq!(14, counter.get());
+        // But this time, rendering will also increase it by 3
+        application.simulate_render(dummy_region, false);
+        assert_eq!(17, counter.get());
+
+        // But rendering again shouldn't matter
+        application.simulate_render(dummy_region, false);
+        assert_eq!(17, counter.get());
+    }
 }
