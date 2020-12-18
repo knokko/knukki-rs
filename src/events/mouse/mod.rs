@@ -42,6 +42,7 @@ impl Mouse {
 ///
 /// Use `MouseClickOutEvent` and the corresponding `on_mouse_click_out` method
 /// to keep track of mouse clicks outside the component.
+#[derive(Copy, Clone, Debug)]
 pub struct MouseClickEvent {
     mouse: Mouse,
     point: MousePoint,
