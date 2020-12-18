@@ -287,4 +287,62 @@ mod tests {
         application.simulate_render(dummy_region, false);
         assert_eq!(17, counter.get());
     }
+
+    #[test]
+    fn test_filter_mouse_actions() {
+        struct CustomCountingComponent {
+            counter: Rc<Cell<u8>>
+        }
+
+        impl Component for CustomCountingComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+                buddy.subscribe_mouse_click();
+            }
+
+            fn on_resize(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+            fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.counter.set(self.counter.get() + 1);
+            }
+
+            fn render(&mut self, _golem: &Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+                panic!("No real rendering")
+            }
+
+            fn simulate_render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+                RenderResult {
+                    drawn_region: Box::new(RectangularDrawnRegion::new(0.4, 0.4, 0.6, 0.6)),
+                    filter_mouse_actions: true
+                }
+            }
+        }
+        let counter = Rc::new(Cell::new(0));
+        let component = CustomCountingComponent { counter: Rc::clone(&counter) };
+        let mut application = Application::new(Box::new(component));
+
+        let miss_click = MouseClickEvent::new(
+            Mouse::new(0), 
+            MousePoint::new(0.3, 0.3), 
+            MouseButton::primary()
+        );
+        let hit_click = MouseClickEvent::new(
+            Mouse::new(0), 
+            MousePoint::new(0.5, 0.5), 
+            MouseButton::primary()
+        );
+
+        // Clicks don't have effect until the component has been drawn
+        application.fire_mouse_click_event(hit_click);
+        assert_eq!(0, counter.get());
+
+        application.simulate_render(RenderRegion::between(0, 0, 1, 1), false);
+
+        // And neither do miss-clicks
+        application.fire_mouse_click_event(miss_click);
+        assert_eq!(0, counter.get());
+
+        // Only hit clicks have effect
+        application.fire_mouse_click_event(hit_click);
+        assert_eq!(1, counter.get());
+    }
 }
