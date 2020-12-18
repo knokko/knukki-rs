@@ -164,10 +164,6 @@ mod tests {
             buddy.subscribe_mouse_click();
         }
 
-        fn on_resize(&mut self, _buddy: &mut dyn ComponentBuddy) {
-            self.counter.set(self.counter.get() + 2);
-        }
-
         fn render(&mut self, _golem: &Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
             self.counter.set(self.counter.get() + 3);
             RenderResult::entire()
@@ -298,8 +294,6 @@ mod tests {
             fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
                 buddy.subscribe_mouse_click();
             }
-
-            fn on_resize(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
             fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
                 self.counter.set(self.counter.get() + 1);

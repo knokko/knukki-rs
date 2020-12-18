@@ -25,7 +25,7 @@ pub use render::*;
 pub trait Component {
     fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy);
 
-    fn on_resize(&mut self, buddy: &mut dyn ComponentBuddy);
+    fn on_resize(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
     /// Lets this component render itself, and returns some information about the rendering.
     ///

@@ -11,10 +11,6 @@ impl Component for DummyComponent {
         panic!("Dummy components shouldn't be attached");
     }
 
-    fn on_resize(&mut self, _buddy: &mut dyn ComponentBuddy) {
-        panic!("Dummy components shouldn't receive actual events");
-    }
-
     fn render(
         &mut self,
         _golem: &Context,
