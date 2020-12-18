@@ -72,7 +72,12 @@ impl Application {
     /// time, the application should only do this if something changed. If
     /// nothing changed, the window will keep showing the results of the previous
     /// time the application *did* render.
-    pub fn render(&mut self, golem: &Context, region: RenderRegion, force: bool) {
+    /// 
+    /// ### Return value
+    /// This method returns true if the application chose to render (or it was
+    /// forced to do so) and false if the application chose not to render.
+    pub fn render(&mut self, golem: &Context, region: RenderRegion, force: bool) -> bool {
+        self.test_counter += 1;
         if force || self.root_buddy.did_request_render() {
             self.root_buddy.clear_render_request();
 
@@ -87,6 +92,9 @@ impl Application {
 
             // Check if the root component requested anything while rendering
             self.work_after_events();
+            true
+        } else {
+            false
         }
     }
 
