@@ -1,6 +1,6 @@
 use crate::*;
 
-pub struct RootComponentBuddy {
+pub struct SimpleFlatBuddy {
     subscriptions: ComponentSubscriptions,
 
     last_render_result: Option<RenderResult>,
@@ -10,16 +10,15 @@ pub struct RootComponentBuddy {
     requested_render: bool,
 }
 
-impl RootComponentBuddy {
+impl SimpleFlatBuddy {
     pub fn new() -> Self {
         Self {
             subscriptions: ComponentSubscriptions::new(),
             last_render_result: None,
             create_next_menu: None,
 
-            // Components should normally render as soon as possible after they
-            // are attached
-            requested_render: true,
+            // Components should always render right after they are attached
+            requested_render: true
         }
     }
 
@@ -59,7 +58,7 @@ impl RootComponentBuddy {
     }
 }
 
-impl ComponentBuddy for RootComponentBuddy {
+impl ComponentBuddy for SimpleFlatBuddy {
     fn change_menu(
         &mut self,
         create_new_menu: Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>,

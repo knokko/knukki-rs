@@ -27,7 +27,8 @@ impl Application {
     pub fn new(mut initial_root_component: Box<dyn Component>) -> Self {
         let mut root_buddy = RootComponentBuddy::new();
         initial_root_component.on_attach(&mut root_buddy);
-        root_buddy.request_render();
+        // No need to call request_render, because the did_request_render field
+        // of RootComponentBuddy starts as true
         let mut result = Self {
             root_component: initial_root_component,
             root_buddy,
