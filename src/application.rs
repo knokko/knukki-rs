@@ -1,4 +1,6 @@
 use crate::*;
+
+#[cfg(feature = "golem_rendering")]
 use golem::Context;
 
 /// The `Application` is the 'highest' object that is cross-platform. It
@@ -76,6 +78,7 @@ impl Application {
     /// ### Return value
     /// This method returns true if the application chose to render (or it was
     /// forced to do so) and false if the application chose not to render.
+    #[cfg(feature = "golem_rendering")]
     pub fn render(&mut self, golem: &Context, region: RenderRegion, force: bool) -> bool {
         if force || self.root_buddy.did_request_render() {
             self.root_buddy.clear_render_request();
@@ -156,8 +159,6 @@ mod tests {
 
     use crate::*;
 
-    use golem::Context;
-
     use std::cell::Cell;
     use std::rc::Rc;
 
@@ -169,11 +170,6 @@ mod tests {
         fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
             self.counter.set(self.counter.get() + 1);
             buddy.subscribe_mouse_click();
-        }
-
-        fn render(&mut self, _golem: &Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
-            self.counter.set(self.counter.get() + 3);
-            RenderResult::entire()
         }
 
         fn simulate_render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
@@ -304,10 +300,6 @@ mod tests {
 
             fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
                 self.counter.set(self.counter.get() + 1);
-            }
-
-            fn render(&mut self, _golem: &Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
-                panic!("No real rendering")
             }
 
             fn simulate_render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {

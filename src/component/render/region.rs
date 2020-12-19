@@ -1,5 +1,3 @@
-use golem::Context;
-
 /// Describe the region of the viewport where a `Component` is allowed to render
 /// itself. This is normally the *domain* of the component.
 /// 
@@ -165,7 +163,8 @@ impl RenderRegion {
     }
 
     /// Sets the viewport of the given golem `Context` to this render region.
-    pub fn set_viewport(&self, golem: &Context) {
+    #[cfg(feature = "golem_rendering")]
+    pub fn set_viewport(&self, golem: &golem::Context) {
         golem.set_viewport(
             self.get_min_x(),
             self.get_min_y(),

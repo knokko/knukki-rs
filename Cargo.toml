@@ -8,11 +8,10 @@ edition = "2018"
 
 [features]
 default = []
-
+golem_rendering = ["golem"]
 provider = ["glutin", "glow"]
 
 [dependencies]
-golem = "0.1.7"
-
+golem = { version = "0.1.7", optional = true }
 glutin = { version = "0.22.0", optional = true }
 glow = { version = "0.4.0", optional = true }

@@ -1,4 +1,6 @@
 use crate::*;
+
+#[cfg(feature = "golem_rendering")]
 use golem::Context;
 
 mod buddy;
@@ -68,6 +70,7 @@ pub trait Component {
     /// set to true, it will *not* be called because the component didn't render
     /// there. This can be convenient for many clickable components that don't
     /// always use their full component domain.
+    #[cfg(feature = "golem_rendering")]
     fn render(
         &mut self,
         golem: &Context,

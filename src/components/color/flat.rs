@@ -1,7 +1,5 @@
 use crate::*;
 
-use golem::Context;
-
 pub struct FlatColorComponent {
     color: Color
 }
@@ -15,7 +13,8 @@ impl FlatColorComponent {
 impl Component for FlatColorComponent {
     fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
-    fn render(&mut self, golem: &Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+    #[cfg(feature = "golem_rendering")]
+    fn render(&mut self, golem: &golem::Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
         golem.set_clear_color(
             self.color.get_red_float(), 
             self.color.get_green_float(), 
