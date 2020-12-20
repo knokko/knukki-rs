@@ -8,6 +8,7 @@ pub struct SimpleFlatBuddy {
     create_next_menu: Option<Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>>,
 
     requested_render: bool,
+    has_changes: bool,
 }
 
 impl SimpleFlatBuddy {
@@ -18,7 +19,9 @@ impl SimpleFlatBuddy {
             create_next_menu: None,
 
             // Components should always render right after they are attached
-            requested_render: true
+            requested_render: true,
+            // This one is initially true to indicate the requested_render
+            has_changes: true
         }
     }
 
@@ -30,16 +33,24 @@ impl SimpleFlatBuddy {
         self.requested_render
     }
 
+    pub fn clear_render_request(&mut self) {
+        self.requested_render = false;
+    }
+
+    pub fn has_changes(&self) -> bool {
+        self.has_changes
+    }
+
+    pub fn clear_changes(&mut self) {
+        self.has_changes = false;
+    }
+
     pub fn get_last_render_result(&self) -> &Option<RenderResult> {
         &self.last_render_result
     }
 
     pub fn set_last_render_result(&mut self, result: RenderResult) {
         self.last_render_result = Some(result);
-    }
-
-    pub fn clear_render_request(&mut self) {
-        self.requested_render = false;
     }
 
     pub fn has_next_menu(&self) -> bool {
@@ -64,6 +75,7 @@ impl ComponentBuddy for SimpleFlatBuddy {
         create_new_menu: Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>,
     ) {
         self.create_next_menu = Some(create_new_menu);
+        self.has_changes = true;
     }
 
     fn request_text_input(&self, start_text: String) -> Option<String> {
@@ -71,15 +83,24 @@ impl ComponentBuddy for SimpleFlatBuddy {
     }
 
     fn request_render(&mut self) {
-        self.requested_render = true;
+        if !self.requested_render {
+            self.requested_render = true;
+            self.has_changes = true;
+        }
     }
 
     fn subscribe_mouse_click(&mut self) {
-        self.subscriptions.mouse_click = true;
+        if !self.subscriptions.mouse_click {
+            self.subscriptions.mouse_click = true;
+            self.has_changes = true;
+        }
     }
 
     fn unsubscribe_mouse_click(&mut self) {
-        self.subscriptions.mouse_click = false;
+        if self.subscriptions.mouse_click {
+            self.subscriptions.mouse_click = false;
+            self.has_changes = true;
+        }
     }
 
     fn subscribe_mouse_click_out(&self) {
