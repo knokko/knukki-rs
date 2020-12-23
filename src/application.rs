@@ -62,6 +62,18 @@ impl Application {
     /// (typically 60 times per second). If the window resized or lost its
     /// previous pixels, the `force` should be set to true to inform the
     /// application that it should really use this opportunity to render.
+    /// 
+    /// ### Golem context
+    /// When the `golem_rendering` feature is enabled, this method expects
+    /// a Golem `Context` as first parameter. This is the context where
+    /// the application will render its components. If this feature is not
+    /// enabled, the application will perform a 'dummy render': The 
+    /// components will 'pretend' that they are drawing itself and should
+    /// return the same `RenderResult` as they would when given an actual
+    /// golem `Context`. This is of course useless for production environments
+    /// because the application will be invisible, but very useful for unit
+    /// testing: there is no need to create some dirty offscreen window that
+    /// nobody will be able to view anyway.
     ///
     /// ### Region
     /// The *provider* can use the *region* parameter to tell the application
