@@ -15,6 +15,10 @@ provider = ["glutin", "glow"]
 name = "color_clicking"
 required-features = ["golem_rendering", "provider"]
 
+[[example]]
+name = "color_clicking_menu"
+required-features = ["golem_rendering", "provider"]
+
 [dependencies]
 golem = { version = "0.1.7", optional = true }
 glutin = { version = "0.22.0", optional = true }

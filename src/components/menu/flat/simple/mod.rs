@@ -33,7 +33,11 @@ impl SimpleFlatMenu {
         self.components_to_add.push(ComponentToAdd { component, domain });
     }
 
-    fn update_internal(&mut self, own_buddy: &mut dyn ComponentBuddy) {
+    fn update_internal(
+        &mut self, 
+        own_buddy: &mut dyn ComponentBuddy, 
+        is_about_to_render: bool
+    ) {
         while !self.components_to_add.is_empty() {
             let to_add = self.components_to_add.swap_remove(0);
             let mut entry_to_add = ComponentEntry {
@@ -43,16 +47,21 @@ impl SimpleFlatMenu {
             };
 
             entry_to_add.attach();
-            self.check_buddy(own_buddy, &mut entry_to_add);
+            self.check_buddy(own_buddy, &mut entry_to_add, is_about_to_render);
 
             // Don't forget this x)
             self.components.push(Rc::new(RefCell::new(entry_to_add)));
         }
     }
 
-    fn check_buddy(&self, own_buddy: &mut dyn ComponentBuddy, entry: &mut ComponentEntry) {
+    fn check_buddy(
+        &self, 
+        own_buddy: &mut dyn ComponentBuddy, 
+        entry: &mut ComponentEntry, 
+        is_about_to_render: bool
+    ) {
         if entry.buddy.has_changes() {
-            if entry.buddy.did_request_render() {
+            if !is_about_to_render && entry.buddy.did_request_render() {
                 own_buddy.request_render();
                 // Don't clear the render request until we have really rendered it
             }
@@ -76,14 +85,14 @@ impl SimpleFlatMenu {
 
 impl Component for SimpleFlatMenu {
     fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
-        self.update_internal(buddy);
+        self.update_internal(buddy, false);
         // TODO Performance improvement: only subscribe when at least 1 component did
         buddy.subscribe_mouse_click();
     }
 
     fn on_mouse_click(&mut self, event: MouseClickEvent, own_buddy: &mut dyn ComponentBuddy) {
         // This should be done before every important action
-        self.update_internal(own_buddy);
+        self.update_internal(own_buddy, false);
 
         // Lets now handle the actual click event
         let maybe_clicked_cell = self.get_component_at(
@@ -93,7 +102,7 @@ impl Component for SimpleFlatMenu {
         if let Some(clicked_cell) = maybe_clicked_cell {
             let mut clicked_entry = clicked_cell.borrow_mut();
             clicked_entry.mouse_click(event);
-            self.check_buddy(own_buddy, &mut clicked_entry);
+            self.check_buddy(own_buddy, &mut clicked_entry, false);
         }
 
         // TODO Fire mouse click out events to the rest of the components
@@ -107,7 +116,7 @@ impl Component for SimpleFlatMenu {
         buddy: &mut dyn ComponentBuddy
     ) -> RenderResult {
         // This needs to happen before each event
-        self.update_internal(buddy);
+        self.update_internal(buddy, true);
 
         // Now onto the 'actual' drawing
         let mut drawn_regions: Vec<Box<dyn DrawnRegion>> = Vec::new();
@@ -136,7 +145,7 @@ impl Component for SimpleFlatMenu {
                     component_domain.get_max_y()
                 );
                 drawn_regions.push(Box::new(transformed_region));
-                self.check_buddy(buddy, &mut entry);
+                self.check_buddy(buddy, &mut entry, false);
             }
         }
 
@@ -193,6 +202,7 @@ impl ComponentEntry {
         region: RenderRegion
     ) -> &Option<RenderResult> {
         if self.buddy.did_request_render() {
+            self.buddy.clear_render_request();
             #[cfg(feature = "golem_rendering")]
             {
                 region.set_viewport(golem);
@@ -374,5 +384,73 @@ mod tests {
         application.fire_mouse_click_event(click_event(0.1, 0.8));
         assert_eq!(2, full_counter.get());
         assert_eq!(1, half_counter.get());
+    }
+
+    #[test]
+    fn test_rendering() {
+        struct BusyRenderComponent {
+            counter: Rc<Cell<u8>>
+        }
+
+        impl Component for BusyRenderComponent {
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy) -> RenderResult {
+                buddy.request_render();
+                self.counter.set(self.counter.get() + 1);
+                RenderResult::entire()
+            }
+        }
+
+        struct ClickRenderComponent {
+            counter: Rc<Cell<u8>>
+        }
+
+        impl Component for ClickRenderComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+                buddy.subscribe_mouse_click();
+            }
+
+            fn on_mouse_click(&mut self, _event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
+                buddy.request_render();
+            }
+
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+                self.counter.set(self.counter.get() + 1);
+                RenderResult::entire()
+            }
+        }
+
+        let mut menu = SimpleFlatMenu::new();
+        let mut buddy = RootComponentBuddy::new();
+        let render_region = RenderRegion::between(10, 20, 30, 40);
+
+        let click_counter = Rc::new(Cell::new(0));
+        let busy_counter = Rc::new(Cell::new(0));
+
+        menu.add_component(
+            Box::new(ClickRenderComponent { counter: Rc::clone(&click_counter)}), 
+            ComponentDomain::between(0.1, 0.1, 0.3, 0.3)
+        );
+
+        // All components should be rendered during their first render call
+        assert!(buddy.did_request_render());
+        buddy.clear_render_request();
+        menu.render(render_region, &mut buddy);
+        assert_eq!(1, click_counter.get());
+
+        // But the menu shouldn't request another one until we click the component
+        assert!(!buddy.did_request_render());
+
+        // So let's click it and render again
+        let hit_click = MouseClickEvent::new(
+            Mouse::new(0), MousePoint::new(0.2, 0.2), MouseButton::primary()
+        );
+        menu.on_mouse_click(hit_click, &mut buddy);
+        assert!(buddy.did_request_render());
+        buddy.clear_render_request();
+        menu.render(render_region, &mut buddy);
+        assert!(!buddy.did_request_render());
+        assert_eq!(2, click_counter.get());
     }
 }
