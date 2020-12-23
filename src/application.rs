@@ -79,18 +79,27 @@ impl Application {
     /// ### Return value
     /// This method returns true if the application chose to render (or it was
     /// forced to do so) and false if the application chose not to render.
-    #[cfg(feature = "golem_rendering")]
-    pub fn render(&mut self, golem: &Context, region: RenderRegion, force: bool) -> bool {
+    pub fn render(
+        &mut self, 
+        #[cfg(feature = "golem_rendering")]
+        golem: &Context, 
+        region: RenderRegion, 
+        force: bool
+    ) -> bool {
         if force || self.root_buddy.did_request_render() {
             self.root_buddy.clear_render_request();
 
             // Make sure we draw onto the right area
+            #[cfg(feature = "golem_rendering")]
             region.set_viewport(golem);
 
             // Let the root component render itself
-            let result = self
-                .root_component
-                .render(golem, region, &mut self.root_buddy);
+            let result = self.root_component.render(
+                    #[cfg(feature = "golem_rendering")]
+                    golem, 
+                    region, 
+                    &mut self.root_buddy
+                );
             self.root_buddy.set_last_render_result(result);
 
             // Check if the root component requested anything while rendering
@@ -98,25 +107,6 @@ impl Application {
             true
         } else {
             false
-        }
-    }
-
-    /// Let the `Application` pretend like it received a `render` call. But
-    /// unlike a real `render` call, nothing will be rendered.
-    /// 
-    /// ### Purpose
-    /// The purpose of this method is to make unit tests easier: no real
-    /// Golem rendering context is necessary. If the components of the
-    /// application use reasonable implementations of `simulate_render`,
-    /// the testing will still be very accurate.
-    pub fn simulate_render(&mut self, region: RenderRegion, force: bool) {
-        if force || self.root_buddy.did_request_render() {
-            self.root_buddy.clear_render_request();
-
-            let result = self.root_component.simulate_render(region, &mut self.root_buddy);
-            self.root_buddy.set_last_render_result(result);
-
-            self.work_after_events();
         }
     }
 
@@ -173,7 +163,7 @@ mod tests {
             buddy.subscribe_mouse_click();
         }
 
-        fn simulate_render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+        fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
             self.counter.set(self.counter.get() + 3);
             RenderResult::entire()
         }
@@ -219,25 +209,25 @@ mod tests {
         assert_eq!(1, counter.get());
 
         // If we simulate 1 render call, the component should draw once
-        application.simulate_render(dummy_region, false);
+        application.render(dummy_region, false);
         assert_eq!(4, counter.get());
 
         // But, rendering again shouldn't change anything because the component
         // didn't request another render
-        application.simulate_render(dummy_region, false);
+        application.render(dummy_region, false);
         assert_eq!(4, counter.get());
 
         // Unless we force it to do so...
-        application.simulate_render(dummy_region, true);
+        application.render(dummy_region, true);
         assert_eq!(7, counter.get());
 
         // After we forced it, things should continue normally...
-        application.simulate_render(dummy_region, false);
+        application.render(dummy_region, false);
         assert_eq!(7, counter.get());
 
         // And no matter how often we request without force, nothing will happen
         for _counter in 0 .. 100 {
-            application.simulate_render(dummy_region, false);
+            application.render(dummy_region, false);
             assert_eq!(7, counter.get());
         }
     }
@@ -265,7 +255,7 @@ mod tests {
 
         // Rendering 10 times should only increase it once by 3
         for _counter in 0 .. 10 {
-            application.simulate_render(dummy_region, false);
+            application.render(dummy_region, false);
         }
         assert_eq!(4, counter.get());
 
@@ -273,18 +263,18 @@ mod tests {
         application.fire_mouse_click_event(miss_event);
         assert_eq!(9, counter.get());
         // But rendering won't have effect because we missed
-        application.simulate_render(dummy_region, false);
+        application.render(dummy_region, false);
         assert_eq!(9, counter.get());
 
         // If we hit, the counter should also be increased by 5
         application.fire_mouse_click_event(hit_event);
         assert_eq!(14, counter.get());
         // But this time, rendering will also increase it by 3
-        application.simulate_render(dummy_region, false);
+        application.render(dummy_region, false);
         assert_eq!(17, counter.get());
 
         // But rendering again shouldn't matter
-        application.simulate_render(dummy_region, false);
+        application.render(dummy_region, false);
         assert_eq!(17, counter.get());
     }
 
@@ -303,7 +293,7 @@ mod tests {
                 self.counter.set(self.counter.get() + 1);
             }
 
-            fn simulate_render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
                 RenderResult {
                     drawn_region: Box::new(RectangularDrawnRegion::new(0.4, 0.4, 0.6, 0.6)),
                     filter_mouse_actions: true
@@ -329,7 +319,7 @@ mod tests {
         application.fire_mouse_click_event(hit_click);
         assert_eq!(0, counter.get());
 
-        application.simulate_render(RenderRegion::between(0, 0, 1, 1), false);
+        application.render(RenderRegion::between(0, 0, 1, 1), false);
 
         // And neither do miss-clicks
         application.fire_mouse_click_event(miss_click);

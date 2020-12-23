@@ -99,18 +99,13 @@ impl Component for SimpleFlatMenu {
         // TODO Fire mouse click out events to the rest of the components
     }
 
-    #[cfg(feature = "golem_rendering")]
-    fn render(&mut self, golem: &golem::Context, region: RenderRegion, buddy: &mut dyn ComponentBuddy) -> RenderResult {
-        for entry_cell in &self.components {
-            let mut entry = entry_cell.borrow_mut();
-            entry.render();
-        }
-        // TODO Well... render the components x)
-        // TODO And compute a more accurate return value!
-        RenderResult::entire()
-    }
-
-    fn simulate_render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy) -> RenderResult {
+    fn render(
+        &mut self, 
+        #[cfg(feature = "golem_rendering")]
+        golem: &golem::Context,
+        region: RenderRegion, 
+        buddy: &mut dyn ComponentBuddy
+    ) -> RenderResult {
         // This needs to happen before each event
         self.update_internal(buddy);
 
@@ -127,7 +122,11 @@ impl Component for SimpleFlatMenu {
                 component_domain.get_max_y()
             );
 
-            if let Some(entry_result) = entry.simulate_render(child_region) {
+            if let Some(entry_result) = entry.render(
+                #[cfg(feature = "golem_rendering")]
+                golem,
+                child_region
+            ) {
                 let transformed_region = TransformedDrawnRegion::new(
                     entry_result.drawn_region.clone(),
                     move |x, y| component_domain.transform(x, y),
@@ -187,9 +186,19 @@ impl ComponentEntry {
         }       
     }
 
-    fn simulate_render(&mut self, region: RenderRegion) -> &Option<RenderResult> {
+    fn render(
+        &mut self, 
+        #[cfg(feature = "golem_rendering")]
+        golem: &golem::Context,
+        region: RenderRegion
+    ) -> &Option<RenderResult> {
         if self.buddy.did_request_render() {
-            let render_result = self.component.simulate_render(region, &mut self.buddy);
+            let render_result = self.component.render(
+                #[cfg(feature = "golem_rendering")]
+                golem, 
+                region, 
+                &mut self.buddy
+            );
             self.buddy.set_last_render_result(render_result);
             self.buddy.get_last_render_result()
         } else {
@@ -223,6 +232,10 @@ mod tests {
                 self.counter.set(self.counter.get() + 1);
             }
 
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+                RenderResult::entire()
+            }
+
             fn on_detach(&mut self) {
                 self.counter.set(self.counter.get() + 1);
             }
@@ -250,12 +263,12 @@ mod tests {
         );
 
         // It should attach the second component as soon as possible
-        menu.simulate_render(RenderRegion::between(0, 0, 10, 10), &mut buddy);
+        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy);
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
 
         // But they should be attached only once
-        menu.simulate_render(RenderRegion::between(0, 0, 10, 10), &mut buddy);
+        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy);
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
 
@@ -283,7 +296,7 @@ mod tests {
                 self.click_counter.set(self.click_counter.get() + 1);
             }
 
-            fn simulate_render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
                 RenderResult::entire()
             }
         }
@@ -301,7 +314,7 @@ mod tests {
                 self.click_counter.set(self.click_counter.get() + 1);
             }
 
-            fn simulate_render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
                 RenderResult {
                     filter_mouse_actions: true,
                     drawn_region: Box::new(RectangularDrawnRegion::new(0.25, 0.0, 0.75, 1.0))
@@ -339,7 +352,7 @@ mod tests {
         assert_eq!(0, half_counter.get());
 
         // After at least 1 render call, clicking should have effect
-        application.simulate_render(RenderRegion::between(0, 0, 10, 10), false);
+        application.render(RenderRegion::between(0, 0, 10, 10), false);
         application.fire_mouse_click_event(click_event(0.2, 0.2));
         application.fire_mouse_click_event(click_event(0.7, 0.7));
         assert_eq!(1, full_counter.get());

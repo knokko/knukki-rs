@@ -10,9 +10,9 @@ impl Component for DummyComponent {
         panic!("Dummy components shouldn't be attached");
     }
 
-    #[cfg(feature = "golem_rendering")]
     fn render(
         &mut self,
+        #[cfg(feature = "golem_rendering")]
         _golem: &golem::Context,
         _region: RenderRegion,
         _buddy: &mut dyn ComponentBuddy,
