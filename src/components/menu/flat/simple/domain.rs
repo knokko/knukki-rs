@@ -56,4 +56,80 @@ impl ComponentDomain {
         let transformed = self.transform(mouse_point.get_x(), mouse_point.get_y());
         MousePoint::new(transformed.0, transformed.1)
     }
+
+    pub fn transform_back(&self, inner_x: f32, inner_y: f32) -> (f32, f32) {
+        let outer_x = self.get_min_x() + inner_x * self.get_width();
+        let outer_y = self.get_min_y() + inner_y * self.get_height();
+        (outer_x, outer_y)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_between() {
+        // Carefully choose values to ensure they don't cause rounding errors
+        let domain = ComponentDomain::between(-0.5, 0.25, 1.25, 0.5);
+        assert_eq!(-0.5, domain.get_min_x());
+        assert_eq!(0.25, domain.get_min_y());
+        assert_eq!(1.25, domain.get_max_x());
+        assert_eq!(0.5, domain.get_max_y());
+        assert_eq!(1.75, domain.get_width());
+        assert_eq!(0.25, domain.get_height());
+    }
+
+    #[test]
+    fn test_with_size() {
+        let domain = ComponentDomain::with_size(-0.75, -1.0, 0.5, 1.0);
+        assert_eq!(-0.75, domain.get_min_x());
+        assert_eq!(-1.0, domain.get_min_y());
+        assert_eq!(-0.25, domain.get_max_x());
+        assert_eq!(0.0, domain.get_max_y());
+        assert_eq!(0.5, domain.get_width());
+        assert_eq!(1.0, domain.get_height());
+    }
+
+    #[test]
+    fn test_is_inside() {
+        let domain = ComponentDomain::between(1.0, 0.0, 2.0, 3.0);
+
+        assert!(!domain.is_inside(-0.5, -0.5));
+        assert!(!domain.is_inside(0.5, 0.5));
+        assert!(domain.is_inside(1.5, 0.5));
+        assert!(!domain.is_inside(1.5, 3.5));
+        assert!(!domain.is_inside(2.5, 3.5));
+
+        // Edge case, literally
+        assert!(domain.is_inside(1.5, 0.0));
+
+        // Corner case, literally
+        assert!(domain.is_inside(2.0, 3.0));
+    }
+
+    #[test]
+    fn test_transform() {
+        // These numbers are carefully chosen to avoid rounding errors
+        let domain = ComponentDomain::between(0.25, 0.5, 0.375, 0.75);
+
+        assert_eq!((0.0, 0.0), domain.transform(0.25, 0.5));
+        assert_eq!((1.0, 1.0), domain.transform(0.375, 0.75));
+        assert_eq!((0.25, 0.5), domain.transform(0.28125, 0.625));
+        assert_eq!((-2.0, -2.0), domain.transform(0.0, 0.0));
+        assert_eq!((6.0, 2.0), domain.transform(1.0, 1.0));
+    }
+
+    #[test]
+    fn test_transform_back() {
+        // This is just the reverse of the test_transform test
+        let domain = ComponentDomain::between(0.25, 0.5, 0.375, 0.75);
+
+        assert_eq!((0.25, 0.5), domain.transform_back(0.0, 0.0));
+        assert_eq!((0.375, 0.75), domain.transform_back(1.0, 1.0));
+        assert_eq!((0.28125, 0.625), domain.transform_back(0.25, 0.5));
+        assert_eq!((0.0, 0.0), domain.transform_back(-2.0, -2.0));
+        assert_eq!((1.0, 1.0), domain.transform_back(6.0, 2.0));
+    }
 }
