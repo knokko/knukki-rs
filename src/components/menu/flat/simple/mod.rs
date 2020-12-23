@@ -193,6 +193,11 @@ impl ComponentEntry {
         region: RenderRegion
     ) -> &Option<RenderResult> {
         if self.buddy.did_request_render() {
+            #[cfg(feature = "golem_rendering")]
+            {
+                region.set_viewport(golem);
+            }
+
             let render_result = self.component.render(
                 #[cfg(feature = "golem_rendering")]
                 golem, 
