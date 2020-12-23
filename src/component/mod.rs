@@ -36,7 +36,7 @@ pub trait Component {
     /// the given golem `Context`. The given `region` is just for the information
     /// of the component: it can ignore it because the caller must ensure that the
     /// viewport is set accordingly.
-    /// 
+    ///
     /// ### Fake rendering
     /// When the `golem_rendering` feature is not enabled, there will not be
     /// a *golem* parameter for the actual drawing. The component is then
@@ -52,12 +52,12 @@ pub trait Component {
     /// of the parameter *force* will be true. If *force* is true, the
     /// component is supposed to redraw itself completely. If *force* is false,
     /// the component should only redraw the things that changed since the
-    /// previous call to `render`. 
-    /// 
+    /// previous call to `render`.
+    ///
     /// ### Continuous rendering
-    /// If you want this method to be called continuously, you should call the 
-    /// `request_render` method of `buddy` during this method call (which 
-    /// basically requests to be rendered again as soon as possible). This 
+    /// If you want this method to be called continuously, you should call the
+    /// `request_render` method of `buddy` during this method call (which
+    /// basically requests to be rendered again as soon as possible). This
     /// method will also be called soon after the component is attached.
     ///
     /// ### The return value
@@ -85,8 +85,7 @@ pub trait Component {
     /// always use their full component domain.
     fn render(
         &mut self,
-        #[cfg(feature = "golem_rendering")]
-        golem: &Context,
+        #[cfg(feature = "golem_rendering")] golem: &Context,
         region: RenderRegion,
         buddy: &mut dyn ComponentBuddy,
         force: bool,

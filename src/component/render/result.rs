@@ -6,11 +6,10 @@ pub struct RenderResult {
 }
 
 impl RenderResult {
-
     pub fn entire() -> Self {
         Self {
             drawn_region: Box::new(RectangularDrawnRegion::new(0.0, 0.0, 1.0, 1.0)),
-            filter_mouse_actions: false
+            filter_mouse_actions: false,
         }
     }
 }

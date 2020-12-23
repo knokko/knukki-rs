@@ -8,8 +8,8 @@ mod provider;
 
 pub use application::*;
 pub use component::*;
-pub use events::*;
 pub use components::*;
+pub use events::*;
 
 #[cfg(feature = "provider")]
 pub use provider::*;

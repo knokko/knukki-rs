@@ -4,20 +4,29 @@ pub use flat::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Color {
-
     red: u8,
     green: u8,
     blue: u8,
-    alpha: u8
+    alpha: u8,
 }
 
 impl Color {
     pub fn rgb(red: u8, green: u8, blue: u8) -> Self {
-        Self { red, green, blue, alpha: u8::max_value() }
+        Self {
+            red,
+            green,
+            blue,
+            alpha: u8::max_value(),
+        }
     }
 
     pub fn rgba(red: u8, green: u8, blue: u8, alpha: u8) -> Self {
-        Self { red, green, blue, alpha }
+        Self {
+            red,
+            green,
+            blue,
+            alpha,
+        }
     }
 
     pub fn get_red_int(&self) -> u8 {

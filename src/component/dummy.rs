@@ -12,11 +12,10 @@ impl Component for DummyComponent {
 
     fn render(
         &mut self,
-        #[cfg(feature = "golem_rendering")]
-        _golem: &golem::Context,
+        #[cfg(feature = "golem_rendering")] _golem: &golem::Context,
         _region: RenderRegion,
         _buddy: &mut dyn ComponentBuddy,
-        _force: bool
+        _force: bool,
     ) -> RenderResult {
         panic!("Dummy components shouldn't be asked to render itself");
     }

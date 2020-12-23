@@ -4,13 +4,12 @@ use crate::DrawnRegion;
 /// 1). Points will be considered *inside* a `CompositeDrawnRegion` if it is
 /// *inside* at least 1 of the `DrawnRegion`s it is composed of.
 pub struct CompositeDrawnRegion {
-
     components: Vec<Box<dyn DrawnRegion>>,
 
     left_bound: f32,
     bottom_bound: f32,
     right_bound: f32,
-    top_bound: f32
+    top_bound: f32,
 }
 
 impl CompositeDrawnRegion {
@@ -34,7 +33,7 @@ impl CompositeDrawnRegion {
             left_bound,
             bottom_bound,
             right_bound,
-            top_bound
+            top_bound,
         }
     }
 }
@@ -51,15 +50,17 @@ impl DrawnRegion for CompositeDrawnRegion {
     }
 
     fn clone(&self) -> Box<dyn DrawnRegion> {
-        let components = self.components.iter().map(
-            |component| component.as_ref().clone()
-        ).collect();
+        let components = self
+            .components
+            .iter()
+            .map(|component| component.as_ref().clone())
+            .collect();
         Box::new(Self {
             components,
             left_bound: self.left_bound,
             bottom_bound: self.bottom_bound,
             right_bound: self.right_bound,
-            top_bound: self.top_bound
+            top_bound: self.top_bound,
         })
     }
 
@@ -97,9 +98,9 @@ mod tests {
 
     #[test]
     fn test_single() {
-        let single = CompositeDrawnRegion::new(vec![
-            Box::new(RectangularDrawnRegion::new(0.2, 1.0, 0.5, 2.0))
-        ]);
+        let single = CompositeDrawnRegion::new(vec![Box::new(RectangularDrawnRegion::new(
+            0.2, 1.0, 0.5, 2.0,
+        ))]);
 
         assert!(!single.is_inside(0.1, 0.9));
         assert!(single.is_inside(0.2, 2.0));
@@ -114,7 +115,7 @@ mod tests {
     fn test_double() {
         let double = CompositeDrawnRegion::new(vec![
             Box::new(RectangularDrawnRegion::new(0.0, 0.0, 1.0, 1.0)),
-            Box::new(RectangularDrawnRegion::new(2.0, 1.0, 3.0, 2.0))
+            Box::new(RectangularDrawnRegion::new(2.0, 1.0, 3.0, 2.0)),
         ]);
 
         assert!(double.is_inside(0.1, 0.1));

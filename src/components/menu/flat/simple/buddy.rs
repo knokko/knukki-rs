@@ -21,7 +21,7 @@ impl SimpleFlatBuddy {
             // Components should always render right after they are attached
             requested_render: true,
             // This one is initially true to indicate the requested_render
-            has_changes: true
+            has_changes: true,
         }
     }
 

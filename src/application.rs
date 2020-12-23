@@ -62,12 +62,12 @@ impl Application {
     /// (typically 60 times per second). If the window resized or lost its
     /// previous pixels, the `force` should be set to true to inform the
     /// application that it should really use this opportunity to render.
-    /// 
+    ///
     /// ### Golem context
     /// When the `golem_rendering` feature is enabled, this method expects
     /// a Golem `Context` as first parameter. This is the context where
     /// the application will render its components. If this feature is not
-    /// enabled, the application will perform a 'dummy render': The 
+    /// enabled, the application will perform a 'dummy render': The
     /// components will 'pretend' that they are drawing itself and should
     /// return the same `RenderResult` as they would when given an actual
     /// golem `Context`. This is of course useless for production environments
@@ -87,16 +87,15 @@ impl Application {
     /// time, the application should only do this if something changed. If
     /// nothing changed, the window will keep showing the results of the previous
     /// time the application *did* render.
-    /// 
+    ///
     /// ### Return value
     /// This method returns true if the application chose to render (or it was
     /// forced to do so) and false if the application chose not to render.
     pub fn render(
-        &mut self, 
-        #[cfg(feature = "golem_rendering")]
-        golem: &Context, 
-        region: RenderRegion, 
-        force: bool
+        &mut self,
+        #[cfg(feature = "golem_rendering")] golem: &Context,
+        region: RenderRegion,
+        force: bool,
     ) -> bool {
         if force || self.root_buddy.did_request_render() {
             self.root_buddy.clear_render_request();
@@ -107,12 +106,12 @@ impl Application {
 
             // Let the root component render itself
             let result = self.root_component.render(
-                    #[cfg(feature = "golem_rendering")]
-                    golem, 
-                    region, 
-                    &mut self.root_buddy,
-                    force
-                );
+                #[cfg(feature = "golem_rendering")]
+                golem,
+                region,
+                &mut self.root_buddy,
+                force,
+            );
             self.root_buddy.set_last_render_result(result);
 
             // Check if the root component requested anything while rendering
@@ -167,7 +166,7 @@ mod tests {
     use std::rc::Rc;
 
     struct CountingComponent {
-        counter: Rc<Cell<u32>>
+        counter: Rc<Cell<u32>>,
     }
 
     impl Component for CountingComponent {
@@ -176,7 +175,12 @@ mod tests {
             buddy.subscribe_mouse_click();
         }
 
-        fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+        fn render(
+            &mut self,
+            _region: RenderRegion,
+            _buddy: &mut dyn ComponentBuddy,
+            force: bool,
+        ) -> RenderResult {
             self.counter.set(self.counter.get() + 3);
             RenderResult::entire()
         }
@@ -196,7 +200,9 @@ mod tests {
     #[test]
     fn test_initial_attach_and_detach() {
         let counter = Rc::new(Cell::new(0));
-        let component = CountingComponent { counter: Rc::clone(&counter) };
+        let component = CountingComponent {
+            counter: Rc::clone(&counter),
+        };
         {
             let _application = Application::new(Box::new(component));
 
@@ -213,7 +219,9 @@ mod tests {
     #[test]
     fn test_render() {
         let counter = Rc::new(Cell::new(0));
-        let component = CountingComponent { counter: Rc::clone(&counter) };
+        let component = CountingComponent {
+            counter: Rc::clone(&counter),
+        };
         let mut application = Application::new(Box::new(component));
 
         let dummy_region = RenderRegion::with_size(0, 0, 150, 100);
@@ -239,7 +247,7 @@ mod tests {
         assert_eq!(7, counter.get());
 
         // And no matter how often we request without force, nothing will happen
-        for _counter in 0 .. 100 {
+        for _counter in 0..100 {
             application.render(dummy_region, false);
             assert_eq!(7, counter.get());
         }
@@ -248,26 +256,28 @@ mod tests {
     #[test]
     fn test_click_and_render() {
         let counter = Rc::new(Cell::new(0));
-        let component = CountingComponent { counter: Rc::clone(&counter) };
+        let component = CountingComponent {
+            counter: Rc::clone(&counter),
+        };
         let mut application = Application::new(Box::new(component));
 
         let dummy_region = RenderRegion::between(100, 100, 200, 200);
         let hit_event = MouseClickEvent::new(
-            Mouse::new(0), 
-            MousePoint::new(0.5, 0.5), 
-            MouseButton::primary()
+            Mouse::new(0),
+            MousePoint::new(0.5, 0.5),
+            MouseButton::primary(),
         );
         let miss_event = MouseClickEvent::new(
             Mouse::new(0),
             MousePoint::new(0.0, 0.0),
-            MouseButton::primary()
+            MouseButton::primary(),
         );
 
         // The counter should be 1 because the component should only have been attached
         assert_eq!(1, counter.get());
 
         // Rendering 10 times should only increase it once by 3
-        for _counter in 0 .. 10 {
+        for _counter in 0..10 {
             application.render(dummy_region, false);
         }
         assert_eq!(4, counter.get());
@@ -294,7 +304,7 @@ mod tests {
     #[test]
     fn test_filter_mouse_actions() {
         struct CustomCountingComponent {
-            counter: Rc<Cell<u8>>
+            counter: Rc<Cell<u8>>,
         }
 
         impl Component for CustomCountingComponent {
@@ -306,26 +316,33 @@ mod tests {
                 self.counter.set(self.counter.get() + 1);
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _region: RenderRegion,
+                _buddy: &mut dyn ComponentBuddy,
+                force: bool,
+            ) -> RenderResult {
                 RenderResult {
                     drawn_region: Box::new(RectangularDrawnRegion::new(0.4, 0.4, 0.6, 0.6)),
-                    filter_mouse_actions: true
+                    filter_mouse_actions: true,
                 }
             }
         }
         let counter = Rc::new(Cell::new(0));
-        let component = CustomCountingComponent { counter: Rc::clone(&counter) };
+        let component = CustomCountingComponent {
+            counter: Rc::clone(&counter),
+        };
         let mut application = Application::new(Box::new(component));
 
         let miss_click = MouseClickEvent::new(
-            Mouse::new(0), 
-            MousePoint::new(0.3, 0.3), 
-            MouseButton::primary()
+            Mouse::new(0),
+            MousePoint::new(0.3, 0.3),
+            MouseButton::primary(),
         );
         let hit_click = MouseClickEvent::new(
-            Mouse::new(0), 
-            MousePoint::new(0.5, 0.5), 
-            MouseButton::primary()
+            Mouse::new(0),
+            MousePoint::new(0.5, 0.5),
+            MouseButton::primary(),
         );
 
         // Clicks don't have effect until the component has been drawn

@@ -26,9 +26,9 @@ pub use transformed::*;
 /// domain and a y-coordinate of 1.0 indicates the top border of the component.
 ///
 /// ### Implementations
-/// The simplest implementation of this trait is `RectangularDrawnRegion`. 
-/// There is also the `CompositeDrawnRegion`. I am planning to add more 
-/// implementations in the future. You can also create your own 
+/// The simplest implementation of this trait is `RectangularDrawnRegion`.
+/// There is also the `CompositeDrawnRegion`. I am planning to add more
+/// implementations in the future. You can also create your own
 /// implementations to define more complex shapes.
 pub trait DrawnRegion {
     /// Checks if the point (x, y) is inside this region and returns true if
@@ -69,15 +69,17 @@ pub trait DrawnRegion {
     /// Checks if the point *(x, y)* is within the *bounds* of this `DrawnRegion`
     /// (thus whether `get_left()` <= x <= `get_right()` and `get_bottom()` <= y
     /// <= `get_top()`.
-    /// 
+    ///
     /// This method should always be quick, no matter how complex this `DrawnRegion`
     /// is. Also, if this method returns `false`, the point *(x, y)* *can not* be
     /// *inside* this region. But if this method returns `true`, the possibly
     /// expensive `is_inside` method will have to be used to determine the final
     /// outcome.
     fn is_within_bounds(&self, x: f32, y: f32) -> bool {
-        x >= self.get_left() && x <= self.get_right() && 
-        y >= self.get_bottom() && y <= self.get_top()
+        x >= self.get_left()
+            && x <= self.get_right()
+            && y >= self.get_bottom()
+            && y <= self.get_top()
     }
 
     /// Gets the width of this region. This is simply the result of subtracting

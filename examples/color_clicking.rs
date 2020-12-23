@@ -2,7 +2,10 @@ use golem::Context;
 use knukki::*;
 
 fn main() {
-    let component = TestComponent { red: 100, green: 200 };
+    let component = TestComponent {
+        red: 100,
+        green: 200,
+    };
     let app = Application::new(Box::new(component));
 
     start(app, "Hello knukki");
@@ -10,7 +13,7 @@ fn main() {
 
 struct TestComponent {
     red: u8,
-    green: u8
+    green: u8,
 }
 
 impl Component for TestComponent {
@@ -24,7 +27,12 @@ impl Component for TestComponent {
         buddy.request_render();
     }
 
-    fn render(&mut self, golem: &Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+    fn render(
+        &mut self,
+        golem: &Context,
+        _region: RenderRegion,
+        _buddy: &mut dyn ComponentBuddy,
+    ) -> RenderResult {
         golem.set_clear_color(self.red as f32 / 255.0, self.green as f32 / 255.0, 0.4, 1.0);
         golem.clear();
         RenderResult::entire()

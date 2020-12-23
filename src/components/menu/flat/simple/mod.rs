@@ -1,49 +1,42 @@
 use crate::*;
 
 use std::cell::RefCell;
-use std::rc::{
-    Rc,
-    Weak
-};
+use std::rc::{Rc, Weak};
 
 mod buddy;
 mod domain;
 
-pub use domain::*;
 use buddy::*;
+pub use domain::*;
 
 type RR<T> = Rc<RefCell<T>>;
 type WR<T> = Weak<RefCell<T>>;
 
 pub struct SimpleFlatMenu {
-
     components: Vec<RR<ComponentEntry>>,
-    components_to_add: Vec<ComponentToAdd>
+    components_to_add: Vec<ComponentToAdd>,
 }
 
 impl SimpleFlatMenu {
     pub fn new() -> Self {
         Self {
             components: Vec::new(),
-            components_to_add: Vec::new()
+            components_to_add: Vec::new(),
         }
     }
 
     pub fn add_component(&mut self, component: Box<dyn Component>, domain: ComponentDomain) {
-        self.components_to_add.push(ComponentToAdd { component, domain });
+        self.components_to_add
+            .push(ComponentToAdd { component, domain });
     }
 
-    fn update_internal(
-        &mut self, 
-        own_buddy: &mut dyn ComponentBuddy, 
-        is_about_to_render: bool
-    ) {
+    fn update_internal(&mut self, own_buddy: &mut dyn ComponentBuddy, is_about_to_render: bool) {
         while !self.components_to_add.is_empty() {
             let to_add = self.components_to_add.swap_remove(0);
             let mut entry_to_add = ComponentEntry {
                 component: to_add.component,
                 domain: to_add.domain,
-                buddy: SimpleFlatBuddy::new()
+                buddy: SimpleFlatBuddy::new(),
             };
 
             entry_to_add.attach();
@@ -55,10 +48,10 @@ impl SimpleFlatMenu {
     }
 
     fn check_buddy(
-        &self, 
-        own_buddy: &mut dyn ComponentBuddy, 
-        entry: &mut ComponentEntry, 
-        is_about_to_render: bool
+        &self,
+        own_buddy: &mut dyn ComponentBuddy,
+        entry: &mut ComponentEntry,
+        is_about_to_render: bool,
     ) {
         if entry.buddy.has_changes() {
             if !is_about_to_render && entry.buddy.did_request_render() {
@@ -95,9 +88,8 @@ impl Component for SimpleFlatMenu {
         self.update_internal(own_buddy, false);
 
         // Lets now handle the actual click event
-        let maybe_clicked_cell = self.get_component_at(
-            event.get_point().get_x(), event.get_point().get_y()
-        );
+        let maybe_clicked_cell =
+            self.get_component_at(event.get_point().get_x(), event.get_point().get_y());
 
         if let Some(clicked_cell) = maybe_clicked_cell {
             let mut clicked_entry = clicked_cell.borrow_mut();
@@ -109,10 +101,9 @@ impl Component for SimpleFlatMenu {
     }
 
     fn render(
-        &mut self, 
-        #[cfg(feature = "golem_rendering")]
-        golem: &golem::Context,
-        region: RenderRegion, 
+        &mut self,
+        #[cfg(feature = "golem_rendering")] golem: &golem::Context,
+        region: RenderRegion,
         buddy: &mut dyn ComponentBuddy,
         force: bool,
     ) -> RenderResult {
@@ -122,21 +113,20 @@ impl Component for SimpleFlatMenu {
         // Now onto the 'actual' drawing
         let mut drawn_regions: Vec<Box<dyn DrawnRegion>> = Vec::new();
         for entry_cell in &self.components {
-
             let mut entry = entry_cell.borrow_mut();
             let component_domain = entry.domain;
             let child_region = region.child_region(
                 component_domain.get_min_x(),
                 component_domain.get_min_y(),
                 component_domain.get_max_x(),
-                component_domain.get_max_y()
+                component_domain.get_max_y(),
             );
 
             if let Some(entry_result) = entry.render(
                 #[cfg(feature = "golem_rendering")]
                 golem,
                 child_region,
-                force
+                force,
             ) {
                 let transformed_region = TransformedDrawnRegion::new(
                     entry_result.drawn_region.clone(),
@@ -144,7 +134,7 @@ impl Component for SimpleFlatMenu {
                     component_domain.get_min_x(),
                     component_domain.get_min_y(),
                     component_domain.get_max_x(),
-                    component_domain.get_max_y()
+                    component_domain.get_max_y(),
                 );
                 drawn_regions.push(Box::new(transformed_region));
                 self.check_buddy(buddy, &mut entry, false);
@@ -153,7 +143,7 @@ impl Component for SimpleFlatMenu {
 
         RenderResult {
             drawn_region: Box::new(CompositeDrawnRegion::new(drawn_regions)),
-            filter_mouse_actions: false
+            filter_mouse_actions: false,
         }
     }
 
@@ -164,7 +154,7 @@ impl Component for SimpleFlatMenu {
 
 struct ComponentToAdd {
     component: Box<dyn Component>,
-    domain: ComponentDomain
+    domain: ComponentDomain,
 }
 
 struct ComponentEntry {
@@ -180,29 +170,31 @@ impl ComponentEntry {
 
     fn mouse_click(&mut self, outer_event: MouseClickEvent) {
         if self.buddy.get_subscriptions().mouse_click {
-
             let transformed_point = self.domain.transform_mouse(outer_event.get_point());
             if let Some(render_result) = self.buddy.get_last_render_result() {
-                if !render_result.filter_mouse_actions || 
-                    render_result.drawn_region.is_mouse_inside(transformed_point) 
+                if !render_result.filter_mouse_actions
+                    || render_result
+                        .drawn_region
+                        .is_mouse_inside(transformed_point)
                 {
                     let transformed_event = MouseClickEvent::new(
-                        outer_event.get_mouse(), transformed_point, outer_event.get_button()
+                        outer_event.get_mouse(),
+                        transformed_point,
+                        outer_event.get_button(),
                     );
 
-                    self.component.on_mouse_click(transformed_event, &mut self.buddy);
+                    self.component
+                        .on_mouse_click(transformed_event, &mut self.buddy);
                 }
             }
-            
-        }       
+        }
     }
 
     fn render(
-        &mut self, 
-        #[cfg(feature = "golem_rendering")]
-        golem: &golem::Context,
+        &mut self,
+        #[cfg(feature = "golem_rendering")] golem: &golem::Context,
         region: RenderRegion,
-        force: bool
+        force: bool,
     ) -> &Option<RenderResult> {
         if force || self.buddy.did_request_render() {
             self.buddy.clear_render_request();
@@ -213,10 +205,10 @@ impl ComponentEntry {
 
             let render_result = self.component.render(
                 #[cfg(feature = "golem_rendering")]
-                golem, 
-                region, 
+                golem,
+                region,
                 &mut self.buddy,
-                force
+                force,
             );
             self.buddy.set_last_render_result(render_result);
             self.buddy.get_last_render_result()
@@ -243,7 +235,7 @@ mod tests {
     #[test]
     fn test_attach_and_detach() {
         struct CountingComponent {
-            counter: Rc<Cell<u8>>
+            counter: Rc<Cell<u8>>,
         }
 
         impl Component for CountingComponent {
@@ -251,7 +243,12 @@ mod tests {
                 self.counter.set(self.counter.get() + 1);
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _region: RenderRegion,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool,
+            ) -> RenderResult {
                 RenderResult::entire()
             }
 
@@ -265,8 +262,10 @@ mod tests {
 
         let mut menu = SimpleFlatMenu::new();
         menu.add_component(
-            Box::new(CountingComponent { counter: Rc::clone(&counter1) }), 
-            ComponentDomain::between(0.0, 0.0, 0.5, 1.0)
+            Box::new(CountingComponent {
+                counter: Rc::clone(&counter1),
+            }),
+            ComponentDomain::between(0.0, 0.0, 0.5, 1.0),
         );
 
         let mut buddy = RootComponentBuddy::new();
@@ -277,8 +276,10 @@ mod tests {
         assert_eq!(0, counter2.get());
 
         menu.add_component(
-            Box::new(CountingComponent { counter: Rc::clone(&counter2) }), 
-            ComponentDomain::between(0.5, 0.0, 1.0, 1.0)
+            Box::new(CountingComponent {
+                counter: Rc::clone(&counter2),
+            }),
+            ComponentDomain::between(0.5, 0.0, 1.0, 1.0),
         );
 
         // It should attach the second component as soon as possible
@@ -303,7 +304,7 @@ mod tests {
     #[test]
     fn test_basic_mouse_clicking() {
         struct FullComponent {
-            click_counter: Rc<Cell<u8>>
+            click_counter: Rc<Cell<u8>>,
         }
 
         impl Component for FullComponent {
@@ -315,13 +316,18 @@ mod tests {
                 self.click_counter.set(self.click_counter.get() + 1);
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _region: RenderRegion,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool,
+            ) -> RenderResult {
                 RenderResult::entire()
             }
         }
 
         struct HalfComponent {
-            click_counter: Rc<Cell<u8>>
+            click_counter: Rc<Cell<u8>>,
         }
 
         impl Component for HalfComponent {
@@ -333,10 +339,15 @@ mod tests {
                 self.click_counter.set(self.click_counter.get() + 1);
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _region: RenderRegion,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool,
+            ) -> RenderResult {
                 RenderResult {
                     filter_mouse_actions: true,
-                    drawn_region: Box::new(RectangularDrawnRegion::new(0.25, 0.0, 0.75, 1.0))
+                    drawn_region: Box::new(RectangularDrawnRegion::new(0.25, 0.0, 0.75, 1.0)),
                 }
             }
         }
@@ -346,22 +357,22 @@ mod tests {
 
         let mut menu = SimpleFlatMenu::new();
         menu.add_component(
-            Box::new(FullComponent { click_counter: Rc::clone(&full_counter) }), 
-            ComponentDomain::between(0.0, 0.0, 0.5, 0.5)
+            Box::new(FullComponent {
+                click_counter: Rc::clone(&full_counter),
+            }),
+            ComponentDomain::between(0.0, 0.0, 0.5, 0.5),
         );
         menu.add_component(
-            Box::new(HalfComponent { click_counter: Rc::clone(&half_counter) }), 
-            ComponentDomain::between(0.5, 0.5, 1.0, 1.0)
+            Box::new(HalfComponent {
+                click_counter: Rc::clone(&half_counter),
+            }),
+            ComponentDomain::between(0.5, 0.5, 1.0, 1.0),
         );
 
         let mut application = Application::new(Box::new(menu));
 
         fn click_event(x: f32, y: f32) -> MouseClickEvent {
-            MouseClickEvent::new(
-                Mouse::new(0), 
-                MousePoint::new(x, y), 
-                MouseButton::primary()
-            )
+            MouseClickEvent::new(Mouse::new(0), MousePoint::new(x, y), MouseButton::primary())
         }
 
         // Before the initial render, clicking shouldn't fire any events
@@ -393,13 +404,18 @@ mod tests {
     #[test]
     fn test_rendering() {
         struct BusyRenderComponent {
-            counter: Rc<Cell<u8>>
+            counter: Rc<Cell<u8>>,
         }
 
         impl Component for BusyRenderComponent {
             fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
-            fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _region: RenderRegion,
+                buddy: &mut dyn ComponentBuddy,
+                _force: bool,
+            ) -> RenderResult {
                 buddy.request_render();
                 self.counter.set(self.counter.get() + 1);
                 RenderResult::entire()
@@ -407,7 +423,7 @@ mod tests {
         }
 
         struct ClickRenderComponent {
-            counter: Rc<Cell<u8>>
+            counter: Rc<Cell<u8>>,
         }
 
         impl Component for ClickRenderComponent {
@@ -419,7 +435,12 @@ mod tests {
                 buddy.request_render();
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _region: RenderRegion,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool,
+            ) -> RenderResult {
                 self.counter.set(self.counter.get() + 1);
                 RenderResult::entire()
             }
@@ -433,8 +454,10 @@ mod tests {
         let busy_counter = Rc::new(Cell::new(0));
 
         menu.add_component(
-            Box::new(ClickRenderComponent { counter: Rc::clone(&click_counter)}), 
-            ComponentDomain::between(0.1, 0.1, 0.3, 0.3)
+            Box::new(ClickRenderComponent {
+                counter: Rc::clone(&click_counter),
+            }),
+            ComponentDomain::between(0.1, 0.1, 0.3, 0.3),
         );
 
         // All components should be rendered during their first render call
@@ -448,7 +471,9 @@ mod tests {
 
         // So let's click it and render again
         let hit_click = MouseClickEvent::new(
-            Mouse::new(0), MousePoint::new(0.2, 0.2), MouseButton::primary()
+            Mouse::new(0),
+            MousePoint::new(0.2, 0.2),
+            MouseButton::primary(),
         );
         menu.on_mouse_click(hit_click, &mut buddy);
         assert!(buddy.did_request_render());

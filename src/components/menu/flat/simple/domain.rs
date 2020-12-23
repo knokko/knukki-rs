@@ -5,16 +5,26 @@ pub struct ComponentDomain {
     min_x: f32,
     min_y: f32,
     max_x: f32,
-    max_y: f32
+    max_y: f32,
 }
 
 impl ComponentDomain {
     pub fn between(min_x: f32, min_y: f32, max_x: f32, max_y: f32) -> Self {
-        Self { min_x, min_y, max_x, max_y }
+        Self {
+            min_x,
+            min_y,
+            max_x,
+            max_y,
+        }
     }
 
     pub fn with_size(min_x: f32, min_y: f32, width: f32, height: f32) -> Self {
-        Self { min_x, min_y, max_x: min_x + width, max_y: min_y + height }
+        Self {
+            min_x,
+            min_y,
+            max_x: min_x + width,
+            max_y: min_y + height,
+        }
     }
 
     pub fn get_min_x(&self) -> f32 {
@@ -42,8 +52,10 @@ impl ComponentDomain {
     }
 
     pub fn is_inside(&self, x: f32, y: f32) -> bool {
-        x >= self.get_min_x() && x <= self.get_max_x() 
-        && y >= self.get_min_y() && y <= self.get_max_y()
+        x >= self.get_min_x()
+            && x <= self.get_max_x()
+            && y >= self.get_min_y()
+            && y <= self.get_max_y()
     }
 
     pub fn transform(&self, outer_x: f32, outer_y: f32) -> (f32, f32) {

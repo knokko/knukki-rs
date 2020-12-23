@@ -1,6 +1,6 @@
 /// Describe the region of the viewport where a `Component` is allowed to render
 /// itself. This is normally the *domain* of the component.
-/// 
+///
 /// The render region of the component will be given as parameter to its `render`
 /// method. The parent component or provider will ensure that the viewport is set
 /// to that render region before calling the `render` method.

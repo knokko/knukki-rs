@@ -7,13 +7,17 @@ pub struct TransformedDrawnRegion<T: Clone + Fn(f32, f32) -> (f32, f32) + 'stati
     left_bound: f32,
     bottom_bound: f32,
     right_bound: f32,
-    top_bound: f32
+    top_bound: f32,
 }
 
 impl<T: Clone + Fn(f32, f32) -> (f32, f32) + 'static> TransformedDrawnRegion<T> {
     pub fn new(
-        region: Box<dyn DrawnRegion>, transform_function: T,
-        left_bound: f32, bottom_bound: f32, right_bound: f32, top_bound: f32
+        region: Box<dyn DrawnRegion>,
+        transform_function: T,
+        left_bound: f32,
+        bottom_bound: f32,
+        right_bound: f32,
+        top_bound: f32,
     ) -> Self {
         Self {
             region,
@@ -21,7 +25,7 @@ impl<T: Clone + Fn(f32, f32) -> (f32, f32) + 'static> TransformedDrawnRegion<T> 
             left_bound,
             bottom_bound,
             right_bound,
-            top_bound
+            top_bound,
         }
     }
 }
@@ -40,7 +44,7 @@ impl<T: Clone + Fn(f32, f32) -> (f32, f32) + 'static> DrawnRegion for Transforme
             left_bound: self.left_bound,
             bottom_bound: self.bottom_bound,
             right_bound: self.right_bound,
-            top_bound: self.top_bound
+            top_bound: self.top_bound,
         })
     }
 
@@ -70,8 +74,12 @@ mod tests {
     fn basic_test() {
         let original_region = Box::new(RectangularDrawnRegion::new(1.0, 4.0, 2.0, 7.0));
         let region = TransformedDrawnRegion::new(
-            original_region, |x, y| (x * 3.0, y - 1.0), 
-            1.0 / 3.0, 5.0, 2.0 / 3.0, 8.0
+            original_region,
+            |x, y| (x * 3.0, y - 1.0),
+            1.0 / 3.0,
+            5.0,
+            2.0 / 3.0,
+            8.0,
         );
         assert!(!region.is_inside(0.3, 4.5));
         assert!(!region.is_inside(0.4, 4.5));
