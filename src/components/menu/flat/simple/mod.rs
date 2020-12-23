@@ -113,7 +113,8 @@ impl Component for SimpleFlatMenu {
         #[cfg(feature = "golem_rendering")]
         golem: &golem::Context,
         region: RenderRegion, 
-        buddy: &mut dyn ComponentBuddy
+        buddy: &mut dyn ComponentBuddy,
+        force: bool,
     ) -> RenderResult {
         // This needs to happen before each event
         self.update_internal(buddy, true);
@@ -134,7 +135,8 @@ impl Component for SimpleFlatMenu {
             if let Some(entry_result) = entry.render(
                 #[cfg(feature = "golem_rendering")]
                 golem,
-                child_region
+                child_region,
+                force
             ) {
                 let transformed_region = TransformedDrawnRegion::new(
                     entry_result.drawn_region.clone(),
@@ -199,9 +201,10 @@ impl ComponentEntry {
         &mut self, 
         #[cfg(feature = "golem_rendering")]
         golem: &golem::Context,
-        region: RenderRegion
+        region: RenderRegion,
+        force: bool
     ) -> &Option<RenderResult> {
-        if self.buddy.did_request_render() {
+        if force || self.buddy.did_request_render() {
             self.buddy.clear_render_request();
             #[cfg(feature = "golem_rendering")]
             {
@@ -212,7 +215,8 @@ impl ComponentEntry {
                 #[cfg(feature = "golem_rendering")]
                 golem, 
                 region, 
-                &mut self.buddy
+                &mut self.buddy,
+                force
             );
             self.buddy.set_last_render_result(render_result);
             self.buddy.get_last_render_result()
@@ -247,7 +251,7 @@ mod tests {
                 self.counter.set(self.counter.get() + 1);
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
                 RenderResult::entire()
             }
 
@@ -278,12 +282,12 @@ mod tests {
         );
 
         // It should attach the second component as soon as possible
-        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy);
+        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy, false);
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
 
         // But they should be attached only once
-        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy);
+        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy, false);
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
 
@@ -311,7 +315,7 @@ mod tests {
                 self.click_counter.set(self.click_counter.get() + 1);
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
                 RenderResult::entire()
             }
         }
@@ -329,7 +333,7 @@ mod tests {
                 self.click_counter.set(self.click_counter.get() + 1);
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
                 RenderResult {
                     filter_mouse_actions: true,
                     drawn_region: Box::new(RectangularDrawnRegion::new(0.25, 0.0, 0.75, 1.0))
@@ -395,7 +399,7 @@ mod tests {
         impl Component for BusyRenderComponent {
             fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
-            fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
                 buddy.request_render();
                 self.counter.set(self.counter.get() + 1);
                 RenderResult::entire()
@@ -415,7 +419,7 @@ mod tests {
                 buddy.request_render();
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
                 self.counter.set(self.counter.get() + 1);
                 RenderResult::entire()
             }
@@ -436,7 +440,7 @@ mod tests {
         // All components should be rendered during their first render call
         assert!(buddy.did_request_render());
         buddy.clear_render_request();
-        menu.render(render_region, &mut buddy);
+        menu.render(render_region, &mut buddy, false);
         assert_eq!(1, click_counter.get());
 
         // But the menu shouldn't request another one until we click the component
@@ -449,8 +453,10 @@ mod tests {
         menu.on_mouse_click(hit_click, &mut buddy);
         assert!(buddy.did_request_render());
         buddy.clear_render_request();
-        menu.render(render_region, &mut buddy);
+        menu.render(render_region, &mut buddy, false);
         assert!(!buddy.did_request_render());
         assert_eq!(2, click_counter.get());
+
+        // TODO Test force behavior and busy rendering
     }
 }

@@ -16,6 +16,7 @@ impl Component for DummyComponent {
         _golem: &golem::Context,
         _region: RenderRegion,
         _buddy: &mut dyn ComponentBuddy,
+        _force: bool
     ) -> RenderResult {
         panic!("Dummy components shouldn't be asked to render itself");
     }

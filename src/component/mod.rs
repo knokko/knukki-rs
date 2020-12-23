@@ -48,11 +48,17 @@ pub trait Component {
     /// This method will only be called if the component asked for it via the
     /// `request_render` method of its buddy, or the parent (or provider)
     /// determined that it was necessary (for instance, the window was resized
-    /// or the operating system requested it). If you want this method to be
-    /// called continuously, you should call the `request_render` method of
-    /// `buddy` during this method call (which basically requests to be rendered
-    /// again as soon as possible). This method will also be called soon
-    /// after the component is attached.
+    /// or the operating system requested it). In the latter case, the value
+    /// of the parameter *force* will be true. If *force* is true, the
+    /// component is supposed to redraw itself completely. If *force* is false,
+    /// the component should only redraw the things that changed since the
+    /// previous call to `render`. 
+    /// 
+    /// ### Continuous rendering
+    /// If you want this method to be called continuously, you should call the 
+    /// `request_render` method of `buddy` during this method call (which 
+    /// basically requests to be rendered again as soon as possible). This 
+    /// method will also be called soon after the component is attached.
     ///
     /// ### The return value
     /// #### The drawn area
@@ -83,6 +89,7 @@ pub trait Component {
         golem: &Context,
         region: RenderRegion,
         buddy: &mut dyn ComponentBuddy,
+        force: bool,
     ) -> RenderResult;
 
     fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {

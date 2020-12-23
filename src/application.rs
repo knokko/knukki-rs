@@ -110,7 +110,8 @@ impl Application {
                     #[cfg(feature = "golem_rendering")]
                     golem, 
                     region, 
-                    &mut self.root_buddy
+                    &mut self.root_buddy,
+                    force
                 );
             self.root_buddy.set_last_render_result(result);
 
@@ -175,7 +176,7 @@ mod tests {
             buddy.subscribe_mouse_click();
         }
 
-        fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+        fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
             self.counter.set(self.counter.get() + 3);
             RenderResult::entire()
         }
@@ -305,7 +306,7 @@ mod tests {
                 self.counter.set(self.counter.get() + 1);
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
                 RenderResult {
                     drawn_region: Box::new(RectangularDrawnRegion::new(0.4, 0.4, 0.6, 0.6)),
                     filter_mouse_actions: true

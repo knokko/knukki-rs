@@ -18,7 +18,8 @@ impl Component for FlatColorComponent {
         #[cfg(feature = "golem_rendering")]
         golem: &golem::Context, 
         _region: RenderRegion, 
-        _buddy: &mut dyn ComponentBuddy
+        _buddy: &mut dyn ComponentBuddy,
+        _force: bool
     ) -> RenderResult {
         #[cfg(feature = "golem_rendering")]
         {
