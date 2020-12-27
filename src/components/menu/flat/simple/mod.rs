@@ -309,7 +309,7 @@ mod tests {
 
     use crate::*;
 
-    use std::cell::Cell;
+    use std::cell::*;
     use std::rc::Rc;
 
     #[test]
@@ -623,7 +623,6 @@ mod tests {
         assert_eq!(5, busy_counter.get());
     }
 
-    // TODO Write a test for the render results
     struct ClickComponent {
         render_result: RenderResult
     }
@@ -868,9 +867,154 @@ mod tests {
         check_counters(1, 5, 1, 5);
     }
 
-    // TODO Test subscriptions
     #[test]
     fn test_subscriptions() {
-        // Hm... test...
+        struct SubscribingComponent {
+            should_subscribe: Rc<Cell<bool>>,
+            should_unsubscribe: Rc<Cell<bool>>,
+            click_counter: Rc<Cell<u8>>,
+            click_out_counter: Rc<Cell<u8>>,
+        }
+
+        impl Component for SubscribingComponent {
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(
+                &mut self, 
+                _region: RenderRegion, 
+                buddy: &mut dyn ComponentBuddy, 
+                _force: bool
+            ) -> RenderResult {
+                if self.should_subscribe.get() {
+                    buddy.subscribe_mouse_click();
+                    buddy.subscribe_mouse_click_out();
+                }
+                if self.should_unsubscribe.get() {
+                    buddy.unsubscribe_mouse_click();
+                    buddy.unsubscribe_mouse_click_out();
+                }
+                self.should_subscribe.set(false);
+                self.should_unsubscribe.set(false);
+                entire_render_result()
+            }
+
+            fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.click_counter.set(self.click_counter.get() + 1);
+            }
+
+            fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.click_out_counter.set(self.click_out_counter.get() + 1);
+            }
+        }
+
+        let subscribe1 = Rc::new(Cell::new(false));
+        let subscribe2 = Rc::new(Cell::new(false));
+        let unsubscribe1 = Rc::new(Cell::new(false));
+        let unsubscribe2 = Rc::new(Cell::new(false));
+
+        let click_count1 = Rc::new(Cell::new(0));
+        let click_count2 = Rc::new(Cell::new(0));
+        let click_out_count1 = Rc::new(Cell::new(0));
+        let click_out_count2 = Rc::new(Cell::new(0));
+
+        let buddy = RootComponentBuddy::new();
+        let region = RenderRegion::between(0, 10, 20, 30);
+        let mut menu = SimpleFlatMenu::new(None);
+        menu.add_component(
+            Box::new(SubscribingComponent {
+                should_subscribe: Rc::clone(&subscribe1),
+                should_unsubscribe: Rc::clone(&unsubscribe1),
+                click_counter: Rc::clone(&click_count1),
+                click_out_counter: Rc::clone(&click_out_count1),
+            }
+        ), ComponentDomain::between(0.0, 0.0, 0.5, 0.5));
+        menu.add_component(
+            Box::new(SubscribingComponent {
+                should_subscribe: Rc::clone(&subscribe2),
+                should_unsubscribe: Rc::clone(&unsubscribe2),
+                click_counter: Rc::clone(&click_count2),
+                click_out_counter: Rc::clone(&click_out_count2),
+            }
+        ), ComponentDomain::between(0.5, 0.5, 1.0, 1.0));
+
+        let menu_cell = Rc::new(RefCell::new(menu));
+        let buddy_cell = Rc::new(RefCell::new(buddy));
+        let do_render = || {
+            let mut menu = menu_cell.borrow_mut();
+            let mut buddy = buddy_cell.borrow_mut();
+            menu.render(region, &mut *buddy, true).unwrap();
+        };
+
+        let fire_click = || {
+            let mut menu = menu_cell.borrow_mut();
+            let mut buddy = buddy_cell.borrow_mut();
+            menu.on_mouse_click(MouseClickEvent::new(
+                Mouse::new(0), MousePoint::new(0.2, 0.2), MouseButton::primary()), 
+                &mut *buddy
+            );
+            menu.on_mouse_click(MouseClickEvent::new(
+                Mouse::new(0), MousePoint::new(0.8, 0.8), MouseButton::primary()), 
+                &mut *buddy
+            );
+        };
+        let fire_click_out = || {
+            let mut menu = menu_cell.borrow_mut();
+            let mut buddy = buddy_cell.borrow_mut();
+            menu.on_mouse_click_out(
+                MouseClickOutEvent::new(Mouse::new(0), MouseButton::primary()), 
+                &mut *buddy
+            );
+        };
+
+        let check_values = |click1: u8, click_out1: u8, click2: u8, click_out2: u8| {
+            assert_eq!(click1, click_count1.get());
+            assert_eq!(click_out1, click_out_count1.get());
+            assert_eq!(click2, click_count2.get());
+            assert_eq!(click_out2, click_out_count2.get());
+        };
+
+        // No subscriptions yet, so these events should be ignored
+        do_render();
+        fire_click();
+        fire_click_out();
+        check_values(0, 0, 0, 0);
+
+        // Lets subscribe the first component
+        subscribe1.set(true);
+        do_render();
+        fire_click();
+        check_values(1, 1, 0, 0);
+
+        // Now the second one as well
+        subscribe2.set(true);
+        do_render();
+        fire_click_out();
+        check_values(1, 2, 0, 1);
+
+        // Nah, let's cancel the subscription for the second one
+        unsubscribe2.set(true);
+        do_render();
+        fire_click();
+        check_values(2, 3, 0, 1);
+
+        // This is not fair... lets cancel the first one as well
+        unsubscribe1.set(true);
+        do_render();
+        fire_click_out();
+        check_values(2, 3, 0, 1);
+
+        // Lets give the second one a comeback
+        subscribe2.set(true);
+        do_render();
+        fire_click();
+        fire_click_out();
+        check_values(2, 3, 1, 3);
+
+        // Let's stop
+        unsubscribe2.set(true);
+        do_render();
+        fire_click();
+        fire_click_out();
+        check_values(2, 3, 1, 3);
     }
 }
