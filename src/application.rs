@@ -111,7 +111,7 @@ impl Application {
                 region,
                 &mut self.root_buddy,
                 force,
-            );
+            ).expect("Render shouldn't fail");
             self.root_buddy.set_last_render_result(result);
 
             // Check if the root component requested anything while rendering
@@ -130,7 +130,7 @@ impl Application {
 
             // Don't pass on any click events until the component has been
             // rendered for the first time.
-            if let Some(Ok(render_result)) = maybe_render_result {
+            if let Some(render_result) = maybe_render_result {
                 // If we should filter mouse actions, we need to do an additional check
                 if render_result.filter_mouse_actions {
                     fire = render_result

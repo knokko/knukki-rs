@@ -3,7 +3,7 @@ use crate::*;
 pub struct RootComponentBuddy {
     subscriptions: ComponentSubscriptions,
 
-    last_render_result: Option<RenderResult>,
+    last_render_result: Option<RenderResultStruct>,
 
     create_next_menu: Option<Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>>,
 
@@ -31,11 +31,11 @@ impl RootComponentBuddy {
         self.requested_render
     }
 
-    pub fn get_last_render_result(&self) -> &Option<RenderResult> {
+    pub fn get_last_render_result(&self) -> &Option<RenderResultStruct> {
         &self.last_render_result
     }
 
-    pub fn set_last_render_result(&mut self, result: RenderResult) {
+    pub fn set_last_render_result(&mut self, result: RenderResultStruct) {
         self.last_render_result = Some(result);
     }
 

@@ -23,3 +23,12 @@ impl RenderResultStruct {
 pub fn entire_render_result() -> RenderResult {
     Ok(RenderResultStruct::entire())
 }
+
+impl Clone for RenderResultStruct {
+    fn clone(&self) -> Self {
+        Self {
+            drawn_region: self.drawn_region.clone(),
+            filter_mouse_actions: self.filter_mouse_actions
+        }
+    }
+}

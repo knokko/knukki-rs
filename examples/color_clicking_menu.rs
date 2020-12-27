@@ -77,6 +77,9 @@ impl Component for TestComponent {
         vertex_buffer.set_data(&quad_vertices);
         element_buffer.set_data(&quad_indices);
 
+        // TODO Everything above only needs to happen once, so I should add
+        // some kind of lazy initialization of this...
+
         shader.bind();
         shader.set_uniform("red", UniformValue::Float(self.red as f32 / 255.0));
         shader.set_uniform("green", UniformValue::Float(self.green as f32 / 255.0));

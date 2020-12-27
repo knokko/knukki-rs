@@ -142,24 +142,30 @@ impl Component for SimpleFlatMenu {
                 component_domain.get_max_y(),
             );
 
-            if let Some(Ok(entry_result)) = entry.render(
+            if let Some(entry_result) = entry.render(
                 #[cfg(feature = "golem_rendering")]
                 golem,
                 child_region,
                 force,
             ) {
-                let transformed_region = TransformedDrawnRegion::new(
-                    entry_result.drawn_region.clone(),
-                    move |x, y| component_domain.transform(x, y),
-                    component_domain.get_min_x(),
-                    component_domain.get_min_y(),
-                    component_domain.get_max_x(),
-                    component_domain.get_max_y(),
-                );
-                if !force || self.background_color.is_none() {
-                    drawn_regions.push(Box::new(transformed_region));
+                match entry_result {
+                    Ok(good_entry_result) => {
+                        let transformed_region = TransformedDrawnRegion::new(
+                            good_entry_result.drawn_region.clone(),
+                            move |x, y| component_domain.transform(x, y),
+                            component_domain.get_min_x(),
+                            component_domain.get_min_y(),
+                            component_domain.get_max_x(),
+                            component_domain.get_max_y(),
+                        );
+                        if !force || self.background_color.is_none() {
+                            drawn_regions.push(Box::new(transformed_region));
+                        }
+                        self.check_buddy(buddy, &mut entry, false);
+                    }, Err(bad_result) => {
+                        return Err(bad_result);
+                    }
                 }
-                self.check_buddy(buddy, &mut entry, false);
             }
         }
 
@@ -196,7 +202,7 @@ impl ComponentEntry {
     fn mouse_click(&mut self, outer_event: MouseClickEvent) {
         if self.buddy.get_subscriptions().mouse_click {
             let transformed_point = self.domain.transform_mouse(outer_event.get_point());
-            if let Some(Ok(render_result)) = self.buddy.get_last_render_result() {
+            if let Some(render_result) = self.buddy.get_last_render_result() {
                 if !render_result.filter_mouse_actions
                     || render_result
                         .drawn_region
@@ -220,7 +226,7 @@ impl ComponentEntry {
         #[cfg(feature = "golem_rendering")] golem: &golem::Context,
         region: RenderRegion,
         force: bool,
-    ) -> &Option<RenderResult> {
+    ) -> Option<RenderResult> {
         if force || self.buddy.did_request_render() {
             self.buddy.clear_render_request();
             #[cfg(feature = "golem_rendering")]
@@ -235,10 +241,15 @@ impl ComponentEntry {
                 &mut self.buddy,
                 force,
             );
-            self.buddy.set_last_render_result(render_result);
-            self.buddy.get_last_render_result()
+            if render_result.is_err() {
+                return Some(render_result);
+            }
+
+            let good_result = render_result.unwrap();
+            self.buddy.set_last_render_result(good_result.clone());
+            Some(Ok(good_result))
         } else {
-            &None
+            None
         }
     }
 }
