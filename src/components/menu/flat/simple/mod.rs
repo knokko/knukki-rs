@@ -16,6 +16,7 @@ pub struct SimpleFlatMenu {
     components: Vec<RR<ComponentEntry>>,
     components_to_add: Vec<ComponentToAdd>,
     background_color: Option<Color>,
+    has_rendered_before: bool,
 }
 
 impl SimpleFlatMenu {
@@ -24,6 +25,7 @@ impl SimpleFlatMenu {
             components: Vec::new(),
             components_to_add: Vec::new(),
             background_color,
+            has_rendered_before: false
         }
     }
 
@@ -116,7 +118,7 @@ impl Component for SimpleFlatMenu {
         self.update_internal(buddy, true);
 
         // Now onto the 'actual' drawing
-        if force {
+        if force || !self.has_rendered_before {
             if let Some(bc) = self.background_color {
                 // TODO This really needs a scissor...
                 // TODO And take more care when this is partially transparent...
@@ -169,13 +171,16 @@ impl Component for SimpleFlatMenu {
             }
         }
 
-        if force && self.background_color.is_some() {
-            drawn_regions.push(Box::new(RectangularDrawnRegion::new(0.0, 0.0, 1.0, 1.0)));
+        if (force || !self.has_rendered_before) && self.background_color.is_some() {
+            self.has_rendered_before = true;
+            entire_render_result()
+        } else {
+            self.has_rendered_before = true;
+            Ok(RenderResultStruct {
+                drawn_region: Box::new(CompositeDrawnRegion::new(drawn_regions)),
+                filter_mouse_actions: false,
+            })
         }
-        Ok(RenderResultStruct {
-            drawn_region: Box::new(CompositeDrawnRegion::new(drawn_regions)),
-            filter_mouse_actions: false,
-        })
     }
 
     fn on_detach(&mut self) {
@@ -438,7 +443,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rendering() {
+    fn test_rendering_components() {
         struct BusyRenderComponent {
             counter: Rc<Cell<u8>>,
         }
@@ -482,7 +487,6 @@ mod tests {
             }
         }
 
-        // TODO Also write tests with a background color
         let mut menu = SimpleFlatMenu::new(None);
         let mut buddy = RootComponentBuddy::new();
         let render_region = RenderRegion::between(10, 20, 30, 40);
@@ -519,6 +523,190 @@ mod tests {
         assert!(!buddy.did_request_render());
         assert_eq!(2, click_counter.get());
 
-        // TODO Test force behavior and busy rendering
+        // Miss clicking shouldn't change anything
+        let miss_click = MouseClickEvent::new(
+            Mouse::new(0), 
+            MousePoint::new(0.35, 0.35), 
+            MouseButton::primary()
+        );
+        menu.on_mouse_click(miss_click, &mut buddy);
+        assert!(!buddy.did_request_render());
+
+        // Force rendering should cause the render method to be called
+        // And thus increment the click counter
+        buddy.clear_render_request();
+        menu.render(render_region, &mut buddy, true).unwrap();
+        assert!(!buddy.did_request_render());
+        assert_eq!(3, click_counter.get());
+
+        // Add the busy rendering component
+        menu.add_component(
+            Box::new(BusyRenderComponent { counter: Rc::clone(&busy_counter) }), 
+            ComponentDomain::between(0.5, 0.7, 0.9, 0.8)
+        );
+
+        // Only the busy component should render
+        buddy.clear_render_request();
+        menu.render(render_region, &mut buddy, false).unwrap();
+        // And it should have requested a redraw right away
+        assert!(buddy.did_request_render());
+        assert_eq!(3, click_counter.get());
+        assert_eq!(1, busy_counter.get());
+
+        // Again, only the busy component should render
+        buddy.clear_render_request();
+        menu.render(render_region, &mut buddy, false).unwrap();
+        // And it should have requested a redraw again
+        assert!(buddy.did_request_render());
+        assert_eq!(3, click_counter.get());
+        assert_eq!(2, busy_counter.get());
+
+        // When we force a render, both components should be redrawn
+        buddy.clear_render_request();
+        menu.render(render_region, &mut buddy, true).unwrap();
+        // Like usual, it should request a next render
+        assert!(buddy.did_request_render());
+        assert_eq!(4, click_counter.get());
+        assert_eq!(3, busy_counter.get());
+
+        // But when we render without force again, only the busy one should be drawn
+        buddy.clear_render_request();
+        menu.render(render_region, &mut buddy, false).unwrap();
+        assert!(buddy.did_request_render());
+        assert_eq!(4, click_counter.get());
+        assert_eq!(4, busy_counter.get());
+
+        // Unless we click it... 
+        menu.on_mouse_click(hit_click, &mut buddy);
+        menu.render(render_region, &mut buddy, false).unwrap();
+        assert!(buddy.did_request_render());
+        assert_eq!(5, click_counter.get());
+        assert_eq!(5, busy_counter.get());
+    }
+
+    // TODO Write a test for the render results
+    struct ClickComponent {
+        render_result: RenderResult
+    }
+
+    impl Component for ClickComponent {
+        fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+            buddy.subscribe_mouse_click();
+        }
+
+        fn render(
+            &mut self, 
+            _region: RenderRegion, 
+            _buddy: &mut dyn ComponentBuddy, 
+            _force: bool
+        ) -> RenderResult {
+            self.render_result.clone()
+        }
+
+        fn on_mouse_click(
+            &mut self, 
+            _event: MouseClickEvent, 
+            buddy: &mut dyn ComponentBuddy
+        ) {
+            buddy.request_render();
+        }
+    }
+
+    #[test]
+    fn test_render_results_with_background() {
+        test_render_results(Some(Color::rgb(0, 200, 100)), true);
+    }
+
+    #[test]
+    fn test_render_results_without_background() {
+        test_render_results(None, false);
+    }
+
+    fn test_render_results(background: Option<Color>, draw_background: bool) {
+        let mut menu = SimpleFlatMenu::new(background);
+        menu.add_component(
+            Box::new(ClickComponent { render_result: entire_render_result() }), 
+            ComponentDomain::between(0.0, 0.0, 0.5, 0.5)
+        );
+        menu.add_component(
+            Box::new(ClickComponent { render_result: Ok(RenderResultStruct {
+                drawn_region: Box::new(RectangularDrawnRegion::new(0.0, 0.0, 0.6, 0.6)),
+                filter_mouse_actions: false
+            })}), ComponentDomain::between(0.5, 0.5, 1.0, 1.0)
+        );
+
+        let click1 = MouseClickEvent::new(
+            Mouse::new(0), 
+            MousePoint::new(0.2, 0.2), 
+            MouseButton::primary()
+        );
+        let click2 = MouseClickEvent::new(
+            Mouse::new(0), 
+            MousePoint::new(0.6, 0.6), 
+            MouseButton::primary()
+        );
+        let render_region = RenderRegion::between(0, 0, 100, 40);
+        let mut buddy = RootComponentBuddy::new();
+
+        let result = menu.render(render_region, &mut buddy, false).unwrap();
+        // This menu should never request filtering mouse actions
+        assert!(!result.filter_mouse_actions);
+        // It should have rendered both components, and maybe the area outside
+        {
+            let region = &result.drawn_region;
+            assert_eq!(draw_background, region.is_inside(1.0, 0.0));
+            assert_eq!(draw_background, region.is_inside(0.0, 1.0));
+            assert!(region.is_inside(0.0, 0.0));
+            assert!(region.is_inside(0.5, 0.5));
+            assert!(region.is_inside(0.7, 0.7));
+            // Only draw outside the drawn region of component 2 if there is background
+            assert_eq!(draw_background, region.is_inside(0.9, 0.9));
+        }
+
+        menu.on_mouse_click(click1, &mut buddy);
+        let result = menu.render(render_region, &mut buddy, false).unwrap();
+        // This time, it should only have drawn the first component
+        {
+            let region = &result.drawn_region;
+            assert!(region.is_inside(0.0, 0.0));
+            assert!(region.is_inside(0.5, 0.5));
+            assert!(!region.is_inside(0.6, 0.6));
+        }
+
+        menu.on_mouse_click(click2, &mut buddy);
+        let result = menu.render(render_region, &mut buddy, false).unwrap();
+        // This time, it should only have drawn the second component
+        {
+            let region = &result.drawn_region;
+            assert!(!region.is_inside(0.2, 0.2));
+            assert!(region.is_inside(0.5, 0.5));
+            assert!(region.is_inside(0.7, 0.7));
+            // But only inside the region returned by the second component
+            assert!(!region.is_inside(0.9, 0.9));
+        }
+
+        // When we force, it should draw both components again, and maybe even background
+        let result = menu.render(render_region, &mut buddy, true).unwrap();
+        {
+            let region = &result.drawn_region;
+            assert_eq!(draw_background, region.is_inside(1.0, 0.0));
+            assert_eq!(draw_background, region.is_inside(0.0, 1.0));
+            assert!(region.is_inside(0.0, 0.0));
+            assert!(region.is_inside(0.5, 0.5));
+            assert!(region.is_inside(0.7, 0.7));
+            // Only draw outside the drawn region of component 2 if there is background
+            assert_eq!(draw_background, region.is_inside(0.9, 0.9));
+        }
+
+        // And when we do a normal render thereafter, it should only draw component 1
+        menu.on_mouse_click(click1, &mut buddy);
+        let result = menu.render(render_region, &mut buddy, false).unwrap();
+        // This time, it should only have drawn the first component
+        {
+            let region = &result.drawn_region;
+            assert!(region.is_inside(0.0, 0.0));
+            assert!(region.is_inside(0.5, 0.5));
+            assert!(!region.is_inside(0.6, 0.6));
+        }
     }
 }
