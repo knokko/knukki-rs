@@ -30,6 +30,6 @@ impl Component for FlatColorComponent {
             );
             golem.clear();
         }
-        RenderResult::entire()
+        entire_render_result()
     }
 }

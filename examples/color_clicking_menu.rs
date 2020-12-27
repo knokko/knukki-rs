@@ -1,8 +1,8 @@
-use golem::Context;
+use golem::*;
 use knukki::*;
 
 fn main() {
-    let mut menu = SimpleFlatMenu::new();
+    let mut menu = SimpleFlatMenu::new(Some(Color::rgb(100, 0, 0)));
     menu.add_component(
         Box::new(TestComponent { red: 100, green: 0 }),
         ComponentDomain::between(0.1, 0.1, 0.7, 0.3),
@@ -40,9 +40,52 @@ impl Component for TestComponent {
         golem: &Context,
         _region: RenderRegion,
         _buddy: &mut dyn ComponentBuddy,
+        _force: bool
     ) -> RenderResult {
-        golem.set_clear_color(self.red as f32 / 255.0, self.green as f32 / 255.0, 0.4, 1.0);
-        golem.clear();
-        RenderResult::entire()
+        #[rustfmt::skip]
+        let quad_vertices = [
+            -1.0, -1.0,    1.0, -1.0,    1.0, 1.0,    -1.0, 1.0,
+        ];
+        #[rustfmt::skip]
+        let quad_indices = [
+            0, 1, 2, 2, 3, 0
+        ];
+
+        #[rustfmt::skip]
+        let shader_description = ShaderDescription {
+            vertex_input: &[
+                Attribute::new("position", AttributeType::Vector(Dimension::D2))
+            ],
+            fragment_input: &[],
+            uniforms: &[
+                Uniform::new("red", UniformType::Scalar(NumberType::Float)),
+                Uniform::new("green", UniformType::Scalar(NumberType::Float)),
+            ],
+            vertex_shader: "
+            void main() {
+                gl_Position = vec4(position, 0.0, 1.0);
+            }",
+            fragment_shader: "
+            void main() {
+                gl_FragColor = vec4(red, green, 1.0, 1.0);
+            }",
+        };
+
+        let mut shader = ShaderProgram::new(golem, shader_description)?;
+        let mut vertex_buffer = VertexBuffer::new(golem)?;
+        let mut element_buffer = ElementBuffer::new(golem)?;
+        vertex_buffer.set_data(&quad_vertices);
+        element_buffer.set_data(&quad_indices);
+
+        shader.bind();
+        shader.set_uniform("red", UniformValue::Float(self.red as f32 / 255.0));
+        shader.set_uniform("green", UniformValue::Float(self.green as f32 / 255.0));
+        unsafe {
+            shader.draw(
+                &vertex_buffer, &element_buffer, 
+                0..quad_indices.len(), GeometryMode::Triangles
+            )?;
+        }
+        entire_render_result()
     }
 }

@@ -14,14 +14,6 @@
 ///
 /// This struct also has a `child_region` method, which can be useful for menu
 /// components to create regions for its child components.
-///
-/// ### Note
-/// This struct describes a framebuffer region rather than a relative region
-/// (used in the rest of this crate).
-/// The most interesting difference is that higher y-coordinates in framebuffer
-/// regions describe screen positions closer to the bottom of the screen, while
-/// higher y-coordinates in relative regions describe screen positions closer to
-/// the top of the screen.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct RenderRegion {
     min_x: u32,
@@ -127,10 +119,6 @@ impl RenderRegion {
     /// and using (0.0, 0.0, 0.5, 0.5) would return the bottom-left quarter of this
     /// region. See the Examples for details.
     ///
-    /// ### Note
-    /// Since this method takes *relative* coordinates and the properties of this
-    /// struct are framebuffer coordinates, this method acts a bit 'upside-down'.
-    ///
     /// ### Examples
     /// ```
     /// use knukki::RenderRegion;
@@ -138,7 +126,7 @@ impl RenderRegion {
     /// let region = RenderRegion::between(20, 20, 30, 30);
     /// assert_eq!(region, region.child_region(0.0, 0.0, 1.0, 1.0));
     /// assert_eq!(
-    ///     RenderRegion::between(20, 25, 25, 30),
+    ///     RenderRegion::between(20, 20, 25, 25),
     ///     region.child_region(0.0, 0.0, 0.5, 0.5)
     /// );
     /// ```
@@ -155,9 +143,10 @@ impl RenderRegion {
         let width = (self.get_width() as f32 * relative_width).round() as u32;
         let height = (self.get_height() as f32 * relative_height).round() as u32;
 
-        let min_x = self.get_min_x() + (self.get_width() as f32 * relative_min_x).round() as u32;
-        let min_y =
-            self.get_min_y() + (self.get_height() as f32 * (1.0 - relative_max_y)).round() as u32;
+        let min_x = self.get_min_x() 
+            + (self.get_width() as f32 * relative_min_x).round() as u32;
+        let min_y = self.get_min_y() 
+            + (self.get_height() as f32 * relative_min_y).round() as u32;
 
         return Self::with_size(min_x, min_y, width, height);
     }
@@ -213,11 +202,11 @@ mod tests {
             parent.child_region(0.3, 0.3, 0.7, 0.7)
         );
         assert_eq!(
-            RenderRegion::between(200, 550, 250, 600),
+            RenderRegion::between(200, 500, 250, 550),
             parent.child_region(0.0, 0.0, 0.5, 0.5)
         );
         assert_eq!(
-            RenderRegion::between(200, 500, 250, 550),
+            RenderRegion::between(200, 550, 250, 600),
             parent.child_region(0.0, 0.5, 0.5, 1.0)
         );
         assert_eq!(parent, parent.child_region(0.0, 0.0, 1.0, 1.0));

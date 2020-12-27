@@ -130,7 +130,7 @@ impl Application {
 
             // Don't pass on any click events until the component has been
             // rendered for the first time.
-            if let Some(render_result) = maybe_render_result {
+            if let Some(Ok(render_result)) = maybe_render_result {
                 // If we should filter mouse actions, we need to do an additional check
                 if render_result.filter_mouse_actions {
                     fire = render_result
@@ -179,10 +179,10 @@ mod tests {
             &mut self,
             _region: RenderRegion,
             _buddy: &mut dyn ComponentBuddy,
-            force: bool,
+            _force: bool,
         ) -> RenderResult {
             self.counter.set(self.counter.get() + 3);
-            RenderResult::entire()
+            entire_render_result()
         }
 
         fn on_detach(&mut self) {
@@ -320,12 +320,12 @@ mod tests {
                 &mut self,
                 _region: RenderRegion,
                 _buddy: &mut dyn ComponentBuddy,
-                force: bool,
+                _force: bool,
             ) -> RenderResult {
-                RenderResult {
+                Ok(RenderResultStruct {
                     drawn_region: Box::new(RectangularDrawnRegion::new(0.4, 0.4, 0.6, 0.6)),
                     filter_mouse_actions: true,
-                }
+                })
             }
         }
         let counter = Rc::new(Cell::new(0));
