@@ -103,12 +103,18 @@ impl ComponentBuddy for SimpleFlatBuddy {
         }
     }
 
-    fn subscribe_mouse_click_out(&self) {
-        unimplemented!()
+    fn subscribe_mouse_click_out(&mut self) {
+        if !self.subscriptions.mouse_click_out {
+            self.subscriptions.mouse_click_out = true;
+            self.has_changes = true;
+        }
     }
 
-    fn unsubscribe_mouse_click_out(&self) {
-        unimplemented!()
+    fn unsubscribe_mouse_click_out(&mut self) {
+        if self.subscriptions.mouse_click_out {
+            self.subscriptions.mouse_click_out = false;
+            self.has_changes = true;
+        }
     }
 
     fn subscribe_mouse_move(&self) {

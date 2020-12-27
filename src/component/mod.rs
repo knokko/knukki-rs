@@ -95,7 +95,7 @@ pub trait Component {
         forgot("MouseClick")
     }
 
-    fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent) {
+    fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent, _buddy: &mut dyn ComponentBuddy) {
         forgot("MouseClickOut")
     }
 

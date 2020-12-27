@@ -27,10 +27,15 @@ struct TestComponent {
 impl Component for TestComponent {
     fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
         buddy.subscribe_mouse_click();
+        buddy.subscribe_mouse_click_out();
     }
 
     fn on_mouse_click(&mut self, _event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
         self.red = self.red.wrapping_add(100);
+        buddy.request_render();
+    }
+
+    fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent, buddy: &mut dyn ComponentBuddy) {
         self.green = self.green.wrapping_add(17);
         buddy.request_render();
     }
@@ -81,8 +86,8 @@ impl Component for TestComponent {
         // some kind of lazy initialization of this...
 
         shader.bind();
-        shader.set_uniform("red", UniformValue::Float(self.red as f32 / 255.0));
-        shader.set_uniform("green", UniformValue::Float(self.green as f32 / 255.0));
+        shader.set_uniform("red", UniformValue::Float(self.red as f32 / 255.0))?;
+        shader.set_uniform("green", UniformValue::Float(self.green as f32 / 255.0))?;
         unsafe {
             shader.draw(
                 &vertex_buffer, &element_buffer, 

@@ -83,12 +83,12 @@ impl ComponentBuddy for RootComponentBuddy {
         self.subscriptions.mouse_click = false;
     }
 
-    fn subscribe_mouse_click_out(&self) {
-        unimplemented!()
+    fn subscribe_mouse_click_out(&mut self) {
+        self.subscriptions.mouse_click_out = true;
     }
 
-    fn unsubscribe_mouse_click_out(&self) {
-        unimplemented!()
+    fn unsubscribe_mouse_click_out(&mut self) {
+        self.subscriptions.mouse_click_out = false;
     }
 
     fn subscribe_mouse_move(&self) {

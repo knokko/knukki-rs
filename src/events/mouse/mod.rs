@@ -86,6 +86,7 @@ impl MouseClickEvent {
 ///
 /// Unlike `MouseClickEvent`, this event doesn't know the mouse position,
 /// but only which mouse button was used.
+#[derive(Copy, Clone, Debug)]
 pub struct MouseClickOutEvent {
     mouse: Mouse,
     button: MouseButton,

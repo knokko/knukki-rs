@@ -123,9 +123,14 @@ impl Application {
     }
 
     pub fn fire_mouse_click_event(&mut self, event: MouseClickEvent) {
-        if self.root_buddy.get_subscriptions().mouse_click {
+        let sub_mouse_click = self.root_buddy.get_subscriptions().mouse_click;
+        let sub_mouse_click_out = self.root_buddy.get_subscriptions().mouse_click_out;
+
+        if sub_mouse_click || sub_mouse_click_out {
             let point = event.get_point();
+
             let mut fire = false;
+            let mut fire_out = false;
             let maybe_render_result = self.root_buddy.get_last_render_result();
 
             // Don't pass on any click events until the component has been
@@ -139,6 +144,7 @@ impl Application {
                 } else {
                     fire = true;
                 }
+                fire_out = !fire;
             }
 
             if fire {
@@ -146,8 +152,14 @@ impl Application {
                     .on_mouse_click(event, &mut self.root_buddy);
                 self.work_after_events();
             }
+            if fire_out {
+                let out_event = MouseClickOutEvent::new(
+                    event.get_mouse(), event.get_button()
+                );
+                self.root_component.on_mouse_click_out(out_event, &mut self.root_buddy);
+                self.work_after_events();
+            }
         }
-        // TODO Handle mouse click out
     }
 }
 
@@ -305,15 +317,21 @@ mod tests {
     fn test_filter_mouse_actions() {
         struct CustomCountingComponent {
             counter: Rc<Cell<u8>>,
+            out_counter: Rc<Cell<u8>>,
         }
 
         impl Component for CustomCountingComponent {
             fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
                 buddy.subscribe_mouse_click();
+                buddy.subscribe_mouse_click_out();
             }
 
             fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
                 self.counter.set(self.counter.get() + 1);
+            }
+
+            fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.out_counter.set(self.out_counter.get() + 1);
             }
 
             fn render(
@@ -329,8 +347,10 @@ mod tests {
             }
         }
         let counter = Rc::new(Cell::new(0));
+        let out_counter = Rc::new(Cell::new(0));
         let component = CustomCountingComponent {
             counter: Rc::clone(&counter),
+            out_counter: Rc::clone(&out_counter),
         };
         let mut application = Application::new(Box::new(component));
 
@@ -348,15 +368,18 @@ mod tests {
         // Clicks don't have effect until the component has been drawn
         application.fire_mouse_click_event(hit_click);
         assert_eq!(0, counter.get());
+        assert_eq!(0, out_counter.get());
 
         application.render(RenderRegion::between(0, 0, 1, 1), false);
 
-        // And neither do miss-clicks
+        // Miss clicks should increment only the out counter
         application.fire_mouse_click_event(miss_click);
         assert_eq!(0, counter.get());
+        assert_eq!(1, out_counter.get());
 
-        // Only hit clicks have effect
+        // Hit clicks only increment the real counter
         application.fire_mouse_click_event(hit_click);
         assert_eq!(1, counter.get());
+        assert_eq!(1, out_counter.get());
     }
 }
