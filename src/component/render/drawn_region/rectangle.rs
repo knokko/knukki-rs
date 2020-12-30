@@ -133,6 +133,14 @@ impl DrawnRegion for RectangularDrawnRegion {
             // If we reach this part, the line goes from a point outside this rectangle to another
             // point outside this rectangle. We need to check if it intersects this rectangle
             // between those points.
+            let min_x = f32::min(from.get_x(), to.get_x());
+            let max_x = f32::max(from.get_x(), to.get_x());
+            let min_y = f32::min(from.get_y(), to.get_y());
+            let max_y = f32::max(from.get_y(), to.get_y());
+            if max_x < self.left || max_y < self.bottom || min_x > self.right || min_y > self.top {
+                return LineIntersection::FullyOutside;
+            }
+
             return if left_y < self.bottom {
                 if right_y < self.bottom {
                     // For any `self.left <= x <= self.right`, the y-coordinate on the line is
@@ -352,7 +360,87 @@ mod tests {
     }
 
     #[test]
-    fn test_line_intersection_from_inside_to_inside() {
-        
+    fn test_line_intersection_fully_inside() {
+        let rect = RectangularDrawnRegion::new(1.0, 5.0, 5.0, 7.0);
+        let lii = LineIntersection::FullyInside;
+
+        // Horizontal lines
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(4.0, 6.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(2.0, 6.0)));
+
+        // Vertical lines
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(3.0, 6.5)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(3.0, 5.5)));
+
+        // Lines to the right
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(4.0, 6.5)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(3.1, 6.5)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(4.0, 5.5)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(3.1, 5.5)));
+
+        // Lines to the left
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(2.0, 6.5)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(2.0, 5.5)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(2.9, 6.5)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(3.0, 6.0), Point::new(2.9, 5.5)));
+    }
+
+    #[test]
+    fn test_line_intersection_fully_outside() {
+        let lio = LineIntersection::FullyOutside;
+        let rect = RectangularDrawnRegion::new(0.0, 3.0, 5.0, 10.0);
+
+        // Horizontal lines to the right
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-5.0, 2.0), Point::new(10.0, 2.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-5.0, 11.0), Point::new(10.0, 11.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-5.0, 5.0), Point::new(-1.0, 5.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(6.0, 5.0), Point::new(8.0, 5.0)));
+
+        // Horizontal lines to the left
+        assert_eq!(lio, rect.find_line_intersection(Point::new(10.0, 2.0), Point::new(-5.0, 2.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(10.0, 11.0), Point::new(-5.0, 11.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-1.0, 5.0), Point::new(-5.0, 5.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(8.0, 5.0), Point::new(6.0, 5.0)));
+
+        // Upwards vertical lines
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(2.0, -10.0), Point::new(2.0, 2.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(-1.0, 2.0), Point::new(-1.0, 8.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(6.0, 4.0), Point::new(6.0, 6.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(2.0, 11.0), Point::new(2.0, 20.0)));
+
+        // Downward vertical lines
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(2.0, 2.0), Point::new(2.0, -10.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(-1.0, 8.0), Point::new(-1.0, 2.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(6.0, 6.0), Point::new(6.0, 4.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(2.0, 20.0), Point::new(2.0, 11.0)));
+
+        // Right-up lines
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-1.0, 2.0), Point::new(5.0, 2.5)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(-1.0, -12.0), Point::new(5.0, 2.5)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-5.0, 7.0), Point::new(-0.1, 10.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(-5.0, 1.0), Point::new(-0.1, 10.0)));
+
+        // Right-down lines
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-5.0, 5.0), Point::new(0.0, 2.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(-5.0, 9.0), Point::new(0.0, 2.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(2.0, 12.0), Point::new(5.5, 10.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(2.0, 17.0), Point::new(5.5, 10.0)));
+
+        // Left-down lines
+        assert_eq!(lio, rect.find_line_intersection(Point::new(5.0, 2.5), Point::new(-1.0, 2.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(5.0, 2.5), Point::new(-1.0, 12.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-0.1, 10.0), Point::new(-5.0, 7.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(-0.1, 10.0), Point::new(-5.0, 1.0)));
+
+        // Left-up lines
+        assert_eq!(lio, rect.find_line_intersection(Point::new(0.0, 2.0), Point::new(-5.0, 5.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(0.0, 2.0), Point::new(-5.0, 9.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(5.5, 10.0), Point::new(2.0, 12.0)));
+        //assert_eq!(lio, rect.find_line_intersection(Point::new(5.5, 10.0), Point::new(2.0, 17.0)));
+    }
+
+    #[test]
+    fn test_line_intersection_crossing() {
+        // TODO Lots of cases...
     }
 }
