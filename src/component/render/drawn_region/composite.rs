@@ -1,4 +1,8 @@
-use crate::DrawnRegion;
+use crate::{
+    DrawnRegion,
+    LineIntersection,
+    Point
+};
 
 /// A `DrawnRegion` that is composed of other `DrawnRegion`s (typically more than
 /// 1). Points will be considered *inside* a `CompositeDrawnRegion` if it is
@@ -39,9 +43,9 @@ impl CompositeDrawnRegion {
 }
 
 impl DrawnRegion for CompositeDrawnRegion {
-    fn is_inside(&self, x: f32, y: f32) -> bool {
+    fn is_inside(&self, point: Point ) -> bool {
         for component in &self.components {
-            if component.is_within_bounds(x, y) && component.is_inside(x, y) {
+            if component.is_within_bounds(point) && component.is_inside(point) {
                 return true;
             }
         }
@@ -79,6 +83,87 @@ impl DrawnRegion for CompositeDrawnRegion {
     fn get_top(&self) -> f32 {
         self.top_bound
     }
+
+    fn find_line_intersection(&self, from: Point, to: Point) -> LineIntersection {
+        let from_inside = self.is_within_bounds(from) && self.is_inside(from);
+        let to_inside = self.is_within_bounds(to) && self.is_inside(to);
+        return match (from_inside, to_inside) {
+            (true, true) => LineIntersection::FullyInside,
+            (true, false) => {
+                match self.find_last_exit_point(from, to) {
+                    Some(point) => LineIntersection::Exits { point },
+                    // The case below could occur due to rounding errors, but should be rare
+                    None => LineIntersection::FullyInside
+                }
+            }, (false, true) => {
+                match self.find_first_entry_point(from, to) {
+                    Some(point) => LineIntersection::Enters { point },
+                    // The case below could occur due to rounding errors, but should be rare
+                    None => LineIntersection::FullyOutside
+                }
+            }, (false, false) => {
+                if let Some(entrance) = self.find_first_entry_point(from, to) {
+                    match self.find_last_exit_point(from, to) {
+                        Some(exit) => LineIntersection::Crosses { entrance, exit },
+                        // The case below could occur due to rounding errors, but should be rare
+                        None => LineIntersection::Enters { point: entrance }
+                    }
+                } else {
+                    LineIntersection::FullyOutside
+                }
+            }
+        };
+    }
+}
+
+impl CompositeDrawnRegion {
+    fn find_first_entry_point(&self, from: Point, to: Point) -> Option<Point> {
+        let mut last_point = None;
+        let mut last_distance = f32::MAX;
+
+        for component in &self.components {
+            match component.find_line_intersection(from, to) {
+                LineIntersection::Enters { point } => {
+                    let distance = from.distance_to(point);
+                    if distance < last_distance {
+                        last_point = Some(point);
+                        last_distance = distance;
+                    }
+                }, LineIntersection::Crosses { entrance, exit: _exit } => {
+                    let distance = from.distance_to(entrance);
+                    if distance < last_distance {
+                        last_point = Some(entrance);
+                        last_distance = distance;
+                    }
+                }, _ => {}
+            };
+        }
+
+        last_point
+    }
+    fn find_last_exit_point(&self, from: Point, to: Point) -> Option<Point> {
+        let mut last_point = None;
+        let mut last_distance = f32::MAX;
+        for component in &self.components {
+            match component.find_line_intersection(from, to) {
+                LineIntersection::Exits { point } => {
+                    let distance = to.distance_to(point);
+                    if distance < last_distance {
+                        last_point = Some(point);
+                        last_distance = distance;
+                    }
+                }, LineIntersection::Crosses { entrance: _entrance, exit } => {
+                    let distance = to.distance_to(exit);
+                    if distance < last_distance {
+                        last_point = Some(exit);
+                        last_distance = distance;
+                    }
+                }, _ => {}
+            };
+        }
+
+        last_point
+    }
 }
 
 #[cfg(test)]
@@ -90,10 +175,10 @@ mod tests {
     fn test_empty() {
         let empty = CompositeDrawnRegion::new(Vec::new());
         // is_inside and is_within_bounds should always return false
-        assert!(!empty.is_inside(0.4, 14.0));
-        assert!(!empty.is_within_bounds(0.0, 0.0));
-        assert!(!empty.is_inside(-1.0, -2.0));
-        assert!(!empty.is_inside(-2.0, 3.0));
+        assert!(!empty.is_inside(Point::new(0.4, 14.0)));
+        assert!(!empty.is_within_bounds(Point::new(0.0, 0.0)));
+        assert!(!empty.is_inside(Point::new(-1.0, -2.0)));
+        assert!(!empty.is_inside(Point::new(-2.0, 3.0)));
     }
 
     #[test]
@@ -102,8 +187,8 @@ mod tests {
             0.2, 1.0, 0.5, 2.0,
         ))]);
 
-        assert!(!single.is_inside(0.1, 0.9));
-        assert!(single.is_inside(0.2, 2.0));
+        assert!(!single.is_inside(Point::new(0.1, 0.9)));
+        assert!(single.is_inside(Point::new(0.2, 2.0)));
 
         assert_eq!(0.2, single.get_left());
         assert_eq!(1.0, single.get_bottom());
@@ -118,18 +203,20 @@ mod tests {
             Box::new(RectangularDrawnRegion::new(2.0, 1.0, 3.0, 2.0)),
         ]);
 
-        assert!(double.is_inside(0.1, 0.1));
-        assert!(!double.is_inside(1.1, 0.1));
-        assert!(!double.is_inside(2.1, 0.1));
-        assert!(!double.is_inside(0.1, 1.1));
-        assert!(double.is_inside(2.1, 1.1));
+        assert!(double.is_inside(Point::new(0.1, 0.1)));
+        assert!(!double.is_inside(Point::new(1.1, 0.1)));
+        assert!(!double.is_inside(Point::new(2.1, 0.1)));
+        assert!(!double.is_inside(Point::new(0.1, 1.1)));
+        assert!(double.is_inside(Point::new(2.1, 1.1)));
 
-        assert!(!double.is_inside(-0.1, 0.1));
-        assert!(!double.is_inside(3.1, 1.1));
+        assert!(!double.is_inside(Point::new(-0.1, 0.1)));
+        assert!(!double.is_inside(Point::new(3.1, 1.1)));
 
         assert_eq!(0.0, double.get_left());
         assert_eq!(0.0, double.get_bottom());
         assert_eq!(3.0, double.get_right());
         assert_eq!(2.0, double.get_top());
     }
+
+    // TODO Unit tests for the line intersection logic!
 }

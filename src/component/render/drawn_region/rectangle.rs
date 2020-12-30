@@ -26,8 +26,8 @@ impl RectangularDrawnRegion {
 }
 
 impl DrawnRegion for RectangularDrawnRegion {
-    fn is_inside(&self, x: f32, y: f32) -> bool {
-        x >= self.left && x <= self.right && y >= self.bottom && y <= self.top
+    fn is_inside(&self, point: Point) -> bool {
+        self.is_within_bounds(point)
     }
 
     fn clone(&self) -> Box<dyn DrawnRegion> {
@@ -49,6 +49,162 @@ impl DrawnRegion for RectangularDrawnRegion {
     fn get_top(&self) -> f32 {
         self.top
     }
+
+    fn find_line_intersection(&self, from: Point, to: Point) -> LineIntersection {
+        let dx = to.get_x() - from.get_x();
+        let dy = to.get_y() - from.get_y();
+
+        let from_inside = self.is_within_bounds(from);
+        let to_inside = self.is_within_bounds(to);
+
+        // This is the easy case
+        if from_inside && to_inside {
+            return LineIntersection::FullyInside;
+        }
+
+        // Use case distinction to avoid divisions by 0 (or numbers like 0.0001)
+        // TODO Test both cases
+        if dx.abs() > dy.abs() {
+            // Express line formula as: y = slope * x + adder
+            let slope = dy / dx;
+            let adder = from.get_y() - slope * from.get_x();
+
+            let left_y = slope * self.left + adder;
+            let right_y = slope * self.right + adder;
+
+            // The line goes from a point inside this rectangle to a point outside it
+            if from_inside {
+                // We need to find the intersection of the line with this rectangle
+                return if dx > 0.0 {
+                    if right_y >= self.bottom && right_y <= self.top {
+                        LineIntersection::Exits { point: Point::new(self.right, right_y) }
+                    } else if dy > 0.0 {
+                        // Solve: slope * x + adder = self.top
+                        // Solve: slope * x = self.top - adder
+                        // Solution: x = (self.top - adder) / slope
+                        let top_x = (self.top - adder) / slope;
+                        LineIntersection::Exits { point: Point::new(top_x, self.top) }
+                    } else {
+                        // Solve: slope * x + adder = self.bottom
+                        let bottom_x = (self.bottom - adder) / slope;
+                        LineIntersection::Exits { point: Point::new(bottom_x, self.bottom) }
+                    }
+                } else {
+                    if left_y >= self.bottom && left_y <= self.top {
+                        LineIntersection::Exits { point: Point::new(self.left, left_y) }
+                    } else if dy > 0.0 {
+                        let top_x = (self.top - adder) / slope;
+                        LineIntersection::Exits { point: Point::new(top_x, self.top) }
+                    } else {
+                        let bottom_x = (self.bottom - adder) / slope;
+                        LineIntersection::Exits { point: Point::new(bottom_x, self.bottom) }
+                    }
+                }
+            }
+
+            // The line goes from a point outside this rectangle to a point inside it
+            if to_inside {
+                return if dx > 0.0 {
+                    if left_y >= self.bottom && left_y <= self.top {
+                        LineIntersection::Enters { point: Point::new(self.left, left_y) }
+                    } else if dy > 0.0 {
+                        // Solve: slope * x + adder = self.bottom
+                        // Solve: slope * x = self.bottom - adder
+                        // Solution: x = (self.bottom - adder) / slope
+                        let bottom_x = (self.bottom - adder) / slope;
+                        LineIntersection::Enters { point: Point::new(bottom_x, self.bottom) }
+                    } else {
+                        let top_x = (self.top - adder) / slope;
+                        LineIntersection::Enters { point: Point::new(top_x, self.top) }
+                    }
+                } else {
+                    if right_y >= self.bottom && right_y <= self.top {
+                        LineIntersection::Enters { point: Point::new(self.right, right_y) }
+                    } else if dy > 0.0 {
+                        let bottom_x = (self.bottom - adder) / slope;
+                        LineIntersection::Enters { point: Point::new(bottom_x, self.bottom) }
+                    } else {
+                        let top_x = (self.top - adder) / slope;
+                        LineIntersection::Enters { point: Point::new(top_x, self.top) }
+                    }
+                }
+            }
+
+            // If we reach this part, the line goes from a point outside this rectangle to another
+            // point outside this rectangle. We need to check if it intersects this rectangle
+            // between those points.
+            return if left_y < self.bottom {
+                if right_y < self.bottom {
+                    // For any `self.left <= x <= self.right`, the y-coordinate on the line is
+                    // below this rectangle
+                    LineIntersection::FullyOutside
+                } else if right_y > self.top {
+                    // The line crosses the top and bottom of this rectangle
+                    let bottom_x = (self.bottom - adder) / slope;
+                    let top_x = (self.top - adder) / slope;
+                    LineIntersection::Crosses {
+                        entrance: Point::new(bottom_x, self.bottom),
+                        exit: Point::new(top_x, self.top)
+                    }
+                } else {
+                    // The line crosses the bottom and right of this rectangle
+                    let bottom_x = (self.bottom - adder) / slope;
+                    LineIntersection::Crosses {
+                        entrance: Point::new(bottom_x, self.bottom),
+                        exit: Point::new(self.right, right_y)
+                    }
+                }
+            } else if left_y > self.top {
+                if right_y > self.top {
+                    // For any `self.left <= x <= self.right`, the y-coordinate on the line is
+                    // above this rectangle
+                    LineIntersection::FullyOutside
+                } else if right_y < self.bottom {
+                    // The line crosses the top and bottom of this rectangle
+                    let bottom_x = (self.bottom - adder) / slope;
+                    let top_x = (self.top - adder) / slope;
+                    LineIntersection::Crosses {
+                        entrance: Point::new(bottom_x, self.bottom),
+                        exit: Point::new(top_x, self.top)
+                    }
+                } else {
+                    // The line crosses the top and right of this rectangle
+                    let top_x = (self.top - adder) / slope;
+                    LineIntersection::Crosses {
+                        entrance: Point::new(top_x, self.top),
+                        exit: Point::new(self.right, right_y)
+                    }
+                }
+            } else {
+                if right_y > self.top {
+                    // The line crosses the left and the top of this rectangle
+                    let top_x = (self.top - adder) / slope;
+                    LineIntersection::Crosses {
+                        entrance: Point::new(self.left, left_y),
+                        exit: Point::new(top_x, self.top)
+                    }
+                } else if right_y < self.bottom {
+                    // The line crosses the left and bottom of this rectangle
+                    let bottom_x = (self.bottom - adder) / slope;
+                    LineIntersection::Crosses {
+                        entrance: Point::new(self.left, left_y),
+                        exit: Point::new(bottom_x, self.bottom)
+                    }
+                } else {
+                    // The line crosses the left and right of this rectangle
+                    LineIntersection::Crosses {
+                        entrance: Point::new(self.left, left_y),
+                        exit: Point::new(self.right, right_y)
+                    }
+                }
+            }
+
+        } else {
+
+        }
+
+        unimplemented!()
+    }
 }
 
 #[cfg(test)]
@@ -61,22 +217,22 @@ mod tests {
         let rect = RectangularDrawnRegion::new(-0.2, -0.4, 0.6, 1.0);
 
         // Boundary cases
-        assert!(rect.is_inside(-0.2, -0.4));
-        assert!(rect.is_inside(0.6, 1.0));
-        assert!(!rect.is_inside(-0.21, 0.0));
-        assert!(!rect.is_inside(0.0, 1.01));
+        assert!(rect.is_inside(Point::new(-0.2, -0.4)));
+        assert!(rect.is_inside(Point::new(0.6, 1.0)));
+        assert!(!rect.is_inside(Point::new(-0.21, 0.0)));
+        assert!(!rect.is_inside(Point::new(0.0, 1.01)));
 
         // Simpler cases
-        assert!(rect.is_inside(0.0, 0.0));
-        assert!(!rect.is_inside(2.0, -3.5));
+        assert!(rect.is_inside(Point::new(0.0, 0.0)));
+        assert!(!rect.is_inside(Point::new(2.0, -3.5)));
     }
 
     #[test]
     fn test_invalid() {
         let rect = RectangularDrawnRegion::new(1.0, 1.0, -1.0, -1.0);
 
-        assert!(!rect.is_inside(0.0, 0.0));
-        assert!(!rect.is_inside(1.0, 1.0));
+        assert!(!rect.is_inside(Point::new(0.0, 0.0)));
+        assert!(!rect.is_inside(Point::new(1.0, 1.0)));
     }
 
     #[test]
@@ -87,5 +243,116 @@ mod tests {
         assert_eq!(0.8, rect.get_bottom());
         assert_eq!(1.0, rect.get_right());
         assert_eq!(1.5, rect.get_top());
+    }
+
+    fn li_exit(exit_x: f32, exit_y: f32) -> LineIntersection {
+        LineIntersection::Exits { point: Point::new(exit_x, exit_y)}
+    }
+
+    fn fli(rect: &RectangularDrawnRegion, from: Point, to: Point) -> LineIntersection {
+        rect.find_line_intersection(from, to)
+    }
+
+    #[test]
+    fn test_line_intersection_from_inside_to_outside() {
+        let rect = RectangularDrawnRegion::new(
+            30.0, 10.0, 100.0, 20.0
+        );
+
+        let middle = Point::new(65.0, 15.0);
+        let near_top = Point::new(65.0, 19.0);
+        let near_bottom = Point::new(65.0, 11.0);
+
+        // Test lines from the middle to the right
+        assert!(li_exit(100.0, 16.0).nearly_equal(fli(&rect, middle, Point::new(135.0, 17.0))));
+        assert!(li_exit(100.0, 15.0).nearly_equal(fli(&rect, middle, Point::new(135.0, 15.0))));
+        assert!(li_exit(100.0, 14.0).nearly_equal(fli(&rect, middle, Point::new(135.0, 13.0))));
+        //assert!(li_exit(66.0, 20.0).nearly_equal(fli(&rect, middle, Point::new(67.0, 25.0))));
+
+        // Test vertical lines from the middle
+        //assert!(li_exit(65.0, 20.0).nearly_equal(fli(&rect, middle, Point::new(65.0, 25.0))));
+        //assert!(li_exit(65.0, 10.0).nearly_equal(fli(&rect, middle, Point::new(65.0, 5.0))));
+
+        // Test lines from the middle to the left
+        assert!(li_exit(30.0, 16.0).nearly_equal(fli(&rect, middle, Point::new(-5.0, 17.0))));
+        assert!(li_exit(30.0, 15.0).nearly_equal(fli(&rect, middle, Point::new(-5.0, 15.0))));
+        assert!(li_exit(30.0, 14.0).nearly_equal(fli(&rect, middle, Point::new(-5.0, 13.0))));
+        //assert!(li_exit(64.0, 20.0).nearly_equal(fli(&rect, middle, Point::new(63.0, 25.0))));
+
+        // Test lines from the top to the right
+        assert!(li_exit(90.0, 20.0).nearly_equal(fli(&rect, near_top, Point::new(115.0, 21.0))));
+        assert!(li_exit(100.0, 19.0).nearly_equal(fli(&rect, near_top, Point::new(115.0, 19.0))));
+        assert!(li_exit(100.0, 18.0).nearly_equal(fli(&rect, near_top, Point::new(135.0, 17.0))));
+
+        // Test lines from the top to the left
+        assert!(li_exit(40.0, 20.0).nearly_equal(fli(&rect, near_top, Point::new(15.0, 21.0))));
+        assert!(li_exit(30.0, 19.0).nearly_equal(fli(&rect, near_top, Point::new(-5.0, 19.0))));
+        assert!(li_exit(30.0, 18.0).nearly_equal(fli(&rect, near_top, Point::new(-5.0, 17.0))));
+
+        // Test lines from the bottom to the right
+        assert!(li_exit(100.0, 12.0).nearly_equal(fli(&rect, near_bottom, Point::new(135.0, 13.0))));
+        assert!(li_exit(100.0, 11.0).nearly_equal(fli(&rect, near_bottom, Point::new(115.0, 11.0))));
+        assert!(li_exit(90.0, 10.0).nearly_equal(fli(&rect, near_bottom, Point::new(115.0, 9.0))));
+
+        // Test lines from the bottom to the left
+        assert!(li_exit(30.0, 12.0).nearly_equal(fli(&rect, near_bottom, Point::new(-5.0, 13.0))));
+        assert!(li_exit(30.0, 11.0).nearly_equal(fli(&rect, near_bottom, Point::new(-5.0, 11.0))));
+        assert!(li_exit(40.0, 10.0).nearly_equal(fli(&rect, near_bottom, Point::new(15.0, 9.0))));
+    }
+
+    fn li_enter(enter_x: f32, enter_y: f32) -> LineIntersection {
+        LineIntersection::Enters { point: Point::new(enter_x, enter_y)}
+    }
+
+    #[test]
+    fn test_line_intersection_from_outside_to_inside() {
+        let rect = RectangularDrawnRegion::new(
+            30.0, 10.0, 100.0, 20.0
+        );
+
+        let middle = Point::new(65.0, 15.0);
+        let near_top = Point::new(65.0, 19.0);
+        let near_bottom = Point::new(65.0, 11.0);
+
+        // Test lines from the middle to the right
+        assert!(li_enter(100.0, 16.0).nearly_equal(fli(&rect, Point::new(135.0, 17.0), middle)));
+        assert!(li_enter(100.0, 15.0).nearly_equal(fli(&rect, Point::new(135.0, 15.0), middle)));
+        assert!(li_enter(100.0, 14.0).nearly_equal(fli(&rect, Point::new(135.0, 13.0), middle)));
+        //assert!(li_enter(66.0, 20.0).nearly_equal(fli(&rect, Point::new(67.0, 25.0), middle)));
+
+        // Test vertical lines from the middle
+        //assert!(li_enter(65.0, 20.0).nearly_equal(fli(&rect, Point::new(65.0, 25.0), middle)));
+        //assert!(li_enter(65.0, 10.0).nearly_equal(fli(&rect, Point::new(65.0, 5.0), middle)));
+
+        // Test lines from the middle to the left
+        assert!(li_enter(30.0, 16.0).nearly_equal(fli(&rect, Point::new(-5.0, 17.0), middle)));
+        assert!(li_enter(30.0, 15.0).nearly_equal(fli(&rect, Point::new(-5.0, 15.0), middle)));
+        assert!(li_enter(30.0, 14.0).nearly_equal(fli(&rect, Point::new(-5.0, 13.0), middle)));
+        //assert!(li_enter(64.0, 20.0).nearly_equal(fli(&rect, Point::new(63.0, 25.0), middle)));
+
+        // Test lines from the top to the right
+        assert!(li_enter(90.0, 20.0).nearly_equal(fli(&rect, Point::new(115.0, 21.0), near_top)));
+        assert!(li_enter(100.0, 19.0).nearly_equal(fli(&rect, Point::new(115.0, 19.0), near_top)));
+        assert!(li_enter(100.0, 18.0).nearly_equal(fli(&rect, Point::new(135.0, 17.0), near_top)));
+
+        // Test lines from the top to the left
+        assert!(li_enter(40.0, 20.0).nearly_equal(fli(&rect, Point::new(15.0, 21.0), near_top)));
+        assert!(li_enter(30.0, 19.0).nearly_equal(fli(&rect, Point::new(-5.0, 19.0), near_top)));
+        assert!(li_enter(30.0, 18.0).nearly_equal(fli(&rect, Point::new(-5.0, 17.0), near_top)));
+
+        // Test lines from the bottom to the right
+        assert!(li_enter(100.0, 12.0).nearly_equal(fli(&rect, Point::new(135.0, 13.0), near_bottom)));
+        assert!(li_enter(100.0, 11.0).nearly_equal(fli(&rect, Point::new(115.0, 11.0), near_bottom)));
+        assert!(li_enter(90.0, 10.0).nearly_equal(fli(&rect, Point::new(115.0, 9.0), near_bottom)));
+
+        // Test lines from the bottom to the left
+        assert!(li_enter(30.0, 12.0).nearly_equal(fli(&rect, Point::new(-5.0, 13.0), near_bottom)));
+        assert!(li_enter(30.0, 11.0).nearly_equal(fli(&rect, Point::new(-5.0, 11.0), near_bottom)));
+        assert!(li_enter(40.0, 10.0).nearly_equal(fli(&rect, Point::new(15.0, 9.0), near_bottom)));
+    }
+
+    #[test]
+    fn test_line_intersection_from_inside_to_inside() {
+        
     }
 }

@@ -115,11 +115,11 @@ pub trait ComponentBuddy {
     ///
     /// If the mouse cursor is currently hovering over the component, it will
     /// return Some with the relative mouse position. See the documentation of
-    /// `MousePoint` for more information about the relative coordinates.
+    /// `Point` for more information about the relative coordinates.
     ///
     /// If the mouse cursor is currently not hovering over the component, this
     /// method will return None.
-    fn get_mouse_position(&self, mouse: Mouse) -> Option<MousePoint>;
+    fn get_mouse_position(&self, mouse: Mouse) -> Option<Point>;
 
     /// Checks if the given button of the given mouse is currently being
     /// pressed/down. This method can be called during any event.

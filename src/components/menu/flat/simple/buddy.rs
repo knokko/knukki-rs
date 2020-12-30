@@ -149,7 +149,7 @@ impl ComponentBuddy for SimpleFlatBuddy {
         unimplemented!()
     }
 
-    fn get_mouse_position(&self, mouse: Mouse) -> Option<MousePoint> {
+    fn get_mouse_position(&self, mouse: Mouse) -> Option<Point> {
         unimplemented!()
     }
 

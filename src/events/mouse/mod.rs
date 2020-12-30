@@ -1,8 +1,8 @@
 mod button;
-mod point;
+
+use crate::Point;
 
 pub use button::*;
-pub use point::*;
 
 /// Represents a mouse, or something else that can generate events *at screen
 /// positions* (like clicking, moving, dragging...).
@@ -45,14 +45,14 @@ impl Mouse {
 #[derive(Copy, Clone, Debug)]
 pub struct MouseClickEvent {
     mouse: Mouse,
-    point: MousePoint,
+    point: Point,
     button: MouseButton,
 }
 
 impl MouseClickEvent {
     /// Constructs a new `MouseClickEvent` with the given mouse, relative mouse
     /// cursor position (point) and the given button
-    pub fn new(mouse: Mouse, point: MousePoint, button: MouseButton) -> Self {
+    pub fn new(mouse: Mouse, point: Point, button: MouseButton) -> Self {
         Self {
             mouse,
             point,
@@ -67,7 +67,7 @@ impl MouseClickEvent {
 
     /// Gets the position of the mouse cursor, relative to the component that
     /// listens to this event
-    pub fn get_point(&self) -> MousePoint {
+    pub fn get_point(&self) -> Point {
         self.point
     }
 
@@ -127,14 +127,14 @@ impl MouseClickOutEvent {
 /// a `MouseEnterEvent` with position *b* will be fired.
 pub struct MouseMoveEvent {
     mouse: Mouse,
-    from: MousePoint,
-    to: MousePoint,
+    from: Point,
+    to: Point,
 }
 
 impl MouseMoveEvent {
     /// Constructs a new `MouseMoveEvent` indicating that `mouse` moved from
     /// `from` to `to`
-    pub fn new(mouse: Mouse, from: MousePoint, to: MousePoint) -> Self {
+    pub fn new(mouse: Mouse, from: Point, to: Point) -> Self {
         Self { mouse, from, to }
     }
 
@@ -144,12 +144,12 @@ impl MouseMoveEvent {
     }
 
     /// Gets the position the mouse cursor came from (the old mouse position)
-    pub fn get_from(&self) -> MousePoint {
+    pub fn get_from(&self) -> Point {
         self.from
     }
 
     /// Gets the position the mouse cursor was moved to (the new mouse position)
-    pub fn get_to(&self) -> MousePoint {
+    pub fn get_to(&self) -> Point {
         self.to
     }
 }
@@ -163,12 +163,12 @@ impl MouseMoveEvent {
 /// this can be anywhere in the component.
 pub struct MouseEnterEvent {
     mouse: Mouse,
-    entrance_point: MousePoint,
+    entrance_point: Point,
 }
 
 impl MouseEnterEvent {
     /// Constructs a new `MouseEnterEvent` with the given `Mouse` and `entrance_point`
-    pub fn new(mouse: Mouse, entrance_point: MousePoint) -> Self {
+    pub fn new(mouse: Mouse, entrance_point: Point) -> Self {
         Self {
             mouse,
             entrance_point,
@@ -185,7 +185,7 @@ impl MouseEnterEvent {
     /// For regular mouses, this will always be on the border of the component, but
     /// this doesn't have to be the case for other `Mouse`s like fingers on
     /// touchscreens.
-    pub fn get_entrance_point(&self) -> MousePoint {
+    pub fn get_entrance_point(&self) -> Point {
         self.entrance_point
     }
 }
@@ -201,12 +201,12 @@ impl MouseEnterEvent {
 /// touchscreens.
 pub struct MouseLeaveEvent {
     mouse: Mouse,
-    exit_point: MousePoint,
+    exit_point: Point,
 }
 
 impl MouseLeaveEvent {
     /// Constructs a new `MouseLeaveEvent` with the given `exit_point`
-    pub fn new(mouse: Mouse, exit_point: MousePoint) -> Self {
+    pub fn new(mouse: Mouse, exit_point: Point) -> Self {
         Self { mouse, exit_point }
     }
 
@@ -220,7 +220,7 @@ impl MouseLeaveEvent {
     /// For regular mouses, this will always be on the border of the component, but
     /// this doesn't have to be the case for other `Mouse`s like fingers on
     /// touchscreens.
-    pub fn get_exit_point(&self) -> MousePoint {
+    pub fn get_exit_point(&self) -> Point {
         self.exit_point
     }
 }

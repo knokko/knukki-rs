@@ -140,7 +140,7 @@ impl Application {
                 if render_result.filter_mouse_actions {
                     fire = render_result
                         .drawn_region
-                        .is_inside(point.get_x(), point.get_y());
+                        .is_inside(point);
                 } else {
                     fire = true;
                 }
@@ -157,6 +157,72 @@ impl Application {
                     event.get_mouse(), event.get_button()
                 );
                 self.root_component.on_mouse_click_out(out_event, &mut self.root_buddy);
+                self.work_after_events();
+            }
+        }
+    }
+
+    pub fn fire_mouse_move_event(&mut self, event: MouseMoveEvent) {
+        if let Some(render_result) = self.root_buddy.get_last_render_result() {
+            if self.root_buddy.get_subscriptions().mouse_move {
+                let filter_mouse = render_result.filter_mouse_actions;
+                if filter_mouse {
+                    // Complex case: we need to take the render region into account
+                    match render_result.drawn_region.find_line_intersection(
+                        event.get_from(), event.get_to()) {
+                        LineIntersection::FullyOutside => {
+                            // Do nothing
+                        }, LineIntersection::FullyInside => {
+                            // Simple case: just propagate the event
+                            self.root_component.on_mouse_move(event, &mut self.root_buddy);
+                        }, LineIntersection::Enters { point } => {
+                            // Fire a MouseEnterEvent at `point`
+                            // and a MouseMoveEvent from `point` to `to`
+                            let enter_event = MouseEnterEvent::new(
+                                event.get_mouse(), point
+                            );
+                            self.root_component.on_mouse_enter(enter_event, &mut self.root_buddy);
+                            if event.get_to() != point {
+                                let move_event = MouseMoveEvent::new(
+                                    event.get_mouse(), point, event.get_to()
+                                );
+                                self.root_component.on_mouse_move(move_event, &mut self.root_buddy);
+                            }
+                        }, LineIntersection::Exits { point } => {
+                            // Fire a MouseMoveEvent from `from` to `point`
+                            // and a MouseLeaveEvent at `point`
+                            if event.get_from() != point {
+                                let move_event = MouseMoveEvent::new(
+                                    event.get_mouse(), event.get_from(), point
+                                );
+                                self.root_component.on_mouse_move(move_event, &mut self.root_buddy);
+                            }
+                            let leave_event = MouseLeaveEvent::new(
+                                event.get_mouse(), point
+                            );
+                            self.root_component.on_mouse_leave(leave_event, &mut self.root_buddy);
+                        }, LineIntersection::Crosses { entrance, exit } => {
+                            // Fire a MouseEnterEvent at `entrance`
+                            // and a MouseMoveEvent from `entrance` to `exit`
+                            // and a MouseLeaveEvent at `exit`
+                            let enter_event = MouseEnterEvent::new(
+                                event.get_mouse(), entrance
+                            );
+                            let move_event = MouseMoveEvent::new(
+                                event.get_mouse(), entrance, exit
+                            );
+                            let leave_event = MouseLeaveEvent::new(
+                                event.get_mouse(), exit
+                            );
+                            self.root_component.on_mouse_enter(enter_event, &mut self.root_buddy);
+                            self.root_component.on_mouse_move(move_event, &mut self.root_buddy);
+                            self.root_component.on_mouse_leave(leave_event, &mut self.root_buddy);
+                        }
+                    };
+                } else {
+                    // This is the simple case: just propagate the event
+                    self.root_component.on_mouse_move(event, &mut self.root_buddy);
+                }
                 self.work_after_events();
             }
         }
@@ -276,12 +342,12 @@ mod tests {
         let dummy_region = RenderRegion::between(100, 100, 200, 200);
         let hit_event = MouseClickEvent::new(
             Mouse::new(0),
-            MousePoint::new(0.5, 0.5),
+            Point::new(0.5, 0.5),
             MouseButton::primary(),
         );
         let miss_event = MouseClickEvent::new(
             Mouse::new(0),
-            MousePoint::new(0.0, 0.0),
+            Point::new(0.0, 0.0),
             MouseButton::primary(),
         );
 
@@ -356,12 +422,12 @@ mod tests {
 
         let miss_click = MouseClickEvent::new(
             Mouse::new(0),
-            MousePoint::new(0.3, 0.3),
+            Point::new(0.3, 0.3),
             MouseButton::primary(),
         );
         let hit_click = MouseClickEvent::new(
             Mouse::new(0),
-            MousePoint::new(0.5, 0.5),
+            Point::new(0.5, 0.5),
             MouseButton::primary(),
         );
 

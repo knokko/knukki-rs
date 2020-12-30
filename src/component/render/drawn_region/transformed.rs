@@ -1,6 +1,6 @@
 use crate::*;
 
-pub struct TransformedDrawnRegion<T: Clone + Fn(f32, f32) -> (f32, f32) + 'static> {
+pub struct TransformedDrawnRegion<T: Clone + Fn(Point) -> Point + 'static> {
     region: Box<dyn DrawnRegion>,
     transform_function: T,
 
@@ -10,7 +10,7 @@ pub struct TransformedDrawnRegion<T: Clone + Fn(f32, f32) -> (f32, f32) + 'stati
     top_bound: f32,
 }
 
-impl<T: Clone + Fn(f32, f32) -> (f32, f32) + 'static> TransformedDrawnRegion<T> {
+impl<T: Clone + Fn(Point) -> Point + 'static> TransformedDrawnRegion<T> {
     pub fn new(
         region: Box<dyn DrawnRegion>,
         transform_function: T,
@@ -30,11 +30,10 @@ impl<T: Clone + Fn(f32, f32) -> (f32, f32) + 'static> TransformedDrawnRegion<T> 
     }
 }
 
-impl<T: Clone + Fn(f32, f32) -> (f32, f32) + 'static> DrawnRegion for TransformedDrawnRegion<T> {
-    fn is_inside(&self, x: f32, y: f32) -> bool {
-        let transformed = (self.transform_function)(x, y);
-        println!("Transformed is {:?}", transformed);
-        self.region.is_inside(transformed.0, transformed.1)
+impl<T: Clone + Fn(Point) -> Point + 'static> DrawnRegion for TransformedDrawnRegion<T> {
+    fn is_inside(&self, point: Point) -> bool {
+        let transformed = (self.transform_function)(point);
+        self.region.is_inside(transformed)
     }
 
     fn clone(&self) -> Box<dyn DrawnRegion> {
@@ -63,6 +62,10 @@ impl<T: Clone + Fn(f32, f32) -> (f32, f32) + 'static> DrawnRegion for Transforme
     fn get_top(&self) -> f32 {
         self.top_bound
     }
+
+    fn find_line_intersection(&self, from: Point, to: Point) -> LineIntersection {
+        unimplemented!()
+    }
 }
 
 #[cfg(test)]
@@ -75,17 +78,17 @@ mod tests {
         let original_region = Box::new(RectangularDrawnRegion::new(1.0, 4.0, 2.0, 7.0));
         let region = TransformedDrawnRegion::new(
             original_region,
-            |x, y| (x * 3.0, y - 1.0),
+            |point| Point::new(point.get_x() * 3.0, point.get_y() - 1.0),
             1.0 / 3.0,
             5.0,
             2.0 / 3.0,
             8.0,
         );
-        assert!(!region.is_inside(0.3, 4.5));
-        assert!(!region.is_inside(0.4, 4.5));
-        assert!(region.is_inside(0.4, 5.5));
-        assert!(region.is_inside(0.65, 7.5));
-        assert!(!region.is_inside(0.7, 7.5));
-        assert!(!region.is_inside(0.7, 8.5));
+        assert!(!region.is_inside(Point::new(0.3, 4.5)));
+        assert!(!region.is_inside(Point::new(0.4, 4.5)));
+        assert!(region.is_inside(Point::new(0.4, 5.5)));
+        assert!(region.is_inside(Point::new(0.65, 7.5)));
+        assert!(!region.is_inside(Point::new(0.7, 7.5)));
+        assert!(!region.is_inside(Point::new(0.7, 8.5)));
     }
 }

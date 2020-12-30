@@ -73,7 +73,7 @@ pub fn start(mut app: Application, title: &str) {
                                 let knukki_x = click_position.x as f32 / window_size.width as f32;
                                 let knukki_y =
                                     1.0 - (click_position.y as f32 / window_size.height as f32);
-                                let knukki_point = crate::MousePoint::new(knukki_x, knukki_y);
+                                let knukki_point = crate::Point::new(knukki_x, knukki_y);
 
                                 // Convert winit button to knukki button
                                 let knukki_button = match button {

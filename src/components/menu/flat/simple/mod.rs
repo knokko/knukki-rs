@@ -67,11 +67,11 @@ impl SimpleFlatMenu {
         }
     }
 
-    fn get_component_at(&self, x: f32, y: f32) -> Option<RR<ComponentEntry>> {
+    fn get_component_at(&self, point: Point) -> Option<RR<ComponentEntry>> {
         // TODO Performance: Use some kind of 2d range tree instead
         for entry_cell in &self.components {
             let entry = entry_cell.borrow();
-            if entry.domain.is_inside(x, y) {
+            if entry.domain.is_inside(point) {
                 return Some(Rc::clone(&entry_cell));
             }
         }
@@ -94,7 +94,7 @@ impl Component for SimpleFlatMenu {
 
         // Lets now handle the actual click event
         let maybe_clicked_cell =
-            self.get_component_at(event.get_point().get_x(), event.get_point().get_y());
+            self.get_component_at(event.get_point());
 
         if let Some(clicked_cell) = &maybe_clicked_cell {
             let mut clicked_entry = clicked_cell.borrow_mut();
@@ -172,7 +172,7 @@ impl Component for SimpleFlatMenu {
                     Ok(good_entry_result) => {
                         let transformed_region = TransformedDrawnRegion::new(
                             good_entry_result.drawn_region.clone(),
-                            move |x, y| component_domain.transform(x, y),
+                            move |point| component_domain.transform(point),
                             component_domain.get_min_x(),
                             component_domain.get_min_y(),
                             component_domain.get_max_x(),
@@ -225,12 +225,12 @@ impl ComponentEntry {
     fn mouse_click(&mut self, outer_event: MouseClickEvent) {
         let mut filtered = false;
         if self.buddy.get_subscriptions().mouse_click {
-            let transformed_point = self.domain.transform_mouse(outer_event.get_point());
+            let transformed_point = self.domain.transform(outer_event.get_point());
             if let Some(render_result) = self.buddy.get_last_render_result() {
                 if !render_result.filter_mouse_actions
                     || render_result
                         .drawn_region
-                        .is_mouse_inside(transformed_point)
+                        .is_inside(transformed_point)
                 {
                     let transformed_event = MouseClickEvent::new(
                         outer_event.get_mouse(),
@@ -452,7 +452,7 @@ mod tests {
         let mut application = Application::new(Box::new(menu));
 
         fn click_event(x: f32, y: f32) -> MouseClickEvent {
-            MouseClickEvent::new(Mouse::new(0), MousePoint::new(x, y), MouseButton::primary())
+            MouseClickEvent::new(Mouse::new(0), Point::new(x, y), MouseButton::primary())
         }
 
         // Before the initial render, clicking shouldn't fire any events
@@ -552,7 +552,7 @@ mod tests {
         // So let's click it and render again
         let hit_click = MouseClickEvent::new(
             Mouse::new(0),
-            MousePoint::new(0.2, 0.2),
+            Point::new(0.2, 0.2),
             MouseButton::primary(),
         );
         menu.on_mouse_click(hit_click, &mut buddy);
@@ -565,7 +565,7 @@ mod tests {
         // Miss clicking shouldn't change anything
         let miss_click = MouseClickEvent::new(
             Mouse::new(0), 
-            MousePoint::new(0.35, 0.35), 
+            Point::new(0.35, 0.35),
             MouseButton::primary()
         );
         menu.on_mouse_click(miss_click, &mut buddy);
@@ -675,12 +675,12 @@ mod tests {
 
         let click1 = MouseClickEvent::new(
             Mouse::new(0), 
-            MousePoint::new(0.2, 0.2), 
+            Point::new(0.2, 0.2),
             MouseButton::primary()
         );
         let click2 = MouseClickEvent::new(
             Mouse::new(0), 
-            MousePoint::new(0.6, 0.6), 
+            Point::new(0.6, 0.6),
             MouseButton::primary()
         );
         let render_region = RenderRegion::between(0, 0, 100, 40);
@@ -692,13 +692,13 @@ mod tests {
         // It should have rendered both components, and maybe the area outside
         {
             let region = &result.drawn_region;
-            assert_eq!(draw_background, region.is_inside(1.0, 0.0));
-            assert_eq!(draw_background, region.is_inside(0.0, 1.0));
-            assert!(region.is_inside(0.0, 0.0));
-            assert!(region.is_inside(0.5, 0.5));
-            assert!(region.is_inside(0.7, 0.7));
+            assert_eq!(draw_background, region.is_inside(Point::new(1.0, 0.0)));
+            assert_eq!(draw_background, region.is_inside(Point::new(0.0, 1.0)));
+            assert!(region.is_inside(Point::new(0.0, 0.0)));
+            assert!(region.is_inside(Point::new(0.5, 0.5)));
+            assert!(region.is_inside(Point::new(0.7, 0.7)));
             // Only draw outside the drawn region of component 2 if there is background
-            assert_eq!(draw_background, region.is_inside(0.9, 0.9));
+            assert_eq!(draw_background, region.is_inside(Point::new(0.9, 0.9)));
         }
 
         menu.on_mouse_click(click1, &mut buddy);
@@ -706,9 +706,9 @@ mod tests {
         // This time, it should only have drawn the first component
         {
             let region = &result.drawn_region;
-            assert!(region.is_inside(0.0, 0.0));
-            assert!(region.is_inside(0.5, 0.5));
-            assert!(!region.is_inside(0.6, 0.6));
+            assert!(region.is_inside(Point::new(0.0, 0.0)));
+            assert!(region.is_inside(Point::new(0.5, 0.5)));
+            assert!(!region.is_inside(Point::new(0.6, 0.6)));
         }
 
         menu.on_mouse_click(click2, &mut buddy);
@@ -716,24 +716,24 @@ mod tests {
         // This time, it should only have drawn the second component
         {
             let region = &result.drawn_region;
-            assert!(!region.is_inside(0.2, 0.2));
-            assert!(region.is_inside(0.5, 0.5));
-            assert!(region.is_inside(0.7, 0.7));
+            assert!(!region.is_inside(Point::new(0.2, 0.2)));
+            assert!(region.is_inside(Point::new(0.5, 0.5)));
+            assert!(region.is_inside(Point::new(0.7, 0.7)));
             // But only inside the region returned by the second component
-            assert!(!region.is_inside(0.9, 0.9));
+            assert!(!region.is_inside(Point::new(0.9, 0.9)));
         }
 
         // When we force, it should draw both components again, and maybe even background
         let result = menu.render(render_region, &mut buddy, true).unwrap();
         {
             let region = &result.drawn_region;
-            assert_eq!(draw_background, region.is_inside(1.0, 0.0));
-            assert_eq!(draw_background, region.is_inside(0.0, 1.0));
-            assert!(region.is_inside(0.0, 0.0));
-            assert!(region.is_inside(0.5, 0.5));
-            assert!(region.is_inside(0.7, 0.7));
+            assert_eq!(draw_background, region.is_inside(Point::new(1.0, 0.0)));
+            assert_eq!(draw_background, region.is_inside(Point::new(0.0, 1.0)));
+            assert!(region.is_inside(Point::new(0.0, 0.0)));
+            assert!(region.is_inside(Point::new(0.5, 0.5)));
+            assert!(region.is_inside(Point::new(0.7, 0.7)));
             // Only draw outside the drawn region of component 2 if there is background
-            assert_eq!(draw_background, region.is_inside(0.9, 0.9));
+            assert_eq!(draw_background, region.is_inside(Point::new(0.9, 0.9)));
         }
 
         // And when we do a normal render thereafter, it should only draw component 1
@@ -742,9 +742,9 @@ mod tests {
         // This time, it should only have drawn the first component
         {
             let region = &result.drawn_region;
-            assert!(region.is_inside(0.0, 0.0));
-            assert!(region.is_inside(0.5, 0.5));
-            assert!(!region.is_inside(0.6, 0.6));
+            assert!(region.is_inside(Point::new(0.0, 0.0)));
+            assert!(region.is_inside(Point::new(0.5, 0.5)));
+            assert!(!region.is_inside(Point::new(0.6, 0.6)));
         }
     }
 
@@ -802,28 +802,28 @@ mod tests {
 
         let click_miss = MouseClickEvent::new(
             Mouse::new(0), 
-            MousePoint::new(0.8, 0.2), 
+            Point::new(0.8, 0.2),
             MouseButton::primary()
         );
         let click_out = MouseClickOutEvent::new(Mouse::new(0), MouseButton::primary());
         let click1 = MouseClickEvent::new(
             Mouse::new(0), 
-            MousePoint::new(0.2, 0.2), 
+            Point::new(0.2, 0.2),
             MouseButton::primary()
         );
         let click2 = MouseClickEvent::new(
             Mouse::new(0), 
-            MousePoint::new(0.6, 0.6), 
+            Point::new(0.6, 0.6),
             MouseButton::primary()
         );
         let click1out = MouseClickEvent::new(
             Mouse::new(0), 
-            MousePoint::new(0.3, 0.3), 
+            Point::new(0.3, 0.3),
             MouseButton::primary()
         );
         let click2out = MouseClickEvent::new(
             Mouse::new(0), 
-            MousePoint::new(0.9, 0.9), 
+            Point::new(0.9, 0.9),
             MouseButton::primary()
         );
 
@@ -949,11 +949,11 @@ mod tests {
             let mut menu = menu_cell.borrow_mut();
             let mut buddy = buddy_cell.borrow_mut();
             menu.on_mouse_click(MouseClickEvent::new(
-                Mouse::new(0), MousePoint::new(0.2, 0.2), MouseButton::primary()), 
+                Mouse::new(0), Point::new(0.2, 0.2), MouseButton::primary()),
                 &mut *buddy
             );
             menu.on_mouse_click(MouseClickEvent::new(
-                Mouse::new(0), MousePoint::new(0.8, 0.8), MouseButton::primary()), 
+                Mouse::new(0), Point::new(0.8, 0.8), MouseButton::primary()),
                 &mut *buddy
             );
         };

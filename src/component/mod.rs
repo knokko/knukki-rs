@@ -99,15 +99,15 @@ pub trait Component {
         forgot("MouseClickOut")
     }
 
-    fn on_mouse_move(&mut self, _event: MouseMoveEvent) {
+    fn on_mouse_move(&mut self, _event: MouseMoveEvent, _buddy: &mut dyn ComponentBuddy) {
         forgot("MouseMove")
     }
 
-    fn on_mouse_enter(&mut self, _event: MouseEnterEvent) {
+    fn on_mouse_enter(&mut self, _event: MouseEnterEvent, _buddy: &mut dyn ComponentBuddy) {
         forgot("MouseEnter")
     }
 
-    fn on_mouse_leave(&mut self, _event: MouseLeaveEvent) {
+    fn on_mouse_leave(&mut self, _event: MouseLeaveEvent, _buddy: &mut dyn ComponentBuddy) {
         forgot("MouseLeave")
     }
 
