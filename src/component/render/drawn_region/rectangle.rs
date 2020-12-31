@@ -150,16 +150,31 @@ impl DrawnRegion for RectangularDrawnRegion {
                     // The line crosses the top and bottom of this rectangle
                     let bottom_x = (self.bottom - adder) / slope;
                     let top_x = (self.top - adder) / slope;
-                    LineIntersection::Crosses {
-                        entrance: Point::new(bottom_x, self.bottom),
-                        exit: Point::new(top_x, self.top)
+                    if to.get_y() > from.get_y() {
+                        LineIntersection::Crosses {
+                            entrance: Point::new(bottom_x, self.bottom),
+                            exit: Point::new(top_x, self.top)
+                        }
+                    } else {
+                        LineIntersection::Crosses {
+                            exit: Point::new(bottom_x, self.bottom),
+                            entrance: Point::new(top_x, self.top)
+                        }
                     }
+
                 } else {
                     // The line crosses the bottom and right of this rectangle
                     let bottom_x = (self.bottom - adder) / slope;
-                    LineIntersection::Crosses {
-                        entrance: Point::new(bottom_x, self.bottom),
-                        exit: Point::new(self.right, right_y)
+                    if to.get_y() > from.get_y() {
+                        LineIntersection::Crosses {
+                            entrance: Point::new(bottom_x, self.bottom),
+                            exit: Point::new(self.right, right_y)
+                        }
+                    } else {
+                        LineIntersection::Crosses {
+                            exit: Point::new(bottom_x, self.bottom),
+                            entrance: Point::new(self.right, right_y)
+                        }
                     }
                 }
             } else if left_y > self.top {
@@ -171,42 +186,78 @@ impl DrawnRegion for RectangularDrawnRegion {
                     // The line crosses the top and bottom of this rectangle
                     let bottom_x = (self.bottom - adder) / slope;
                     let top_x = (self.top - adder) / slope;
-                    LineIntersection::Crosses {
-                        entrance: Point::new(bottom_x, self.bottom),
-                        exit: Point::new(top_x, self.top)
+                    if to.get_y() > from.get_y() {
+                        LineIntersection::Crosses {
+                            entrance: Point::new(bottom_x, self.bottom),
+                            exit: Point::new(top_x, self.top)
+                        }
+                    } else {
+                        LineIntersection::Crosses {
+                            exit: Point::new(bottom_x, self.bottom),
+                            entrance: Point::new(top_x, self.top)
+                        }
                     }
+
                 } else {
                     // The line crosses the top and right of this rectangle
                     let top_x = (self.top - adder) / slope;
-                    LineIntersection::Crosses {
-                        entrance: Point::new(top_x, self.top),
-                        exit: Point::new(self.right, right_y)
+                    if to.get_x() > from.get_x() {
+                        LineIntersection::Crosses {
+                            entrance: Point::new(top_x, self.top),
+                            exit: Point::new(self.right, right_y)
+                        }
+                    } else {
+                        LineIntersection::Crosses {
+                            exit: Point::new(top_x, self.top),
+                            entrance: Point::new(self.right, right_y)
+                        }
                     }
                 }
             } else {
                 if right_y > self.top {
                     // The line crosses the left and the top of this rectangle
                     let top_x = (self.top - adder) / slope;
-                    LineIntersection::Crosses {
-                        entrance: Point::new(self.left, left_y),
-                        exit: Point::new(top_x, self.top)
+                    if to.get_y() > from.get_y() {
+                        LineIntersection::Crosses {
+                            entrance: Point::new(self.left, left_y),
+                            exit: Point::new(top_x, self.top)
+                        }
+                    } else {
+                        LineIntersection::Crosses {
+                            exit: Point::new(self.left, left_y),
+                            entrance: Point::new(top_x, self.top)
+                        }
                     }
+
                 } else if right_y < self.bottom {
                     // The line crosses the left and bottom of this rectangle
                     let bottom_x = (self.bottom - adder) / slope;
-                    LineIntersection::Crosses {
-                        entrance: Point::new(self.left, left_y),
-                        exit: Point::new(bottom_x, self.bottom)
+                    if to.get_x() > from.get_x() {
+                        LineIntersection::Crosses {
+                            entrance: Point::new(self.left, left_y),
+                            exit: Point::new(bottom_x, self.bottom)
+                        }
+                    } else {
+                        LineIntersection::Crosses {
+                            exit: Point::new(self.left, left_y),
+                            entrance: Point::new(bottom_x, self.bottom)
+                        }
                     }
                 } else {
                     // The line crosses the left and right of this rectangle
-                    LineIntersection::Crosses {
-                        entrance: Point::new(self.left, left_y),
-                        exit: Point::new(self.right, right_y)
+                    if to.get_x() > from.get_x() {
+                        LineIntersection::Crosses {
+                            entrance: Point::new(self.left, left_y),
+                            exit: Point::new(self.right, right_y)
+                        }
+                    } else {
+                        LineIntersection::Crosses {
+                            exit: Point::new(self.left, left_y),
+                            entrance: Point::new(self.right, right_y)
+                        }
                     }
                 }
             }
-
         } else {
 
         }
@@ -438,9 +489,80 @@ mod tests {
         assert_eq!(lio, rect.find_line_intersection(Point::new(5.5, 10.0), Point::new(2.0, 12.0)));
         //assert_eq!(lio, rect.find_line_intersection(Point::new(5.5, 10.0), Point::new(2.0, 17.0)));
     }
+    
+    fn li_cross(enter_x: f32, enter_y: f32, exit_x: f32, exit_y: f32) -> LineIntersection {
+        LineIntersection::Crosses {
+            entrance: Point::new(enter_x, enter_y),
+            exit: Point::new(exit_x, exit_y)
+        }
+    }
 
     #[test]
     fn test_line_intersection_crossing() {
-        // TODO Lots of cases...
+        let rect = RectangularDrawnRegion::new(
+            30.0, 10.0, 100.0, 20.0
+        );
+
+        let middle = Point::new(65.0, 15.0);
+        let near_top = Point::new(65.0, 19.0);
+        let near_bottom = Point::new(65.0, 11.0);
+
+        // Test lines through the middle to the right
+        assert!(li_cross(30.0, 14.0, 100.0, 16.0)
+            .nearly_equal(fli(&rect, Point::new(-5.0, 13.0), Point::new(135.0, 17.0))));
+        assert!(li_cross(30.0, 15.0, 100.0, 15.0)
+            .nearly_equal(fli(&rect, Point::new(-5.0, 15.0), Point::new(135.0, 15.0))));
+        assert!(li_cross(30.0, 16.0, 100.0, 14.0)
+            .nearly_equal(fli(&rect, Point::new(-5.0, 17.0), Point::new(135.0, 13.0))));
+        //assert!(li_cross(64.0, 10.0, 66.0, 20.0)
+        //  .nearly_equal(fli(&rect, Point::new(63.0, 5.0), Point::new(67.0, 25.0))));
+
+        // Test vertical lines through the middle
+        //assert!(li_cross(65.0, 10.0, 65.0, 20.0)
+        //  .nearly_equal(fli(&rect, Point::new(65.0, 5.0), Point::new(65.0, 25.0))));
+        //assert!(li_cross(65.0, 20.0, 65.0, 10.0)
+        //  .nearly_equal(fli(&rect, Point::new(65.0, 25.0, Point::new(65.0, 5.0))));
+
+        // Test lines through the middle to the left
+        assert!(li_cross(100.0, 14.0, 30.0, 16.0)
+            .nearly_equal(fli(&rect, Point::new(135.0, 13.0), Point::new(-5.0, 17.0))));
+        assert!(li_cross(100.0, 15.0, 30.0, 15.0)
+            .nearly_equal(fli(&rect, Point::new(135.0, 15.0), Point::new(-5.0, 15.0))));
+        assert!(li_cross(100.0, 16.0, 30.0, 14.0)
+            .nearly_equal(fli(&rect, Point::new(135.0, 17.0), Point::new(-5.0, 13.0))));
+        //assert!(li_cross(66.0, 10.0, 64.0, 20.0)
+        //  .nearly_equal(fli(&rect, Point::new(67.0, 5.0), Point::new(63.0, 25.0))));
+
+        // Test lines through the top to the right
+        assert!(li_cross(30.0, 17.6, 90.0, 20.0)
+            .nearly_equal(fli(&rect, Point::new(15.0, 17.0), Point::new(115.0, 21.0))));
+        assert!(li_cross(30.0, 19.0, 100.0, 19.0)
+            .nearly_equal(fli(&rect, Point::new(0.0, 19.0), Point::new(115.0, 19.0))));
+        assert!(li_cross(30.0, 20.0, 100.0, 18.0)
+            .nearly_equal(fli(&rect, Point::new(-5.0, 21.0), Point::new(135.0, 17.0))));
+
+        // Test lines through the top to the left
+        assert!(li_cross(100.0, 17.6, 40.0, 20.0)
+            .nearly_equal(fli(&rect, Point::new(115.0, 17.0), Point::new(15.0, 21.0))));
+        assert!(li_cross(100.0, 19.0, 30.0, 19.0)
+            .nearly_equal(fli(&rect, Point::new(135.0, 19.0), Point::new(-5.0, 19.0))));
+        assert!(li_cross(100.0, 20.0, 30.0, 18.0)
+            .nearly_equal(fli(&rect, Point::new(135.0, 21.0), Point::new(-5.0, 17.0))));
+
+        // Test lines through the bottom to the right
+        assert!(li_cross(30.0, 10.0, 100.0, 12.0)
+            .nearly_equal(fli(&rect, Point::new(-5.0, 9.0), Point::new(135.0, 13.0))));
+        assert!(li_cross(30.0, 11.0, 100.0, 11.0)
+            .nearly_equal(fli(&rect, Point::new(-5.0, 11.0), Point::new(115.0, 11.0))));
+        assert!(li_cross(30.0, 12.4, 90.0, 10.0)
+            .nearly_equal(fli(&rect, Point::new(15.0, 13.0), Point::new(115.0, 9.0))));
+
+        // Test lines through the bottom to the left
+        assert!(li_cross(100.0, 10.0, 30.0, 12.0)
+            .nearly_equal(fli(&rect, Point::new(135.0, 9.0), Point::new(-5.0, 13.0))));
+        assert!(li_cross(100.0, 11.0, 30.0, 11.0)
+            .nearly_equal(fli(&rect, Point::new(135.0, 11.0), Point::new(-5.0, 11.0))));
+        assert!(li_cross(100.0, 12.4, 40.0, 10.0)
+            .nearly_equal(fli(&rect, Point::new(115.0, 13.0), Point::new(15.0, 9.0))));
     }
 }
