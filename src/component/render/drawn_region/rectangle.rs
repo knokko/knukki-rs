@@ -297,7 +297,7 @@ impl DrawnRegion for RectangularDrawnRegion {
 
             // The line goes from a point outside this rectangle to a point inside it
             if to_inside {
-                return if dy > 0.0 {
+                return if dy < 0.0 {
                     if top_x >= self.left && top_x <= self.right {
                         LineIntersection::Enters { point: Point::new(top_x, self.top) }
                     } else if dx > 0.0 {
@@ -668,7 +668,7 @@ mod tests {
 
         // Left-down lines
         assert_eq!(lio, rect.find_line_intersection(Point::new(5.0, 2.5), Point::new(-1.0, 2.0)));
-        assert_eq!(lio, rect.find_line_intersection(Point::new(5.0, 2.5), Point::new(-1.0, 12.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(5.0, 2.5), Point::new(-1.0, -12.0)));
         assert_eq!(lio, rect.find_line_intersection(Point::new(-0.1, 10.0), Point::new(-5.0, 7.0)));
         assert_eq!(lio, rect.find_line_intersection(Point::new(-0.1, 10.0), Point::new(-5.0, 1.0)));
 
@@ -755,6 +755,33 @@ mod tests {
             .nearly_equal(fli(&rect, Point::new(115.0, 13.0), Point::new(15.0, 9.0))));
     }
 
-    // TODO Investigate failing tests
+    #[test]
+    fn test_line_intersection_edge_cases() {
+        let lio = LineIntersection::FullyOutside;
+        let lii = LineIntersection::FullyInside;
+        let rect = RectangularDrawnRegion::new(0.0, 3.0, 5.0, 10.0);
+
+        // Top side, left part
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-5.0, 10.0), Point::new(-0.1, 10.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-0.1, 10.0), Point::new(-5.0, 10.0)));
+        assert!(li_enter(0.0, 10.0).nearly_equal(rect.find_line_intersection(
+            Point::new(-5.0, 10.0), Point::new(0.0, 10.0))));
+        assert!(li_exit(0.0, 10.0).nearly_equal(rect.find_line_intersection(
+            Point::new(0.0, 10.0), Point::new(-5.0, 10.0))));
+        assert!(li_enter(0.0, 10.0).nearly_equal(rect.find_line_intersection(
+            Point::new(-5.0, 10.0), Point::new(2.0, 10.0))));
+        assert!(li_exit(0.0, 10.0).nearly_equal(rect.find_line_intersection(
+            Point::new(2.0, 10.0), Point::new(-5.0, 10.0))));
+
+        // Top side, middle part
+        assert_eq!(lii, rect.find_line_intersection(Point::new(2.0, 10.0), Point::new(4.0, 10.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(0.0, 10.0), Point::new(4.0, 10.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(2.0, 10.0), Point::new(5.0, 10.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(0.0, 10.0), Point::new(5.0, 10.0)));
+        assert!(li_cross(0.0, 10.0, 5.0, 10.0)
+            .nearly_equal(rect.find_line_intersection(Point::new(-1.0, 10.0), Point::new(6.0, 10.0))));
+
+        // TODO Top side, right part, and the other sides
+    }
     // TODO Unit tests for horizontal lines overlapping top/bottom side and vertical lines overlapping left/right side
 }
