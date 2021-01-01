@@ -173,10 +173,7 @@ impl Component for SimpleFlatMenu {
                         let transformed_region = TransformedDrawnRegion::new(
                             good_entry_result.drawn_region.clone(),
                             move |point| component_domain.transform(point),
-                            component_domain.get_min_x(),
-                            component_domain.get_min_y(),
-                            component_domain.get_max_x(),
-                            component_domain.get_max_y(),
+                            move |point| component_domain.transform_back(point)
                         );
                         if !force || self.background_color.is_none() {
                             drawn_regions.push(Box::new(transformed_region));
