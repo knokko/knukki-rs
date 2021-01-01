@@ -781,7 +781,130 @@ mod tests {
         assert!(li_cross(0.0, 10.0, 5.0, 10.0)
             .nearly_equal(rect.find_line_intersection(Point::new(-1.0, 10.0), Point::new(6.0, 10.0))));
 
-        // TODO Top side, right part, and the other sides
+        // Top side, right part
+        assert_eq!(lio, rect.find_line_intersection(Point::new(5.1, 10.0), Point::new(6.0, 10.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(8.0, 10.0), Point::new(12.0, 10.0)));
+        assert!(li_exit(5.0, 10.0).nearly_equal(rect.find_line_intersection(
+            Point::new(5.0, 10.0), Point::new(7.0, 10.0))));
+        assert!(li_enter(5.0, 10.0).nearly_equal(rect.find_line_intersection(
+            Point::new(7.0, 10.0), Point::new(5.0, 10.0))));
+        assert!(li_exit(5.0, 10.0).nearly_equal(rect.find_line_intersection(
+            Point::new(3.0, 10.0), Point::new(7.0, 10.0))));
+        assert!(li_enter(5.0, 10.0).nearly_equal(rect.find_line_intersection(
+            Point::new(7.0, 10.0), Point::new(3.0, 10.0))));
+
+        // Bottom side, left part
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-5.0, 3.0), Point::new(-0.1, 3.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(-0.1, 3.0), Point::new(-5.0, 3.0)));
+        assert!(li_enter(0.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(-5.0, 3.0), Point::new(0.0, 3.0))));
+        assert!(li_exit(0.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(0.0, 3.0), Point::new(-5.0, 3.0))));
+        assert!(li_enter(0.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(-5.0, 3.0), Point::new(2.0, 3.0))));
+        assert!(li_exit(0.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(2.0, 3.0), Point::new(-5.0, 3.0))));
+
+        // Top side, middle part
+        assert_eq!(lii, rect.find_line_intersection(Point::new(2.0, 3.0), Point::new(4.0, 3.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(0.0, 3.0), Point::new(4.0, 3.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(2.0, 3.0), Point::new(5.0, 3.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(0.0, 3.0), Point::new(5.0, 3.0)));
+        assert!(li_cross(0.0, 3.0, 5.0, 3.0)
+            .nearly_equal(rect.find_line_intersection(Point::new(-1.0, 3.0), Point::new(6.0, 3.0))));
+
+        // Top side, right part
+        assert_eq!(lio, rect.find_line_intersection(Point::new(5.1, 3.0), Point::new(6.0, 3.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(8.0, 3.0), Point::new(12.0, 3.0)));
+        assert!(li_exit(5.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(5.0, 3.0), Point::new(7.0, 3.0))));
+        assert!(li_enter(5.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(7.0, 3.0), Point::new(5.0, 3.0))));
+        assert!(li_exit(5.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(3.0, 3.0), Point::new(7.0, 3.0))));
+        assert!(li_enter(5.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(7.0, 3.0), Point::new(3.0, 3.0))));
+
+        // Left side, bottom part
+        assert_eq!(lio, rect.find_line_intersection(Point::new(0.0, 0.0), Point::new(0.0, 2.9)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(0.0, -2.0), Point::new(0.0, 1.0)));
+        assert!(li_enter(0.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(0.0, 2.0), Point::new(0.0, 3.0)
+        )));
+        assert!(li_exit(0.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(0.0, 3.0), Point::new(0.0, 2.0)
+        )));
+        assert!(li_enter(0.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(0.0, 2.0), Point::new(0.0, 8.0)
+        )));
+        assert!(li_exit(0.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(0.0, 8.0), Point::new(0.0, 2.0)
+        )));
+
+        // Left side, middle part
+        assert_eq!(lii, rect.find_line_intersection(Point::new(0.0, 4.0), Point::new(0.0, 9.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(0.0, 3.0), Point::new(0.0, 9.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(0.0, 4.0), Point::new(0.0, 10.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(0.0, 3.0), Point::new(0.0, 10.0)));
+        assert!(li_cross(0.0, 3.0, 0.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(0.0, 0.0), Point::new(0.0, 15.0))
+        ));
+
+        // Left side, top part
+        assert_eq!(lio, rect.find_line_intersection(Point::new(0.0, 10.1), Point::new(0.0, 11.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(0.0, 12.0), Point::new(0.0, 17.0)));
+        assert!(li_exit(0.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(0.0, 10.0), Point::new(0.0, 15.0))
+        ));
+        assert!(li_enter(0.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(0.0, 15.0), Point::new(0.0, 10.0))
+        ));
+        assert!(li_exit(0.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(0.0, 7.0), Point::new(0.0, 15.0))
+        ));
+        assert!(li_enter(0.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(0.0, 15.0), Point::new(0.0, 7.0))
+        ));
+
+        // Right side, bottom part
+        assert_eq!(lio, rect.find_line_intersection(Point::new(5.0, 0.0), Point::new(5.0, 2.9)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(5.0, -2.0), Point::new(5.0, 1.0)));
+        assert!(li_enter(5.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(5.0, 2.0), Point::new(5.0, 3.0)
+        )));
+        assert!(li_exit(5.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(5.0, 3.0), Point::new(5.0, 2.0)
+        )));
+        assert!(li_enter(5.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(5.0, 2.0), Point::new(5.0, 8.0)
+        )));
+        assert!(li_exit(5.0, 3.0).nearly_equal(rect.find_line_intersection(
+            Point::new(5.0, 8.0), Point::new(5.0, 2.0)
+        )));
+
+        // Right side, middle part
+        assert_eq!(lii, rect.find_line_intersection(Point::new(5.0, 4.0), Point::new(5.0, 9.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(5.0, 3.0), Point::new(5.0, 9.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(5.0, 4.0), Point::new(5.0, 10.0)));
+        assert_eq!(lii, rect.find_line_intersection(Point::new(5.0, 3.0), Point::new(5.0, 10.0)));
+        assert!(li_cross(5.0, 3.0, 5.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(5.0, 0.0), Point::new(5.0, 15.0))
+        ));
+
+        // Right side, top part
+        assert_eq!(lio, rect.find_line_intersection(Point::new(5.0, 10.1), Point::new(5.0, 11.0)));
+        assert_eq!(lio, rect.find_line_intersection(Point::new(5.0, 12.0), Point::new(5.0, 17.0)));
+        assert!(li_exit(5.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(5.0, 10.0), Point::new(5.0, 15.0))
+        ));
+        assert!(li_enter(5.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(5.0, 15.0), Point::new(5.0, 10.0))
+        ));
+        assert!(li_exit(5.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(5.0, 7.0), Point::new(5.0, 15.0))
+        ));
+        assert!(li_enter(5.0, 10.0).nearly_equal(
+            rect.find_line_intersection(Point::new(5.0, 15.0), Point::new(5.0, 7.0))
+        ));
     }
-    // TODO Unit tests for horizontal lines overlapping top/bottom side and vertical lines overlapping left/right side
 }
