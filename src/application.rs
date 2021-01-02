@@ -740,17 +740,16 @@ mod tests {
         };
         should_filter_mouse_actions.set(true);
 
-        // Try all 8 combinations
-        test_combination(false, false, true);
-        test_combination(false, true, false);
-        test_combination(false, true, true);
-        test_combination(true, false, false);
-        test_combination(true, false, true);
-        test_combination(true, true, false);
-        test_combination(true, true, true);
-
-        // Also try a full unsubscribe
-        test_combination(false, false, false);
+        // Try all 8 combinations twice
+        for _counter in 0..2 {
+            test_combination(false, false, true);
+            test_combination(false, true, false);
+            test_combination(false, true, true);
+            test_combination(true, false, false);
+            test_combination(true, false, true);
+            test_combination(true, true, false);
+            test_combination(true, true, true);
+        }
     }
 
     #[test]
@@ -823,5 +822,120 @@ mod tests {
         assert!(leave_events[0].get_exit_point().nearly_equal(Point::new(0.8, 0.4)));
     }
 
-    // TODO Test general subscriptions and unsubscriptions for all events
+    #[test]
+    fn test_subscribe_and_unsubscribe() {
+        struct EventFlags {
+            mouse_click: bool,
+            mouse_enter: bool,
+            mouse_leave: bool,
+        }
+
+        struct SubscribeComponent {
+            desired_subscriptions: Rc<RefCell<EventFlags>>,
+            received_events: Rc<RefCell<EventFlags>>,
+        }
+
+        impl Component for SubscribeComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+                let new_subscriptions = self.desired_subscriptions.borrow();
+                if new_subscriptions.mouse_click {
+                    buddy.subscribe_mouse_click();
+                } else {
+                    buddy.unsubscribe_mouse_click();
+                }
+                if new_subscriptions.mouse_enter {
+                    buddy.subscribe_mouse_enter();
+                } else {
+                    buddy.unsubscribe_mouse_enter();
+                }
+                if new_subscriptions.mouse_leave {
+                    buddy.subscribe_mouse_leave();
+                } else {
+                    buddy.unsubscribe_mouse_leave();
+                }
+                entire_render_result()
+            }
+
+            fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
+                let mut flags = self.received_events.borrow_mut();
+                flags.mouse_click = true;
+            }
+
+            fn on_mouse_enter(&mut self, _event: MouseEnterEvent, _buddy: &mut dyn ComponentBuddy) {
+                let mut flags = self.received_events.borrow_mut();
+                flags.mouse_enter = true;
+            }
+
+            fn on_mouse_leave(&mut self, _event: MouseLeaveEvent, _buddy: &mut dyn ComponentBuddy) {
+                let mut flags = self.received_events.borrow_mut();
+                flags.mouse_leave = true;
+            }
+        }
+
+        let desired_subscriptions = Rc::new(RefCell::new(
+            EventFlags {
+                mouse_click: false,
+                mouse_enter: false,
+                mouse_leave: false
+        }));
+        let received_events = Rc::new(RefCell::new(
+            EventFlags {
+                mouse_click: false,
+                mouse_enter: false,
+                mouse_leave: false,
+            }
+        ));
+
+        let component = SubscribeComponent {
+            desired_subscriptions: Rc::clone(&desired_subscriptions),
+            received_events: Rc::clone(&received_events),
+        };
+
+        let mut application = Application::new(Box::new(component));
+        let mut try_events = |mouse_click: bool, mouse_enter: bool, mouse_leave: bool| {
+            let mut subscribe = desired_subscriptions.borrow_mut();
+            subscribe.mouse_click = mouse_click;
+            subscribe.mouse_enter = mouse_enter;
+            subscribe.mouse_leave = mouse_leave;
+            drop(subscribe);
+
+            let mut clear_received_flags = received_events.borrow_mut();
+            clear_received_flags.mouse_click = false;
+            clear_received_flags.mouse_enter = false;
+            clear_received_flags.mouse_leave = false;
+            drop(clear_received_flags);
+
+            let render_region = RenderRegion::between(1, 2, 3, 4);
+            application.render(render_region, true);
+
+            let point = Point::new(0.5, 0.5);
+            let mouse = Mouse::new(0);
+            let enter_event = MouseEnterEvent::new(mouse, point);
+            let click_event = MouseClickEvent::new(mouse, point, MouseButton::primary());
+            let leave_event = MouseLeaveEvent::new(mouse, point);
+
+            application.fire_mouse_enter_event(enter_event);
+            application.fire_mouse_click_event(click_event);
+            application.fire_mouse_leave_event(leave_event);
+
+            let check_received_flags = received_events.borrow_mut();
+            assert_eq!(mouse_click, check_received_flags.mouse_click);
+            assert_eq!(mouse_enter, check_received_flags.mouse_enter);
+            assert_eq!(mouse_leave, check_received_flags.mouse_leave);
+        };
+
+        // Try every combination of subscriptions, and do it twice to test even more
+        for _counter in 0..2 {
+            try_events(false, false, false);
+            try_events(false, false, true);
+            try_events(false, true, false);
+            try_events(false, true, true);
+            try_events(true, false, false);
+            try_events(true, false, true);
+            try_events(true, true, false);
+            try_events(true, true, true);
+        }
+    }
 }
