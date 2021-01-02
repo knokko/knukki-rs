@@ -19,6 +19,14 @@ required-features = ["golem_rendering", "provider"]
 name = "color_clicking_menu"
 required-features = ["golem_rendering", "provider"]
 
+[[example]]
+name = "color_changing_rect"
+required-features = ["golem_rendering", "provider"]
+
+[[example]]
+name = "partial_color_changing_rect"
+required-features = ["golem_rendering", "provider"]
+
 [dependencies]
 golem = { path = "../golem", optional = true }
 glutin = { version = "0.22.0", optional = true }

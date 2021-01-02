@@ -1,4 +1,4 @@
-use crate::{Application, RenderRegion};
+use crate::{Application, RenderRegion, MouseMoveEvent, MouseLeaveEvent, MouseEnterEvent};
 
 use golem::Context;
 
@@ -37,6 +37,7 @@ pub fn start(mut app: Application, title: &str) {
     let mut start_time = Instant::now();
 
     let mut mouse_position: Option<PhysicalPosition<i32>> = None;
+    let mut should_fire_mouse_enter_event = false;
 
     event_loop.run(move |event, _target, control_flow| {
         // I use `Poll` instead of `Wait` to get more control over the control flow.
@@ -99,9 +100,63 @@ pub fn start(mut app: Application, title: &str) {
                         position,
                         ..
                     } => {
-                        // We need to remember the mouse position for click events
+                        // Winit seems to fire mouse move events in occasions like clicking on the
+                        // app icon in the taskbar or opening the window, even when the cursor is
+                        // not inside the window. Let's just ignore these events.
+                        let window_size = windowed_context.window().inner_size();
+                        if position.x < 0 || position.y < 0 ||
+                            (position.x as u32) >= window_size.width ||
+                            (position.y as u32) >= window_size.height {
+                            return;
+                        }
+                        // If there is a previous mouse position, fire a move event
+                        if let Some(previous_position) = mouse_position {
+                            // Winit seems to fire a double cursor move event when the cursor enters
+                            // the window. I don't know if this happens more often, but let's be
+                            // careful and not propagate move events between equal positions.
+                            if previous_position.x != position.x || previous_position.y != position.y {
+                                let old_x = previous_position.x as f32 / window_size.width as f32;
+                                let old_y = 1.0 - previous_position.y as f32 / window_size.height as f32;
+                                let new_x = position.x as f32 / window_size.width as f32;
+                                let new_y = 1.0 - position.y as f32 / window_size.height as f32;
+                                let event = MouseMoveEvent::new(
+                                    crate::Mouse::new(0),
+                                    crate::Point::new(old_x, old_y),
+                                    crate::Point::new(new_x, new_y)
+                                );
+                                app.fire_mouse_move_event(event);
+                            }
+                        } else {
+                            if should_fire_mouse_enter_event {
+                                let x = position.x as f32 / window_size.width as f32;
+                                let y = 1.0 - position.y as f32 / window_size.height as f32;
+                                let event = MouseEnterEvent::new(
+                                    crate::Mouse::new(0), crate::Point::new(x, y)
+                                );
+                                app.fire_mouse_enter_event(event);
+                                should_fire_mouse_enter_event = false;
+                            }
+                        }
                         mouse_position = Some(position);
-                        // TODO Fire mouse_move_event
+                    }
+                    WindowEvent::CursorEntered { .. } => {
+                        should_fire_mouse_enter_event = true;
+                    },
+                    WindowEvent::CursorLeft { .. } => {
+                        // If we know where the cursor was, we should fire a MouseLeaveEvent
+                        if let Some(previous_position) = mouse_position {
+                            let window_size = windowed_context.window().inner_size();
+                            let old_x = previous_position.x as f32 / window_size.width as f32;
+                            let old_y = 1.0 - previous_position.y as f32 / window_size.height as f32;
+                            let event = MouseLeaveEvent::new(
+                                crate::Mouse::new(0), crate::Point::new(old_x, old_y)
+                            );
+                            app.fire_mouse_leave_event(event);
+                        }
+
+                        // Once the mouse leaves the window, we have no clue where it is, but it
+                        // won't be at this mouse position
+                        mouse_position = None;
                     }
                     _ => (),
                 }

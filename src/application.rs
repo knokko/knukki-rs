@@ -103,6 +103,8 @@ impl Application {
             // Make sure we draw onto the right area
             #[cfg(feature = "golem_rendering")]
             region.set_viewport(golem);
+            #[cfg(feature = "golem_rendering")]
+            region.set_scissor(golem);
 
             // Let the root component render itself
             let result = self

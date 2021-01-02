@@ -153,6 +153,14 @@ impl MouseMoveEvent {
     pub fn get_to(&self) -> Point {
         self.to
     }
+
+    pub fn get_delta_x(&self) -> f32 {
+        self.to.get_x() - self.from.get_x()
+    }
+
+    pub fn get_delta_y(&self) -> f32 {
+        self.to.get_y() - self.from.get_y()
+    }
 }
 
 /// The event for the `on_mouse_enter` method of `Component`. It indicates that the

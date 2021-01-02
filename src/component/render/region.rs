@@ -159,6 +159,16 @@ impl RenderRegion {
             self.get_height(),
         );
     }
+
+    #[cfg(feature = "golem_rendering")]
+    pub fn set_scissor(&self, golem: &golem::Context) {
+        golem.set_scissor(
+            self.get_min_x(),
+            self.get_min_y(),
+            self.get_width(),
+            self.get_height()
+        );
+    }
 }
 
 #[cfg(test)]

@@ -47,55 +47,8 @@ impl Component for TestComponent {
         _buddy: &mut dyn ComponentBuddy,
         _force: bool,
     ) -> RenderResult {
-        #[rustfmt::skip]
-        let quad_vertices = [
-            -1.0, -1.0,    1.0, -1.0,    1.0, 1.0,    -1.0, 1.0,
-        ];
-        #[rustfmt::skip]
-        let quad_indices = [
-            0, 1, 2, 2, 3, 0
-        ];
-
-        #[rustfmt::skip]
-        let shader_description = ShaderDescription {
-            vertex_input: &[
-                Attribute::new("position", AttributeType::Vector(Dimension::D2))
-            ],
-            fragment_input: &[],
-            uniforms: &[
-                Uniform::new("red", UniformType::Scalar(NumberType::Float)),
-                Uniform::new("green", UniformType::Scalar(NumberType::Float)),
-            ],
-            vertex_shader: "
-            void main() {
-                gl_Position = vec4(position, 0.0, 1.0);
-            }",
-            fragment_shader: "
-            void main() {
-                gl_FragColor = vec4(red, green, 1.0, 1.0);
-            }",
-        };
-
-        let mut shader = ShaderProgram::new(golem, shader_description)?;
-        let mut vertex_buffer = VertexBuffer::new(golem)?;
-        let mut element_buffer = ElementBuffer::new(golem)?;
-        vertex_buffer.set_data(&quad_vertices);
-        element_buffer.set_data(&quad_indices);
-
-        // TODO Everything above only needs to happen once, so I should add
-        // some kind of lazy initialization of this...
-
-        shader.bind();
-        shader.set_uniform("red", UniformValue::Float(self.red as f32 / 255.0))?;
-        shader.set_uniform("green", UniformValue::Float(self.green as f32 / 255.0))?;
-        unsafe {
-            shader.draw(
-                &vertex_buffer,
-                &element_buffer,
-                0..quad_indices.len(),
-                GeometryMode::Triangles,
-            )?;
-        }
+        golem.set_clear_color(self.red as f32 / 255.0, self.green as f32 / 255.0, 1.0, 1.0);
+        golem.clear();
         entire_render_result()
     }
 }

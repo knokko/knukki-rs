@@ -274,6 +274,7 @@ impl ComponentEntry {
             #[cfg(feature = "golem_rendering")]
             {
                 region.set_viewport(golem);
+                region.set_scissor(golem);
             }
 
             let render_result = self.component.render(
