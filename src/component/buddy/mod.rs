@@ -83,22 +83,22 @@ pub trait ComponentBuddy {
     fn unsubscribe_mouse_click_out(&mut self);
 
     /// Subscribes the component for the `MouseMoveEvent`
-    fn subscribe_mouse_move(&self);
+    fn subscribe_mouse_move(&mut self);
 
     /// Cancels the components subscription for the `MouseMoveEvent`
-    fn unsubscribe_mouse_move(&self);
+    fn unsubscribe_mouse_move(&mut self);
 
     /// Subscribes the component for the `MouseEnterEvent`
-    fn subscribe_mouse_enter(&self);
+    fn subscribe_mouse_enter(&mut self);
 
     /// Cancels the components subscription for the `MouseEnterEvent`
-    fn unsubscribe_mouse_enter(&self);
+    fn unsubscribe_mouse_enter(&mut self);
 
     /// Subscribes the component for the `MouseLeaveEvent`
-    fn subscribe_mouse_leave(&self);
+    fn subscribe_mouse_leave(&mut self);
 
     /// Cancels the components subscription for the `MouseLeaveEvent`
-    fn unsubscribe_mouse_leave(&self);
+    fn unsubscribe_mouse_leave(&mut self);
 
     /// Subscribes the component for the `CharTypeEvent`. This method will return
     /// `Ok` if a keyboard is available, and `Err` if not. If this method returns
@@ -126,11 +126,11 @@ pub trait ComponentBuddy {
     ///
     /// If you want to check whether the *primary* button of the given mouse is
     /// pressed, the `is_primary_mouse_down` should be more convenient.
-    fn is_mouse_down(&self, mouse: Mouse, button: MouseButton) -> bool;
+    fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> bool;
 
     /// Checks if the primary button of the given mouse is currently being
     /// pressed/down. This method can be called during any event.
-    fn is_primary_mouse_down(&self, mouse: Mouse) -> bool;
+    fn is_primary_mouse_button_down(&self, mouse: Mouse) -> bool;
 
     /// Gets all `Mouse`s that are currently hovering over this component
     fn get_local_mouses(&self) -> Vec<Mouse>;

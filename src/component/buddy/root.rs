@@ -91,28 +91,28 @@ impl ComponentBuddy for RootComponentBuddy {
         self.subscriptions.mouse_click_out = false;
     }
 
-    fn subscribe_mouse_move(&self) {
-        unimplemented!()
+    fn subscribe_mouse_move(&mut self) {
+        self.subscriptions.mouse_move = true;
     }
 
-    fn unsubscribe_mouse_move(&self) {
-        unimplemented!()
+    fn unsubscribe_mouse_move(&mut self) {
+        self.subscriptions.mouse_move = false;
     }
 
-    fn subscribe_mouse_enter(&self) {
-        unimplemented!()
+    fn subscribe_mouse_enter(&mut self) {
+        self.subscriptions.mouse_enter = true;
     }
 
-    fn unsubscribe_mouse_enter(&self) {
-        unimplemented!()
+    fn unsubscribe_mouse_enter(&mut self) {
+        self.subscriptions.mouse_enter = false;
     }
 
-    fn subscribe_mouse_leave(&self) {
-        unimplemented!()
+    fn subscribe_mouse_leave(&mut self) {
+        self.subscriptions.mouse_leave = true;
     }
 
-    fn unsubscribe_mouse_leave(&self) {
-        unimplemented!()
+    fn unsubscribe_mouse_leave(&mut self) {
+        self.subscriptions.mouse_leave = false;
     }
 
     fn subscribe_char_type(&self) -> Result<(), ()> {
@@ -127,11 +127,11 @@ impl ComponentBuddy for RootComponentBuddy {
         unimplemented!()
     }
 
-    fn is_mouse_down(&self, mouse: Mouse, button: MouseButton) -> bool {
+    fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> bool {
         unimplemented!()
     }
 
-    fn is_primary_mouse_down(&self, mouse: Mouse) -> bool {
+    fn is_primary_mouse_button_down(&self, mouse: Mouse) -> bool {
         unimplemented!()
     }
 

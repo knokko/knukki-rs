@@ -161,6 +161,7 @@ impl MouseMoveEvent {
 /// inside the component. For regular mouses, this position will always be on one
 /// of the borders of the component. But for other 'mouses' (like fingers on phones),
 /// this can be anywhere in the component.
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct MouseEnterEvent {
     mouse: Mouse,
     entrance_point: Point,
@@ -199,6 +200,7 @@ impl MouseEnterEvent {
 /// For regular mouses, this will always be on the border of the component, but
 /// this doesn't have to be the case for other `Mouse`s like fingers on
 /// touchscreens.
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct MouseLeaveEvent {
     mouse: Mouse,
     exit_point: Point,

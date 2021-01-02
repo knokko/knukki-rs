@@ -117,28 +117,46 @@ impl ComponentBuddy for SimpleFlatBuddy {
         }
     }
 
-    fn subscribe_mouse_move(&self) {
-        unimplemented!()
+    fn subscribe_mouse_move(&mut self) {
+        if !self.subscriptions.mouse_move {
+            self.subscriptions.mouse_move = true;
+            self.has_changes = true;
+        }
     }
 
-    fn unsubscribe_mouse_move(&self) {
-        unimplemented!()
+    fn unsubscribe_mouse_move(&mut self) {
+        if self.subscriptions.mouse_move {
+            self.subscriptions.mouse_move = false;
+            self.has_changes = true;
+        }
     }
 
-    fn subscribe_mouse_enter(&self) {
-        unimplemented!()
+    fn subscribe_mouse_enter(&mut self) {
+        if !self.subscriptions.mouse_enter {
+            self.subscriptions.mouse_enter = true;
+            self.has_changes = true;
+        }
     }
 
-    fn unsubscribe_mouse_enter(&self) {
-        unimplemented!()
+    fn unsubscribe_mouse_enter(&mut self) {
+        if self.subscriptions.mouse_enter {
+            self.subscriptions.mouse_enter = false;
+            self.has_changes = true;
+        }
     }
 
-    fn subscribe_mouse_leave(&self) {
-        unimplemented!()
+    fn subscribe_mouse_leave(&mut self) {
+        if !self.subscriptions.mouse_leave {
+            self.subscriptions.mouse_leave = true;
+            self.has_changes = true;
+        }
     }
 
-    fn unsubscribe_mouse_leave(&self) {
-        unimplemented!()
+    fn unsubscribe_mouse_leave(&mut self) {
+        if self.subscriptions.mouse_leave {
+            self.subscriptions.mouse_leave = false;
+            self.has_changes = true;
+        }
     }
 
     fn subscribe_char_type(&self) -> Result<(), ()> {
@@ -153,11 +171,11 @@ impl ComponentBuddy for SimpleFlatBuddy {
         unimplemented!()
     }
 
-    fn is_mouse_down(&self, mouse: Mouse, button: MouseButton) -> bool {
+    fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> bool {
         unimplemented!()
     }
 
-    fn is_primary_mouse_down(&self, mouse: Mouse) -> bool {
+    fn is_primary_mouse_button_down(&self, mouse: Mouse) -> bool {
         unimplemented!()
     }
 
