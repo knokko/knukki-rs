@@ -751,7 +751,75 @@ mod tests {
         test_combination(false, false, false);
     }
 
-    // TODO Test mouse move subscriptions
-    // TODO Test mouse move in general
+    #[test]
+    fn test_mouse_move() {
+        let mouse_move_log = Rc::new(RefCell::new(Vec::new()));
+        let mouse_enter_log = Rc::new(RefCell::new(Vec::new()));
+        let mouse_leave_log = Rc::new(RefCell::new(Vec::new()));
+
+        let check_counts = |mouse_move: usize, mouse_enter: usize, mouse_leave: usize| {
+            let mouse_moves = mouse_move_log.borrow();
+            assert_eq!(mouse_move, mouse_moves.len());
+            let mouse_enters = mouse_enter_log.borrow();
+            assert_eq!(mouse_enter, mouse_enters.len());
+            let mouse_leaves = mouse_leave_log.borrow();
+            assert_eq!(mouse_leave, mouse_leaves.len());
+        };
+
+        let component = ConditionalMouseFilterComponent {
+            should_filter_mouse_actions: Rc::new(Cell::new(true)),
+            mouse_move_log: Rc::clone(&mouse_move_log),
+            mouse_enter_log: Rc::clone(&mouse_enter_log),
+            mouse_leave_log: Rc::clone(&mouse_leave_log),
+        };
+
+        let mut application = Application::new(Box::new(component));
+        application.render(RenderRegion::between(1, 2, 3, 4), false);
+
+        // Move the mouse entirely outside
+        let outside_event = MouseMoveEvent::new(
+            Mouse::new(0), Point::new(0.0, 1.0), Point::new(0.0, 0.0)
+        );
+        application.fire_mouse_move_event(outside_event);
+        check_counts(0, 0, 0);
+
+        // Move the mouse from outside to inside the component
+        let enter_event = MouseMoveEvent::new(
+            Mouse::new(0), Point::new(0.0, 0.0), Point::new(0.4, 0.2)
+        );
+        application.fire_mouse_move_event(enter_event);
+        check_counts(1, 1, 0);
+
+        // Move the mouse entirely inside the component
+        let inside_event = MouseMoveEvent::new(
+            Mouse::new(0), Point::new(0.4, 0.2), Point::new(0.6, 0.3)
+        );
+        application.fire_mouse_move_event(inside_event);
+        check_counts(2, 1, 0);
+
+        // Move the mouse from inside to outside the component
+        let leave_event = MouseMoveEvent::new(
+            Mouse::new(0), Point::new(0.6, 0.3), Point::new(1.0, 0.5)
+        );
+        application.fire_mouse_move_event(leave_event);
+        check_counts(3, 1, 1);
+
+        // We already checked that the number of events fired is correct, but we haven't checked the
+        // parameters of the events yet.
+        let move_events = mouse_move_log.borrow();
+        assert!(move_events[0].get_from().nearly_equal(Point::new(0.2, 0.1)));
+        assert!(move_events[0].get_to().nearly_equal(Point::new(0.4, 0.2)));
+        assert!(move_events[1].get_from().nearly_equal(Point::new(0.4, 0.2)));
+        assert!(move_events[1].get_to().nearly_equal(Point::new(0.6, 0.3)));
+        assert!(move_events[2].get_from().nearly_equal(Point::new(0.6, 0.3)));
+        assert!(move_events[2].get_to().nearly_equal(Point::new(0.8, 0.4)));
+
+        let enter_events = mouse_enter_log.borrow();
+        assert!(enter_events[0].get_entrance_point().nearly_equal(Point::new(0.2, 0.1)));
+
+        let leave_events = mouse_leave_log.borrow();
+        assert!(leave_events[0].get_exit_point().nearly_equal(Point::new(0.8, 0.4)));
+    }
+
     // TODO Test general subscriptions and unsubscriptions for all events
 }
