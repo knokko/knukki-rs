@@ -260,11 +260,11 @@ impl DrawnRegion for RectangularDrawnRegion {
             }
         } else {
             // Express line formula as: x = slopeInverse * y + adder
-            let slopeInverse = dx / dy;
-            let adder = from.get_x() - slopeInverse * from.get_y();
+            let slope_inv = dx / dy;
+            let adder = from.get_x() - slope_inv * from.get_y();
 
-            let bottom_x = slopeInverse * self.bottom + adder;
-            let top_x = slopeInverse * self.top + adder;
+            let bottom_x = slope_inv * self.bottom + adder;
+            let top_x = slope_inv * self.top + adder;
 
             // The line goes from a point inside this rectangle to a point outside it
             if from_inside {
@@ -276,20 +276,20 @@ impl DrawnRegion for RectangularDrawnRegion {
                         // Solve: slopeInverse * y + adder = self.right
                         // Solve: slopeInverse * y = self.right - adder
                         // Solution: y = (self.right - adder) / slopeInverse
-                        let right_y = (self.right - adder) / slopeInverse;
+                        let right_y = (self.right - adder) / slope_inv;
                         LineIntersection::Exits { point: Point::new(self.right, right_y) }
                     } else {
-                        let left_y = (self.left - adder) / slopeInverse;
+                        let left_y = (self.left - adder) / slope_inv;
                         LineIntersection::Exits { point: Point::new(self.left, left_y) }
                     }
                 } else {
                     if bottom_x >= self.left && bottom_x <= self.right {
                         LineIntersection::Exits { point: Point::new(bottom_x, self.bottom) }
                     } else if dx > 0.0 {
-                        let right_y = (self.right - adder) / slopeInverse;
+                        let right_y = (self.right - adder) / slope_inv;
                         LineIntersection::Exits { point: Point::new(self.right, right_y) }
                     } else {
-                        let left_y = (self.left - adder) / slopeInverse;
+                        let left_y = (self.left - adder) / slope_inv;
                         LineIntersection::Exits { point: Point::new(self.left, left_y) }
                     }
                 }
@@ -304,20 +304,20 @@ impl DrawnRegion for RectangularDrawnRegion {
                         // Solve: slopeInverse * y + adder = self.right
                         // Solve: slopeInverse * y = self.right - adder
                         // Solution: y = (self.right - adder) / slopeInverse
-                        let right_y = (self.right - adder) / slopeInverse;
+                        let right_y = (self.right - adder) / slope_inv;
                         LineIntersection::Enters { point: Point::new(self.right, right_y) }
                     } else {
-                        let left_y = (self.left - adder) / slopeInverse;
+                        let left_y = (self.left - adder) / slope_inv;
                         LineIntersection::Enters { point: Point::new(self.left, left_y) }
                     }
                 } else {
                     if bottom_x >= self.left && bottom_x <= self.right {
                         LineIntersection::Enters { point: Point::new(bottom_x, self.bottom) }
                     } else if dx > 0.0 {
-                        let right_y = (self.right - adder) / slopeInverse;
+                        let right_y = (self.right - adder) / slope_inv;
                         LineIntersection::Enters { point: Point::new(self.right, right_y) }
                     } else {
-                        let left_y = (self.left - adder) / slopeInverse;
+                        let left_y = (self.left - adder) / slope_inv;
                         LineIntersection::Enters { point: Point::new(self.left, left_y) }
                     }
                 }
@@ -341,8 +341,8 @@ impl DrawnRegion for RectangularDrawnRegion {
                     LineIntersection::FullyOutside
                 } else if top_x > self.right {
                     // The line crosses the left and right of this rectangle
-                    let left_y = (self.left - adder) / slopeInverse;
-                    let right_y = (self.right - adder) / slopeInverse;
+                    let left_y = (self.left - adder) / slope_inv;
+                    let right_y = (self.right - adder) / slope_inv;
                     if to.get_x() > from.get_x() {
                         LineIntersection::Crosses {
                             entrance: Point::new(self.left, left_y),
@@ -357,7 +357,7 @@ impl DrawnRegion for RectangularDrawnRegion {
 
                 } else {
                     // The line crosses the left and top of this rectangle
-                    let left_y = (self.left - adder) / slopeInverse;
+                    let left_y = (self.left - adder) / slope_inv;
                     if to.get_x() > from.get_x() {
                         LineIntersection::Crosses {
                             entrance: Point::new(self.left, left_y),
@@ -377,8 +377,8 @@ impl DrawnRegion for RectangularDrawnRegion {
                     LineIntersection::FullyOutside
                 } else if top_x < self.left {
                     // The line crosses the left and right of this rectangle
-                    let left_y = (self.left - adder) / slopeInverse;
-                    let right_y = (self.right - adder) / slopeInverse;
+                    let left_y = (self.left - adder) / slope_inv;
+                    let right_y = (self.right - adder) / slope_inv;
                     if to.get_x() > from.get_x() {
                         LineIntersection::Crosses {
                             entrance: Point::new(self.left, left_y),
@@ -392,7 +392,7 @@ impl DrawnRegion for RectangularDrawnRegion {
                     }
                 } else {
                     // The line crosses the top and right of this rectangle
-                    let right_y = (self.right - adder) / slopeInverse;
+                    let right_y = (self.right - adder) / slope_inv;
                     if to.get_x() > from.get_x() {
                         LineIntersection::Crosses {
                             entrance: Point::new(top_x, self.top),
@@ -409,7 +409,7 @@ impl DrawnRegion for RectangularDrawnRegion {
                 // self.left <= bottom_x <= self.right
                 if top_x > self.right {
                     // The line crosses the bottom and the right of this rectangle
-                    let right_y = (self.right - adder) / slopeInverse;
+                    let right_y = (self.right - adder) / slope_inv;
                     if to.get_y() > from.get_y() {
                         LineIntersection::Crosses {
                             entrance: Point::new(bottom_x, self.bottom),
@@ -424,7 +424,7 @@ impl DrawnRegion for RectangularDrawnRegion {
 
                 } else if top_x < self.left {
                     // The line crosses the left and bottom of this rectangle
-                    let left_y = (self.left - adder) / slopeInverse;
+                    let left_y = (self.left - adder) / slope_inv;
                     if to.get_x() > from.get_x() {
                         LineIntersection::Crosses {
                             entrance: Point::new(self.left, left_y),
@@ -691,10 +691,6 @@ mod tests {
         let rect = RectangularDrawnRegion::new(
             30.0, 10.0, 100.0, 20.0
         );
-
-        let middle = Point::new(65.0, 15.0);
-        let near_top = Point::new(65.0, 19.0);
-        let near_bottom = Point::new(65.0, 11.0);
 
         // Test lines through the middle to the right
         assert!(li_cross(30.0, 14.0, 100.0, 16.0)

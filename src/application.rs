@@ -526,7 +526,7 @@ mod tests {
             buddy.subscribe_mouse_leave();
         }
 
-        fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+        fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
             Ok(RenderResultStruct {
                 filter_mouse_actions: self.should_filter_mouse_actions.get(),
                 drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.0, 0.8, 0.5))
@@ -663,9 +663,9 @@ mod tests {
         }
 
         impl Component for SubscriptionComponent {
-            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
-            fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
                 let subscriptions = self.subscriptions.borrow();
                 if subscriptions.mouse_move {
                     buddy.subscribe_mouse_move();
