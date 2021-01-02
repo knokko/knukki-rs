@@ -6,7 +6,7 @@
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Point {
     x: f32,
-    y: f32
+    y: f32,
 }
 
 impl Point {

@@ -1,14 +1,14 @@
 use crate::Point;
 
 mod composite;
+mod line_intersection;
 mod rectangle;
 mod transformed;
-mod line_intersection;
 
 pub use composite::*;
+pub use line_intersection::*;
 pub use rectangle::*;
 pub use transformed::*;
-pub use line_intersection::*;
 
 /// Represents a part of the domain of a `Component` and is used to indicate in
 /// which part of its domain a component has actually drawn something.
@@ -91,9 +91,5 @@ pub trait DrawnRegion {
 
     /// Finds (or computes) the `LineIntersection` for the line(section) that starts at
     /// `from` and ends at `to`. See the documentation of `LineIntersection` for more information.
-    fn find_line_intersection(
-        &self,
-        from: Point,
-        to: Point
-    ) -> LineIntersection;
+    fn find_line_intersection(&self, from: Point, to: Point) -> LineIntersection;
 }

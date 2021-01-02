@@ -2,7 +2,7 @@ use crate::*;
 
 pub struct TransformedDrawnRegion<
     T: Clone + Fn(Point) -> Point + 'static,
-    B: Clone + Fn(Point) -> Point + 'static
+    B: Clone + Fn(Point) -> Point + 'static,
 > {
     region: Box<dyn DrawnRegion>,
     transform_function: T,
@@ -14,22 +14,21 @@ pub struct TransformedDrawnRegion<
     top_bound: f32,
 }
 
-impl<
-    T: Clone + Fn(Point) -> Point + 'static,
-    B: Clone + Fn(Point) -> Point + 'static
-> TransformedDrawnRegion<T, B> {
+impl<T: Clone + Fn(Point) -> Point + 'static, B: Clone + Fn(Point) -> Point + 'static>
+    TransformedDrawnRegion<T, B>
+{
     pub fn new(
         region: Box<dyn DrawnRegion>,
         transform_function: T,
         transform_back_function: B,
     ) -> Self {
-
         // Sanity check
         let test_point = Point::new(81.37, -35.71);
         assert!(test_point.nearly_equal(transform_back_function(transform_function(test_point))));
 
         // Use the transform back function to compute the transformed bounds
-        let bottom_left = transform_back_function(Point::new(region.get_left(), region.get_bottom()));
+        let bottom_left =
+            transform_back_function(Point::new(region.get_left(), region.get_bottom()));
         let top_right = transform_back_function(Point::new(region.get_right(), region.get_top()));
         Self {
             region,
@@ -43,10 +42,9 @@ impl<
     }
 }
 
-impl<
-    T: Clone + Fn(Point) -> Point + 'static,
-    B: Clone + Fn(Point) -> Point + 'static
-> DrawnRegion for TransformedDrawnRegion<T, B> {
+impl<T: Clone + Fn(Point) -> Point + 'static, B: Clone + Fn(Point) -> Point + 'static> DrawnRegion
+    for TransformedDrawnRegion<T, B>
+{
     fn is_inside(&self, point: Point) -> bool {
         let transformed = (self.transform_function)(point);
         self.region.is_inside(transformed)
@@ -78,22 +76,23 @@ impl<
 
     fn find_line_intersection(&self, from: Point, to: Point) -> LineIntersection {
         let inner_intersection = self.region.find_line_intersection(
-            (self.transform_function)(from), (self.transform_function)(to)
+            (self.transform_function)(from),
+            (self.transform_function)(to),
         );
 
         return match inner_intersection {
             LineIntersection::FullyInside => LineIntersection::FullyInside,
             LineIntersection::FullyOutside => LineIntersection::FullyOutside,
             LineIntersection::Enters { point } => LineIntersection::Enters {
-                point: (self.transform_back_function)(point)
+                point: (self.transform_back_function)(point),
             },
             LineIntersection::Exits { point } => LineIntersection::Exits {
-                point: (self.transform_back_function)(point)
+                point: (self.transform_back_function)(point),
             },
             LineIntersection::Crosses { entrance, exit } => LineIntersection::Crosses {
                 entrance: (self.transform_back_function)(entrance),
-                exit: (self.transform_back_function)(exit)
-            }
+                exit: (self.transform_back_function)(exit),
+            },
         };
     }
 }
@@ -142,26 +141,24 @@ mod tests {
     #[test]
     fn test_find_line_intersection() {
         // TODO Well... the test
-        let original_region = Box::new(RectangularDrawnRegion::new(
-            0.0, 1.0, 3.0, 2.0)
-        );
-        let transform_function = |point: Point| Point::new(
-            5.0 * point.get_x() - 3.0, -4.0 * point.get_y() + 6.0
-        );
-        let transform_back_function = |point: Point| Point::new(
-            (point.get_x() + 3.0) / 5.0, (point.get_y() - 6.0) / -4.0
-        );
+        let original_region = Box::new(RectangularDrawnRegion::new(0.0, 1.0, 3.0, 2.0));
+        let transform_function =
+            |point: Point| Point::new(5.0 * point.get_x() - 3.0, -4.0 * point.get_y() + 6.0);
+        let transform_back_function =
+            |point: Point| Point::new((point.get_x() + 3.0) / 5.0, (point.get_y() - 6.0) / -4.0);
         let transformed_region = TransformedDrawnRegion::new(
-            original_region, transform_function, transform_back_function
+            original_region,
+            transform_function,
+            transform_back_function,
         );
 
         // The transformed region should be (left: 0.6, bottom: 1.25, right: 1.2, top: 1.0)
-        assert!(
-            LineIntersection::Crosses {
-                entrance: Point::new(0.6, 1.1),
-                exit: Point::new(1.2, 1.1)
-            }.nearly_equal(transformed_region.find_line_intersection(
-                Point::new(-2.0, 1.1), Point::new(20.0, 1.1)))
-        );
+        assert!(LineIntersection::Crosses {
+            entrance: Point::new(0.6, 1.1),
+            exit: Point::new(1.2, 1.1)
+        }
+        .nearly_equal(
+            transformed_region.find_line_intersection(Point::new(-2.0, 1.1), Point::new(20.0, 1.1))
+        ));
     }
 }

@@ -143,10 +143,8 @@ impl RenderRegion {
         let width = (self.get_width() as f32 * relative_width).round() as u32;
         let height = (self.get_height() as f32 * relative_height).round() as u32;
 
-        let min_x = self.get_min_x() 
-            + (self.get_width() as f32 * relative_min_x).round() as u32;
-        let min_y = self.get_min_y() 
-            + (self.get_height() as f32 * relative_min_y).round() as u32;
+        let min_x = self.get_min_x() + (self.get_width() as f32 * relative_min_x).round() as u32;
+        let min_y = self.get_min_y() + (self.get_height() as f32 * relative_min_y).round() as u32;
 
         return Self::with_size(min_x, min_y, width, height);
     }

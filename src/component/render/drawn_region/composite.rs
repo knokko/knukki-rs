@@ -1,8 +1,4 @@
-use crate::{
-    DrawnRegion,
-    LineIntersection,
-    Point
-};
+use crate::{DrawnRegion, LineIntersection, Point};
 
 /// A `DrawnRegion` that is composed of other `DrawnRegion`s (typically more than
 /// 1). Points will be considered *inside* a `CompositeDrawnRegion` if it is
@@ -43,7 +39,7 @@ impl CompositeDrawnRegion {
 }
 
 impl DrawnRegion for CompositeDrawnRegion {
-    fn is_inside(&self, point: Point ) -> bool {
+    fn is_inside(&self, point: Point) -> bool {
         for component in &self.components {
             if component.is_within_bounds(point) && component.is_inside(point) {
                 return true;
@@ -93,20 +89,22 @@ impl DrawnRegion for CompositeDrawnRegion {
                 match self.find_last_exit_point(from, to) {
                     Some(point) => LineIntersection::Exits { point },
                     // The case below could occur due to rounding errors, but should be rare
-                    None => LineIntersection::FullyInside
+                    None => LineIntersection::FullyInside,
                 }
-            }, (false, true) => {
+            }
+            (false, true) => {
                 match self.find_first_entry_point(from, to) {
                     Some(point) => LineIntersection::Enters { point },
                     // The case below could occur due to rounding errors, but should be rare
-                    None => LineIntersection::FullyOutside
+                    None => LineIntersection::FullyOutside,
                 }
-            }, (false, false) => {
+            }
+            (false, false) => {
                 if let Some(entrance) = self.find_first_entry_point(from, to) {
                     match self.find_last_exit_point(from, to) {
                         Some(exit) => LineIntersection::Crosses { entrance, exit },
                         // The case below could occur due to rounding errors, but should be rare
-                        None => LineIntersection::Enters { point: entrance }
+                        None => LineIntersection::Enters { point: entrance },
                     }
                 } else {
                     LineIntersection::FullyOutside
@@ -129,13 +127,18 @@ impl CompositeDrawnRegion {
                         last_point = Some(point);
                         last_distance = distance;
                     }
-                }, LineIntersection::Crosses { entrance, exit: _exit } => {
+                }
+                LineIntersection::Crosses {
+                    entrance,
+                    exit: _exit,
+                } => {
                     let distance = from.distance_to(entrance);
                     if distance < last_distance {
                         last_point = Some(entrance);
                         last_distance = distance;
                     }
-                }, _ => {}
+                }
+                _ => {}
             };
         }
 
@@ -153,13 +156,18 @@ impl CompositeDrawnRegion {
                         last_point = Some(point);
                         last_distance = distance;
                     }
-                }, LineIntersection::Crosses { entrance: _entrance, exit } => {
+                }
+                LineIntersection::Crosses {
+                    entrance: _entrance,
+                    exit,
+                } => {
                     let distance = to.distance_to(exit);
                     if distance < last_distance {
                         last_point = Some(exit);
                         last_distance = distance;
                     }
-                }, _ => {}
+                }
+                _ => {}
             };
         }
 
@@ -227,42 +235,49 @@ mod tests {
         // Lines should always be outside if there is not a single part
         assert_eq!(
             LineIntersection::FullyOutside,
-            region.find_line_intersection(
-                Point::new(-2.0, 5.0), Point::new(6.0, -1.0)
-            )
+            region.find_line_intersection(Point::new(-2.0, 5.0), Point::new(6.0, -1.0))
         );
     }
 
     fn test_line_intersection_code_reuse(region: &CompositeDrawnRegion) {
-        assert_eq!(LineIntersection::FullyOutside, region.find_line_intersection(
-            Point::new(6.0, 10.0), Point::new(8.0, 11.0)
-        ));
-
-        assert_eq!(LineIntersection::FullyInside, region.find_line_intersection(
-            Point::new(1.0, 4.0), Point::new(3.0, 4.0)
-        ));
+        assert_eq!(
+            LineIntersection::FullyOutside,
+            region.find_line_intersection(Point::new(6.0, 10.0), Point::new(8.0, 11.0))
+        );
 
         assert_eq!(
-            LineIntersection::Enters { point: Point::new(0.0, 5.0) },
+            LineIntersection::FullyInside,
+            region.find_line_intersection(Point::new(1.0, 4.0), Point::new(3.0, 4.0))
+        );
+
+        assert_eq!(
+            LineIntersection::Enters {
+                point: Point::new(0.0, 5.0)
+            },
             region.find_line_intersection(Point::new(-2.0, 5.0), Point::new(2.0, 5.0))
         );
 
         assert_eq!(
-            LineIntersection::Exits { point: Point::new(0.0, 5.0) },
+            LineIntersection::Exits {
+                point: Point::new(0.0, 5.0)
+            },
             region.find_line_intersection(Point::new(2.0, 5.0), Point::new(-2.0, 5.0))
         );
 
         assert_eq!(
-            LineIntersection::Crosses { entrance: Point::new(2.0, 3.0), exit: Point::new(2.0, 10.0) },
+            LineIntersection::Crosses {
+                entrance: Point::new(2.0, 3.0),
+                exit: Point::new(2.0, 10.0)
+            },
             region.find_line_intersection(Point::new(2.0, 0.0), Point::new(2.0, 20.0))
         );
     }
 
     #[test]
     fn test_line_intersection_single() {
-        let region = CompositeDrawnRegion::new(vec![
-            Box::new(RectangularDrawnRegion::new(0.0, 3.0, 5.0, 10.0))
-        ]);
+        let region = CompositeDrawnRegion::new(vec![Box::new(RectangularDrawnRegion::new(
+            0.0, 3.0, 5.0, 10.0,
+        ))]);
         test_line_intersection_code_reuse(&region);
     }
 
@@ -270,7 +285,7 @@ mod tests {
     fn test_line_intersection_double() {
         let region = CompositeDrawnRegion::new(vec![
             Box::new(RectangularDrawnRegion::new(0.0, 3.0, 5.0, 10.0)),
-            Box::new(RectangularDrawnRegion::new(50.0, 3.0, 55.0, 10.0))
+            Box::new(RectangularDrawnRegion::new(50.0, 3.0, 55.0, 10.0)),
         ]);
         test_line_intersection_code_reuse(&region);
 
@@ -279,15 +294,22 @@ mod tests {
             region.find_line_intersection(Point::new(1.0, 5.0), Point::new(53.0, 5.0))
         );
         assert_eq!(
-            LineIntersection::Enters { point: Point::new(0.0, 7.0) },
+            LineIntersection::Enters {
+                point: Point::new(0.0, 7.0)
+            },
             region.find_line_intersection(Point::new(-5.0, 7.0), Point::new(52.0, 7.0))
         );
         assert_eq!(
-            LineIntersection::Exits { point: Point::new(55.0, 7.0) },
+            LineIntersection::Exits {
+                point: Point::new(55.0, 7.0)
+            },
             region.find_line_intersection(Point::new(4.0, 7.0), Point::new(60.0, 7.0))
         );
         assert_eq!(
-            LineIntersection::Crosses { entrance: Point::new(0.0, 8.0), exit: Point::new(55.0, 8.0) },
+            LineIntersection::Crosses {
+                entrance: Point::new(0.0, 8.0),
+                exit: Point::new(55.0, 8.0)
+            },
             region.find_line_intersection(Point::new(-10.0, 8.0), Point::new(70.0, 8.0))
         );
     }

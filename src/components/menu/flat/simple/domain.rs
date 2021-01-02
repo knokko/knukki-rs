@@ -121,10 +121,22 @@ mod tests {
         // These numbers are carefully chosen to avoid rounding errors
         let domain = ComponentDomain::between(0.25, 0.5, 0.375, 0.75);
 
-        assert_eq!(Point::new(0.0, 0.0), domain.transform(Point::new(0.25, 0.5)));
-        assert_eq!(Point::new(1.0, 1.0), domain.transform(Point::new(0.375, 0.75)));
-        assert_eq!(Point::new(0.25, 0.5), domain.transform(Point::new(0.28125, 0.625)));
-        assert_eq!(Point::new(-2.0, -2.0), domain.transform(Point::new(0.0, 0.0)));
+        assert_eq!(
+            Point::new(0.0, 0.0),
+            domain.transform(Point::new(0.25, 0.5))
+        );
+        assert_eq!(
+            Point::new(1.0, 1.0),
+            domain.transform(Point::new(0.375, 0.75))
+        );
+        assert_eq!(
+            Point::new(0.25, 0.5),
+            domain.transform(Point::new(0.28125, 0.625))
+        );
+        assert_eq!(
+            Point::new(-2.0, -2.0),
+            domain.transform(Point::new(0.0, 0.0))
+        );
         assert_eq!(Point::new(6.0, 2.0), domain.transform(Point::new(1.0, 1.0)));
     }
 
@@ -133,10 +145,25 @@ mod tests {
         // This is just the reverse of the test_transform test
         let domain = ComponentDomain::between(0.25, 0.5, 0.375, 0.75);
 
-        assert_eq!(Point::new(0.25, 0.5), domain.transform_back(Point::new(0.0, 0.0)));
-        assert_eq!(Point::new(0.375, 0.75), domain.transform_back(Point::new(1.0, 1.0)));
-        assert_eq!(Point::new(0.28125, 0.625), domain.transform_back(Point::new(0.25, 0.5)));
-        assert_eq!(Point::new(0.0, 0.0), domain.transform_back(Point::new(-2.0, -2.0)));
-        assert_eq!(Point::new(1.0, 1.0), domain.transform_back(Point::new(6.0, 2.0)));
+        assert_eq!(
+            Point::new(0.25, 0.5),
+            domain.transform_back(Point::new(0.0, 0.0))
+        );
+        assert_eq!(
+            Point::new(0.375, 0.75),
+            domain.transform_back(Point::new(1.0, 1.0))
+        );
+        assert_eq!(
+            Point::new(0.28125, 0.625),
+            domain.transform_back(Point::new(0.25, 0.5))
+        );
+        assert_eq!(
+            Point::new(0.0, 0.0),
+            domain.transform_back(Point::new(-2.0, -2.0))
+        );
+        assert_eq!(
+            Point::new(1.0, 1.0),
+            domain.transform_back(Point::new(6.0, 2.0))
+        );
     }
 }

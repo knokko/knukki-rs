@@ -45,7 +45,7 @@ impl Component for TestComponent {
         golem: &Context,
         _region: RenderRegion,
         _buddy: &mut dyn ComponentBuddy,
-        _force: bool
+        _force: bool,
     ) -> RenderResult {
         #[rustfmt::skip]
         let quad_vertices = [
@@ -90,8 +90,10 @@ impl Component for TestComponent {
         shader.set_uniform("green", UniformValue::Float(self.green as f32 / 255.0))?;
         unsafe {
             shader.draw(
-                &vertex_buffer, &element_buffer, 
-                0..quad_indices.len(), GeometryMode::Triangles
+                &vertex_buffer,
+                &element_buffer,
+                0..quad_indices.len(),
+                GeometryMode::Triangles,
             )?;
         }
         entire_render_result()

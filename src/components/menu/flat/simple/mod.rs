@@ -25,7 +25,7 @@ impl SimpleFlatMenu {
             components: Vec::new(),
             components_to_add: Vec::new(),
             background_color,
-            has_rendered_before: false
+            has_rendered_before: false,
         }
     }
 
@@ -93,8 +93,7 @@ impl Component for SimpleFlatMenu {
         self.update_internal(own_buddy, false);
 
         // Lets now handle the actual click event
-        let maybe_clicked_cell =
-            self.get_component_at(event.get_point());
+        let maybe_clicked_cell = self.get_component_at(event.get_point());
 
         if let Some(clicked_cell) = &maybe_clicked_cell {
             let mut clicked_entry = clicked_cell.borrow_mut();
@@ -105,7 +104,9 @@ impl Component for SimpleFlatMenu {
         // TODO Maintain a list for just the interested components
         let out_event = MouseClickOutEvent::new(event.get_mouse(), event.get_button());
         for component_cell in &self.components {
-            if maybe_clicked_cell.is_none() || !Rc::ptr_eq(component_cell, maybe_clicked_cell.as_ref().unwrap()) {
+            if maybe_clicked_cell.is_none()
+                || !Rc::ptr_eq(component_cell, maybe_clicked_cell.as_ref().unwrap())
+            {
                 let mut component_entry = component_cell.borrow_mut();
                 component_entry.mouse_click_out(out_event);
                 self.check_buddy(own_buddy, &mut component_entry, false);
@@ -113,7 +114,11 @@ impl Component for SimpleFlatMenu {
         }
     }
 
-    fn on_mouse_click_out(&mut self, event: MouseClickOutEvent, own_buddy: &mut dyn ComponentBuddy) {
+    fn on_mouse_click_out(
+        &mut self,
+        event: MouseClickOutEvent,
+        own_buddy: &mut dyn ComponentBuddy,
+    ) {
         // TODO Maintain a list for just the interested components
         for component_cell in &self.components {
             let mut component_entry = component_cell.borrow_mut();
@@ -142,10 +147,10 @@ impl Component for SimpleFlatMenu {
                 // TODO And take more care when this is partially transparent...
                 #[cfg(feature = "golem_rendering")]
                 golem.set_clear_color(
-                    bc.get_red_float(), 
-                    bc.get_green_float(), 
-                    bc.get_blue_float(), 
-                    bc.get_alpha_float()
+                    bc.get_red_float(),
+                    bc.get_green_float(),
+                    bc.get_blue_float(),
+                    bc.get_alpha_float(),
                 );
                 #[cfg(feature = "golem_rendering")]
                 golem.clear();
@@ -173,13 +178,14 @@ impl Component for SimpleFlatMenu {
                         let transformed_region = TransformedDrawnRegion::new(
                             good_entry_result.drawn_region.clone(),
                             move |point| component_domain.transform(point),
-                            move |point| component_domain.transform_back(point)
+                            move |point| component_domain.transform_back(point),
                         );
                         if !force || self.background_color.is_none() {
                             drawn_regions.push(Box::new(transformed_region));
                         }
                         self.check_buddy(buddy, &mut entry, false);
-                    }, Err(bad_result) => {
+                    }
+                    Err(bad_result) => {
                         return Err(bad_result);
                     }
                 }
@@ -225,9 +231,7 @@ impl ComponentEntry {
             let transformed_point = self.domain.transform(outer_event.get_point());
             if let Some(render_result) = self.buddy.get_last_render_result() {
                 if !render_result.filter_mouse_actions
-                    || render_result
-                        .drawn_region
-                        .is_inside(transformed_point)
+                    || render_result.drawn_region.is_inside(transformed_point)
                 {
                     let transformed_event = MouseClickEvent::new(
                         outer_event.get_mouse(),
@@ -245,11 +249,8 @@ impl ComponentEntry {
 
         if filtered && self.buddy.get_subscriptions().mouse_click_out {
             self.component.on_mouse_click_out(
-                MouseClickOutEvent::new(
-                    outer_event.get_mouse(), 
-                    outer_event.get_button()
-                )
-                , &mut self.buddy
+                MouseClickOutEvent::new(outer_event.get_mouse(), outer_event.get_button()),
+                &mut self.buddy,
             );
         }
     }
@@ -360,12 +361,14 @@ mod tests {
         );
 
         // It should attach the second component as soon as possible
-        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy, false).unwrap();
+        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy, false)
+            .unwrap();
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
 
         // But they should be attached only once
-        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy, false).unwrap();
+        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy, false)
+            .unwrap();
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
 
@@ -547,11 +550,8 @@ mod tests {
         assert!(!buddy.did_request_render());
 
         // So let's click it and render again
-        let hit_click = MouseClickEvent::new(
-            Mouse::new(0),
-            Point::new(0.2, 0.2),
-            MouseButton::primary(),
-        );
+        let hit_click =
+            MouseClickEvent::new(Mouse::new(0), Point::new(0.2, 0.2), MouseButton::primary());
         menu.on_mouse_click(hit_click, &mut buddy);
         assert!(buddy.did_request_render());
         buddy.clear_render_request();
@@ -561,9 +561,9 @@ mod tests {
 
         // Miss clicking shouldn't change anything
         let miss_click = MouseClickEvent::new(
-            Mouse::new(0), 
+            Mouse::new(0),
             Point::new(0.35, 0.35),
-            MouseButton::primary()
+            MouseButton::primary(),
         );
         menu.on_mouse_click(miss_click, &mut buddy);
         assert!(!buddy.did_request_render());
@@ -577,8 +577,10 @@ mod tests {
 
         // Add the busy rendering component
         menu.add_component(
-            Box::new(BusyRenderComponent { counter: Rc::clone(&busy_counter) }), 
-            ComponentDomain::between(0.5, 0.7, 0.9, 0.8)
+            Box::new(BusyRenderComponent {
+                counter: Rc::clone(&busy_counter),
+            }),
+            ComponentDomain::between(0.5, 0.7, 0.9, 0.8),
         );
 
         // Only the busy component should render
@@ -612,7 +614,7 @@ mod tests {
         assert_eq!(4, click_counter.get());
         assert_eq!(4, busy_counter.get());
 
-        // Unless we click it... 
+        // Unless we click it...
         menu.on_mouse_click(hit_click, &mut buddy);
         menu.render(render_region, &mut buddy, false).unwrap();
         assert!(buddy.did_request_render());
@@ -621,7 +623,7 @@ mod tests {
     }
 
     struct ClickComponent {
-        render_result: RenderResult
+        render_result: RenderResult,
     }
 
     impl Component for ClickComponent {
@@ -630,19 +632,15 @@ mod tests {
         }
 
         fn render(
-            &mut self, 
-            _region: RenderRegion, 
-            _buddy: &mut dyn ComponentBuddy, 
-            _force: bool
+            &mut self,
+            _region: RenderRegion,
+            _buddy: &mut dyn ComponentBuddy,
+            _force: bool,
         ) -> RenderResult {
             self.render_result.clone()
         }
 
-        fn on_mouse_click(
-            &mut self, 
-            _event: MouseClickEvent, 
-            buddy: &mut dyn ComponentBuddy
-        ) {
+        fn on_mouse_click(&mut self, _event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
             buddy.request_render();
         }
     }
@@ -660,26 +658,25 @@ mod tests {
     fn test_render_results(background: Option<Color>, draw_background: bool) {
         let mut menu = SimpleFlatMenu::new(background);
         menu.add_component(
-            Box::new(ClickComponent { render_result: entire_render_result() }), 
-            ComponentDomain::between(0.0, 0.0, 0.5, 0.5)
+            Box::new(ClickComponent {
+                render_result: entire_render_result(),
+            }),
+            ComponentDomain::between(0.0, 0.0, 0.5, 0.5),
         );
         menu.add_component(
-            Box::new(ClickComponent { render_result: Ok(RenderResultStruct {
-                drawn_region: Box::new(RectangularDrawnRegion::new(0.0, 0.0, 0.6, 0.6)),
-                filter_mouse_actions: false
-            })}), ComponentDomain::between(0.5, 0.5, 1.0, 1.0)
+            Box::new(ClickComponent {
+                render_result: Ok(RenderResultStruct {
+                    drawn_region: Box::new(RectangularDrawnRegion::new(0.0, 0.0, 0.6, 0.6)),
+                    filter_mouse_actions: false,
+                }),
+            }),
+            ComponentDomain::between(0.5, 0.5, 1.0, 1.0),
         );
 
-        let click1 = MouseClickEvent::new(
-            Mouse::new(0), 
-            Point::new(0.2, 0.2),
-            MouseButton::primary()
-        );
-        let click2 = MouseClickEvent::new(
-            Mouse::new(0), 
-            Point::new(0.6, 0.6),
-            MouseButton::primary()
-        );
+        let click1 =
+            MouseClickEvent::new(Mouse::new(0), Point::new(0.2, 0.2), MouseButton::primary());
+        let click2 =
+            MouseClickEvent::new(Mouse::new(0), Point::new(0.6, 0.6), MouseButton::primary());
         let render_region = RenderRegion::between(0, 0, 100, 40);
         let mut buddy = RootComponentBuddy::new();
 
@@ -759,14 +756,14 @@ mod tests {
             }
 
             fn render(
-                &mut self, 
-                _region: RenderRegion, 
-                _buddy: &mut dyn ComponentBuddy, 
-                _force: bool
+                &mut self,
+                _region: RenderRegion,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool,
             ) -> RenderResult {
                 Ok(RenderResultStruct {
                     drawn_region: Box::new(RectangularDrawnRegion::new(0.0, 0.0, 0.5, 0.5)),
-                    filter_mouse_actions: true
+                    filter_mouse_actions: true,
                 })
             }
 
@@ -774,7 +771,11 @@ mod tests {
                 self.in_counter.set(self.in_counter.get() + 1);
             }
 
-            fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent, _buddy: &mut dyn ComponentBuddy) {
+            fn on_mouse_click_out(
+                &mut self,
+                _event: MouseClickOutEvent,
+                _buddy: &mut dyn ComponentBuddy,
+            ) {
                 self.out_counter.set(self.out_counter.get() + 1);
             }
         }
@@ -787,42 +788,31 @@ mod tests {
         let out2 = Rc::new(Cell::new(0));
 
         menu.add_component(
-            Box::new(ClickCountComponent { 
+            Box::new(ClickCountComponent {
                 in_counter: Rc::clone(&in1),
-                out_counter: Rc::clone(&out1)
-        }), ComponentDomain::between(0.0, 0.0, 0.5, 0.5));
+                out_counter: Rc::clone(&out1),
+            }),
+            ComponentDomain::between(0.0, 0.0, 0.5, 0.5),
+        );
         menu.add_component(
-            Box::new(ClickCountComponent { 
+            Box::new(ClickCountComponent {
                 in_counter: Rc::clone(&in2),
-                out_counter: Rc::clone(&out2)
-        }), ComponentDomain::between(0.5, 0.5, 1.0, 1.0));
+                out_counter: Rc::clone(&out2),
+            }),
+            ComponentDomain::between(0.5, 0.5, 1.0, 1.0),
+        );
 
-        let click_miss = MouseClickEvent::new(
-            Mouse::new(0), 
-            Point::new(0.8, 0.2),
-            MouseButton::primary()
-        );
+        let click_miss =
+            MouseClickEvent::new(Mouse::new(0), Point::new(0.8, 0.2), MouseButton::primary());
         let click_out = MouseClickOutEvent::new(Mouse::new(0), MouseButton::primary());
-        let click1 = MouseClickEvent::new(
-            Mouse::new(0), 
-            Point::new(0.2, 0.2),
-            MouseButton::primary()
-        );
-        let click2 = MouseClickEvent::new(
-            Mouse::new(0), 
-            Point::new(0.6, 0.6),
-            MouseButton::primary()
-        );
-        let click1out = MouseClickEvent::new(
-            Mouse::new(0), 
-            Point::new(0.3, 0.3),
-            MouseButton::primary()
-        );
-        let click2out = MouseClickEvent::new(
-            Mouse::new(0), 
-            Point::new(0.9, 0.9),
-            MouseButton::primary()
-        );
+        let click1 =
+            MouseClickEvent::new(Mouse::new(0), Point::new(0.2, 0.2), MouseButton::primary());
+        let click2 =
+            MouseClickEvent::new(Mouse::new(0), Point::new(0.6, 0.6), MouseButton::primary());
+        let click1out =
+            MouseClickEvent::new(Mouse::new(0), Point::new(0.3, 0.3), MouseButton::primary());
+        let click2out =
+            MouseClickEvent::new(Mouse::new(0), Point::new(0.9, 0.9), MouseButton::primary());
 
         let check_counters = |value_in1: u8, value_out1: u8, value_in2: u8, value_out2: u8| {
             assert_eq!(in1.get(), value_in1);
@@ -836,7 +826,8 @@ mod tests {
         check_counters(0, 0, 0, 0);
 
         // So let's render
-        menu.render(RenderRegion::between(0, 0, 120, 10), &mut buddy, false).unwrap();
+        menu.render(RenderRegion::between(0, 0, 120, 10), &mut buddy, false)
+            .unwrap();
 
         // Clicking outside the menu should increment both out counters
         menu.on_mouse_click_out(click_out, &mut buddy);
@@ -854,7 +845,7 @@ mod tests {
         menu.on_mouse_click(click2, &mut buddy);
         check_counters(1, 3, 1, 3);
 
-        // Clicking outside the render region of component 1 
+        // Clicking outside the render region of component 1
         // should increment both out counters
         menu.on_mouse_click(click1out, &mut buddy);
         check_counters(1, 4, 1, 4);
@@ -877,10 +868,10 @@ mod tests {
             fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
             fn render(
-                &mut self, 
-                _region: RenderRegion, 
-                buddy: &mut dyn ComponentBuddy, 
-                _force: bool
+                &mut self,
+                _region: RenderRegion,
+                buddy: &mut dyn ComponentBuddy,
+                _force: bool,
             ) -> RenderResult {
                 if self.should_subscribe.get() {
                     buddy.subscribe_mouse_click();
@@ -899,7 +890,11 @@ mod tests {
                 self.click_counter.set(self.click_counter.get() + 1);
             }
 
-            fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent, _buddy: &mut dyn ComponentBuddy) {
+            fn on_mouse_click_out(
+                &mut self,
+                _event: MouseClickOutEvent,
+                _buddy: &mut dyn ComponentBuddy,
+            ) {
                 self.click_out_counter.set(self.click_out_counter.get() + 1);
             }
         }
@@ -923,16 +918,18 @@ mod tests {
                 should_unsubscribe: Rc::clone(&unsubscribe1),
                 click_counter: Rc::clone(&click_count1),
                 click_out_counter: Rc::clone(&click_out_count1),
-            }
-        ), ComponentDomain::between(0.0, 0.0, 0.5, 0.5));
+            }),
+            ComponentDomain::between(0.0, 0.0, 0.5, 0.5),
+        );
         menu.add_component(
             Box::new(SubscribingComponent {
                 should_subscribe: Rc::clone(&subscribe2),
                 should_unsubscribe: Rc::clone(&unsubscribe2),
                 click_counter: Rc::clone(&click_count2),
                 click_out_counter: Rc::clone(&click_out_count2),
-            }
-        ), ComponentDomain::between(0.5, 0.5, 1.0, 1.0));
+            }),
+            ComponentDomain::between(0.5, 0.5, 1.0, 1.0),
+        );
 
         let menu_cell = Rc::new(RefCell::new(menu));
         let buddy_cell = Rc::new(RefCell::new(buddy));
@@ -945,21 +942,21 @@ mod tests {
         let fire_click = || {
             let mut menu = menu_cell.borrow_mut();
             let mut buddy = buddy_cell.borrow_mut();
-            menu.on_mouse_click(MouseClickEvent::new(
-                Mouse::new(0), Point::new(0.2, 0.2), MouseButton::primary()),
-                &mut *buddy
+            menu.on_mouse_click(
+                MouseClickEvent::new(Mouse::new(0), Point::new(0.2, 0.2), MouseButton::primary()),
+                &mut *buddy,
             );
-            menu.on_mouse_click(MouseClickEvent::new(
-                Mouse::new(0), Point::new(0.8, 0.8), MouseButton::primary()),
-                &mut *buddy
+            menu.on_mouse_click(
+                MouseClickEvent::new(Mouse::new(0), Point::new(0.8, 0.8), MouseButton::primary()),
+                &mut *buddy,
             );
         };
         let fire_click_out = || {
             let mut menu = menu_cell.borrow_mut();
             let mut buddy = buddy_cell.borrow_mut();
             menu.on_mouse_click_out(
-                MouseClickOutEvent::new(Mouse::new(0), MouseButton::primary()), 
-                &mut *buddy
+                MouseClickOutEvent::new(Mouse::new(0), MouseButton::primary()),
+                &mut *buddy,
             );
         };
 
