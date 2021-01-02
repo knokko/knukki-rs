@@ -125,6 +125,7 @@ impl MouseClickOutEvent {
 /// position *t* inside the component, a `MouseMoveEvent` will be fired from the
 /// border *b* of the component where the mouse came in to *t*. Additionally,
 /// a `MouseEnterEvent` with position *b* will be fired.
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct MouseMoveEvent {
     mouse: Mouse,
     from: Point,

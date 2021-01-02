@@ -620,6 +620,134 @@ mod tests {
         check_leaves(vec![inner_leave_event, outer_leave_event, inner_leave_event]);
     }
 
+    #[test]
+    fn test_mouse_move_subscriptions() {
+        let should_filter_mouse_actions = Rc::new(Cell::new(false));
+        let received_mouse_move = Rc::new(Cell::new(false));
+        let received_mouse_enter = Rc::new(Cell::new(false));
+        let received_mouse_leave = Rc::new(Cell::new(false));
+
+        let check_received = |did_move: bool, did_enter: bool, did_leave: bool| {
+            assert_eq!(did_move, received_mouse_move.get());
+            assert_eq!(did_enter, received_mouse_enter.get());
+            assert_eq!(did_leave, received_mouse_leave.get());
+            received_mouse_move.set(false);
+            received_mouse_enter.set(false);
+            received_mouse_leave.set(false);
+        };
+
+        struct SubscriptionState {
+            mouse_move: bool,
+            mouse_enter: bool,
+            mouse_leave: bool
+        }
+
+        let control_subscriptions = Rc::new(RefCell::new(SubscriptionState {
+            mouse_move: false, mouse_enter: false, mouse_leave: false
+        }));
+
+        let set_subscriptions = |sub_mouse_move: bool, sub_mouse_enter: bool, sub_mouse_leave: bool| {
+            let mut subscriptions = control_subscriptions.borrow_mut();
+            subscriptions.mouse_move = sub_mouse_move;
+            subscriptions.mouse_enter = sub_mouse_enter;
+            subscriptions.mouse_leave = sub_mouse_leave;
+        };
+
+        struct SubscriptionComponent {
+            should_filter_mouse_actions: Rc<Cell<bool>>,
+            subscriptions: Rc<RefCell<SubscriptionState>>,
+
+            received_mouse_move: Rc<Cell<bool>>,
+            received_mouse_enter: Rc<Cell<bool>>,
+            received_mouse_leave: Rc<Cell<bool>>
+        }
+
+        impl Component for SubscriptionComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+                let subscriptions = self.subscriptions.borrow();
+                if subscriptions.mouse_move {
+                    buddy.subscribe_mouse_move();
+                } else {
+                    buddy.unsubscribe_mouse_move();
+                }
+                if subscriptions.mouse_enter {
+                    buddy.subscribe_mouse_enter();
+                } else {
+                    buddy.unsubscribe_mouse_enter();
+                }
+                if subscriptions.mouse_leave {
+                    buddy.subscribe_mouse_leave();
+                } else {
+                    buddy.unsubscribe_mouse_leave();
+                }
+                Ok(RenderResultStruct {
+                    filter_mouse_actions: self.should_filter_mouse_actions.get(),
+                    drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.6, 0.6))
+                })
+            }
+
+            fn on_mouse_move(&mut self, _event: MouseMoveEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.received_mouse_move.set(true);
+            }
+
+            fn on_mouse_enter(&mut self, _event: MouseEnterEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.received_mouse_enter.set(true);
+            }
+
+            fn on_mouse_leave(&mut self, _event: MouseLeaveEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.received_mouse_leave.set(true);
+            }
+        }
+
+        let component = SubscriptionComponent {
+            should_filter_mouse_actions: Rc::clone(&should_filter_mouse_actions),
+            subscriptions: Rc::clone(&control_subscriptions),
+            received_mouse_move: Rc::clone(&received_mouse_move),
+            received_mouse_enter: Rc::clone(&received_mouse_enter),
+            received_mouse_leave: Rc::clone(&received_mouse_leave)
+        };
+
+        let mut application = Application::new(Box::new(component));
+        let the_event = MouseMoveEvent::new(
+            Mouse::new(0), Point::new(0.0, 0.4), Point::new(1.0, 0.4)
+        );
+        let render_region = RenderRegion::with_size(0, 0, 30, 70);
+
+        // It shouldn't have subscribed to any of the events yet
+        application.render(render_region, false);
+        application.fire_mouse_move_event(the_event);
+        check_received(false, false, false);
+
+        // Until we filter mouse events, only mouse move can be received
+        set_subscriptions(true, true, true);
+        application.render(render_region, true);
+        application.fire_mouse_move_event(the_event);
+        check_received(true, false, false);
+
+        // But things get more complex when we do filter mouse events
+        let mut test_combination = |mouse_move: bool, mouse_enter: bool, mouse_leave: bool| {
+            set_subscriptions(mouse_move, mouse_enter, mouse_leave);
+            application.render(render_region, true);
+            application.fire_mouse_move_event(the_event);
+            check_received(mouse_move, mouse_enter, mouse_leave);
+        };
+        should_filter_mouse_actions.set(true);
+
+        // Try all 8 combinations
+        test_combination(false, false, true);
+        test_combination(false, true, false);
+        test_combination(false, true, true);
+        test_combination(true, false, false);
+        test_combination(true, false, true);
+        test_combination(true, true, false);
+        test_combination(true, true, true);
+
+        // Also try a full unsubscribe
+        test_combination(false, false, false);
+    }
+
     // TODO Test mouse move subscriptions
     // TODO Test mouse move in general
     // TODO Test general subscriptions and unsubscriptions for all events
