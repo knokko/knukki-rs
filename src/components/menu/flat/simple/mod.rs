@@ -88,45 +88,6 @@ impl Component for SimpleFlatMenu {
         buddy.subscribe_mouse_click_out();
     }
 
-    fn on_mouse_click(&mut self, event: MouseClickEvent, own_buddy: &mut dyn ComponentBuddy) {
-        // This should be done before every important action
-        self.update_internal(own_buddy, false);
-
-        // Lets now handle the actual click event
-        let maybe_clicked_cell = self.get_component_at(event.get_point());
-
-        if let Some(clicked_cell) = &maybe_clicked_cell {
-            let mut clicked_entry = clicked_cell.borrow_mut();
-            clicked_entry.mouse_click(event);
-            self.check_buddy(own_buddy, &mut clicked_entry, false);
-        }
-
-        // TODO Maintain a list for just the interested components
-        let out_event = MouseClickOutEvent::new(event.get_mouse(), event.get_button());
-        for component_cell in &self.components {
-            if maybe_clicked_cell.is_none()
-                || !Rc::ptr_eq(component_cell, maybe_clicked_cell.as_ref().unwrap())
-            {
-                let mut component_entry = component_cell.borrow_mut();
-                component_entry.mouse_click_out(out_event);
-                self.check_buddy(own_buddy, &mut component_entry, false);
-            }
-        }
-    }
-
-    fn on_mouse_click_out(
-        &mut self,
-        event: MouseClickOutEvent,
-        own_buddy: &mut dyn ComponentBuddy,
-    ) {
-        // TODO Maintain a list for just the interested components
-        for component_cell in &self.components {
-            let mut component_entry = component_cell.borrow_mut();
-            component_entry.mouse_click_out(event);
-            self.check_buddy(own_buddy, &mut component_entry, false);
-        }
-    }
-
     // Variables only used when the golem_rendering feature is enabled are
     // considered 'unused' when compiling without this feature.
     #[allow(unused_variables)]
@@ -204,6 +165,61 @@ impl Component for SimpleFlatMenu {
         }
     }
 
+    fn on_mouse_click(&mut self, event: MouseClickEvent, own_buddy: &mut dyn ComponentBuddy) {
+        // This should be done before every important action
+        self.update_internal(own_buddy, false);
+
+        // Lets now handle the actual click event
+        let maybe_clicked_cell = self.get_component_at(event.get_point());
+
+        if let Some(clicked_cell) = &maybe_clicked_cell {
+            let mut clicked_entry = clicked_cell.borrow_mut();
+            clicked_entry.mouse_click(event);
+            self.check_buddy(own_buddy, &mut clicked_entry, false);
+        }
+
+        // TODO Maintain a list for just the interested components
+        let out_event = MouseClickOutEvent::new(event.get_mouse(), event.get_button());
+        for component_cell in &self.components {
+            if maybe_clicked_cell.is_none()
+                || !Rc::ptr_eq(component_cell, maybe_clicked_cell.as_ref().unwrap())
+            {
+                let mut component_entry = component_cell.borrow_mut();
+                component_entry.mouse_click_out(out_event);
+                self.check_buddy(own_buddy, &mut component_entry, false);
+            }
+        }
+    }
+
+    fn on_mouse_click_out(
+        &mut self,
+        event: MouseClickOutEvent,
+        own_buddy: &mut dyn ComponentBuddy,
+    ) {
+        // TODO Maintain a list for just the interested components
+        for component_cell in &self.components {
+            let mut component_entry = component_cell.borrow_mut();
+            component_entry.mouse_click_out(event);
+            self.check_buddy(own_buddy, &mut component_entry, false);
+        }
+    }
+
+    fn on_mouse_enter(&mut self, event: MouseEnterEvent, buddy: &mut dyn ComponentBuddy) {
+        if let Some(hit_component_entry) = self.get_component_at(event.get_entrance_point()) {
+            let mut borrowed_entry = hit_component_entry.borrow_mut();
+            borrowed_entry.mouse_enter(event);
+            self.check_buddy(buddy, &mut borrowed_entry, false);
+        }
+    }
+
+    fn on_mouse_leave(&mut self, event: MouseLeaveEvent, buddy: &mut dyn ComponentBuddy) {
+        if let Some(hit_component_entry) = self.get_component_at(event.get_exit_point()) {
+            let mut borrowed_entry = hit_component_entry.borrow_mut();
+            borrowed_entry.mouse_leave(event);
+            self.check_buddy(buddy, &mut borrowed_entry, false);
+        }
+    }
+
     fn on_detach(&mut self) {
         self.components.clear();
     }
@@ -259,6 +275,34 @@ impl ComponentEntry {
         if self.buddy.get_subscriptions().mouse_click_out {
             if self.buddy.get_last_render_result().is_some() {
                 self.component.on_mouse_click_out(event, &mut self.buddy);
+            }
+        }
+    }
+
+    fn mouse_enter(&mut self, event: MouseEnterEvent) {
+        if self.buddy.get_subscriptions().mouse_enter {
+            if let Some(render_result) = self.buddy.get_last_render_result() {
+                let transformed_entrance_point = self.domain.transform(event.get_entrance_point());
+                if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(transformed_entrance_point) {
+                    let transformed_event = MouseEnterEvent::new(
+                        event.get_mouse(), transformed_entrance_point
+                    );
+                    self.component.on_mouse_enter(transformed_event, &mut self.buddy);
+                }
+            }
+        }
+    }
+
+    fn mouse_leave(&mut self, event: MouseLeaveEvent) {
+        if self.buddy.get_subscriptions().mouse_leave {
+            if let Some(render_result) = self.buddy.get_last_render_result() {
+                let transformed_exit_point = self.domain.transform(event.get_exit_point());
+                if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(transformed_exit_point) {
+                    let transformed_event = MouseLeaveEvent::new(
+                        event.get_mouse(), transformed_exit_point
+                    );
+                    self.component.on_mouse_leave(transformed_event, &mut self.buddy);
+                }
             }
         }
     }
@@ -1012,4 +1056,126 @@ mod tests {
         fire_click_out();
         check_values(2, 3, 1, 3);
     }
+
+    struct MouseMotionComponent {
+
+        should_filter_mouse_actions: Rc<Cell<bool>>,
+        mouse_move_log: Rc<RefCell<Vec<MouseMoveEvent>>>,
+        mouse_enter_log: Rc<RefCell<Vec<MouseEnterEvent>>>,
+        mouse_leave_log: Rc<RefCell<Vec<MouseLeaveEvent>>>,
+    }
+
+    impl Component for MouseMotionComponent {
+        fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+            buddy.subscribe_mouse_move();
+            buddy.subscribe_mouse_enter();
+            buddy.subscribe_mouse_leave();
+        }
+
+        fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+            Ok(RenderResultStruct {
+                filter_mouse_actions: self.should_filter_mouse_actions.get(),
+                drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8))
+            })
+        }
+
+        fn on_mouse_move(&mut self, event: MouseMoveEvent, buddy: &mut dyn ComponentBuddy) {
+            let mut move_log = self.mouse_move_log.borrow_mut();
+            move_log.push(event);
+        }
+
+        fn on_mouse_enter(&mut self, event: MouseEnterEvent, buddy: &mut dyn ComponentBuddy) {
+            let mut enter_log = self.mouse_enter_log.borrow_mut();
+            enter_log.push(event);
+        }
+
+        fn on_mouse_leave(&mut self, event: MouseLeaveEvent, buddy: &mut dyn ComponentBuddy) {
+            let mut leave_log = self.mouse_leave_log.borrow_mut();
+            leave_log.push(event);
+        }
+    }
+
+    #[test]
+    fn test_mouse_enter_and_leave() {
+        let enter_log1 = Rc::new(RefCell::new(Vec::new()));
+        let leave_log1 = Rc::new(RefCell::new(Vec::new()));
+        let enter_log2 = Rc::new(RefCell::new(Vec::new()));
+        let leave_log2 = Rc::new(RefCell::new(Vec::new()));
+
+        let component1 = MouseMotionComponent {
+            should_filter_mouse_actions: Rc::new(Cell::new(true)),
+            mouse_move_log: Rc::new(RefCell::new(Vec::new())),
+            mouse_enter_log: Rc::clone(&enter_log1),
+            mouse_leave_log: Rc::clone(&leave_log1)
+        };
+        let component2 = MouseMotionComponent {
+            should_filter_mouse_actions: Rc::new(Cell::new(true)),
+            mouse_move_log: Rc::new(RefCell::new(Vec::new())),
+            mouse_enter_log: Rc::clone(&enter_log2),
+            mouse_leave_log: Rc::clone(&leave_log2)
+        };
+
+        let mut buddy = RootComponentBuddy::new();
+        let mut menu = SimpleFlatMenu::new(None);
+        menu.on_attach(&mut buddy);
+        menu.add_component(
+            Box::new(component1),
+            ComponentDomain::between(0.1, 0.1, 0.4, 0.9)
+        );
+        menu.add_component(
+            Box::new(component2),
+            ComponentDomain::between(0.6, 0.1, 0.9, 0.9)
+        );
+
+        let miss_enter_event = MouseEnterEvent::new(
+            Mouse::new(0), Point::new(0.5, 0.5)
+        );
+        let miss_leave_event = MouseLeaveEvent::new(
+            Mouse::new(0), Point::new(0.5, 0.5)
+        );
+        let edge_enter_event = MouseEnterEvent::new(
+            Mouse::new(0), Point::new(0.65, 0.5)
+        );
+        let edge_leave_event = MouseLeaveEvent::new(
+            Mouse::new(0), Point::new(0.65, 0.5)
+        );
+        let hit_enter_event = MouseEnterEvent::new(
+            Mouse::new(0), Point::new(0.75, 0.5)
+        );
+        let hit_leave_event = MouseLeaveEvent::new(
+            Mouse::new(0), Point::new(0.75, 0.5)
+        );
+        let render_region = RenderRegion::between(1, 2, 3, 4);
+
+        // Nothing should happen before the first render
+        menu.on_mouse_enter(hit_enter_event, &mut buddy);
+        menu.on_mouse_leave(hit_leave_event, &mut buddy);
+
+        // So let's render
+        menu.render(render_region, &mut buddy, false);
+
+        // Due to the mouse filtering, the edge event shouldn't trigger any reaction either
+        menu.on_mouse_enter(edge_enter_event, &mut buddy);
+        menu.on_mouse_leave(edge_leave_event, &mut buddy);
+
+        // But, the hit events should have effect
+        menu.on_mouse_enter(hit_enter_event, &mut buddy);
+        menu.on_mouse_leave(hit_leave_event, &mut buddy);
+
+        let enter_log1 = enter_log1.borrow();
+        assert!(enter_log1.is_empty());
+        let leave_log1 = leave_log1.borrow();
+        assert!(leave_log1.is_empty());
+
+        let enter_log2 = enter_log2.borrow();
+        assert_eq!(1, enter_log2.len());
+        assert!(enter_log2[0].get_entrance_point().nearly_equal(Point::new(0.5, 0.5)));
+
+        let leave_log2 = leave_log2.borrow();
+        assert_eq!(1, leave_log2.len());
+        assert!(leave_log2[0].get_exit_point().nearly_equal(Point::new(0.5, 0.5)));
+    }
+
+    // TODO Test mouse move, enter, and leave subscriptions
+    // TODO Test mouse move events
 }
