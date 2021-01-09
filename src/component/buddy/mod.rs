@@ -119,6 +119,16 @@ pub trait ComponentBuddy {
     ///
     /// If the mouse cursor is currently not hovering over the component, this
     /// method will return None.
+    ///
+    /// # When this method is called while handling a mouse event
+    /// If this method is called during the `on_mouse_enter` method for *mouse*, this will return
+    /// the *entrance* position of that event.
+    ///
+    /// If this method is called during the `on_mouse_move` method for *mouse*, this will return
+    /// the *new* mouse position.
+    ///
+    /// If this method is called during the `on_mouse_leave` method for *mouse*, this will return
+    /// *None*.
     fn get_mouse_position(&self, mouse: Mouse) -> Option<Point>;
 
     /// Checks if the given button of the given mouse is currently being
@@ -132,9 +142,23 @@ pub trait ComponentBuddy {
     /// pressed/down. This method can be called during any event.
     fn is_primary_mouse_button_down(&self, mouse: Mouse) -> bool;
 
-    /// Gets all `Mouse`s that are currently hovering over this component
+    /// Gets all `Mouse`s that are currently hovering over this component.
+    ///
+    /// # When this method is called while handling a mouse event
+    /// If this method is called during the `on_mouse_enter` for some mouse *M*, the result of
+    /// this method will contain *M*.
+    ///
+    /// If this method is called during the `on_mouse_leave` for some mouse *M*, the result of
+    /// this method *won't* contain *M*.
     fn get_local_mouses(&self) -> Vec<Mouse>;
 
     /// Gets all `Mouse`s that are hovering somewhere over the application window.
+    ///
+    /// # When this method is called while handling a mouse event
+    /// If this method is called during the `fire_mouse_enter_event` of the `Application` for some
+    /// mouse *M*, the result of this method will contain *M*.
+    ///
+    /// If this method is called during the `fire_mouse_leave_event` of the `Application` for some
+    /// mouse *M*, the result of this method *won't* contain *M*.
     fn get_all_mouses(&self) -> Vec<Mouse>;
 }
