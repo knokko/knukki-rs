@@ -1,8 +1,10 @@
 mod root;
 mod subscriptions;
+mod mouse_store;
 
 pub use root::*;
 pub use subscriptions::*;
+pub use mouse_store::*;
 
 use crate::*;
 
@@ -142,7 +144,12 @@ pub trait ComponentBuddy {
     /// pressed/down. This method can be called during any event.
     fn is_primary_mouse_button_down(&self, mouse: Mouse) -> bool;
 
-    /// Gets all `Mouse`s that are currently hovering over this component.
+    /// Gets all `Mouse`s that are currently hovering over the (domain of) this component.
+    ///
+    /// # Filter mouse actions
+    /// This method ignores the last `RenderResult`, so this will simply return all `Mouse`s that
+    /// are inside the domain of the component, regardless of whether `filter_mouse_actions` was
+    /// set to true.
     ///
     /// # When this method is called while handling a mouse event
     /// If this method is called during the `on_mouse_enter` for some mouse *M*, the result of

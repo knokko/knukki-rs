@@ -31,20 +31,20 @@ pub trait Component {
 
     /// Lets this component render itself, and returns some information about the rendering.
     ///
-    /// ### The rendering
+    /// # The rendering
     /// Whenever this method is called, the component should render itself using
     /// the given golem `Context`. The given `region` is just for the information
     /// of the component: it can ignore it because the caller must ensure that the
     /// viewport is set accordingly.
     ///
-    /// ### Fake rendering
+    /// # Fake rendering
     /// When the `golem_rendering` feature is not enabled, there will not be
     /// a *golem* parameter for the actual drawing. The component is then
     /// supposed to return the same `RenderResult` as if there were a real
     /// golem context, but without the actual drawing. Doing this accurately
     /// makes unit testing easier.
     ///
-    /// ### When this method will be called
+    /// # When this method will be called
     /// This method will only be called if the component asked for it via the
     /// `request_render` method of its buddy, or the parent (or provider)
     /// determined that it was necessary (for instance, the window was resized
@@ -54,14 +54,14 @@ pub trait Component {
     /// the component should only redraw the things that changed since the
     /// previous call to `render`.
     ///
-    /// ### Continuous rendering
+    /// # Continuous rendering
     /// If you want this method to be called continuously, you should call the
     /// `request_render` method of `buddy` during this method call (which
     /// basically requests to be rendered again as soon as possible). This
     /// method will also be called soon after the component is attached.
     ///
-    /// ### The return value
-    /// #### The drawn area
+    /// # The return value
+    /// ## The drawn area
     /// For the sake of optimization, it is very interesting for the caller to
     /// know where the component did and did not render stuff (so that it knows
     /// which other components need to be redrawn). The `drawn_area` field of
@@ -70,7 +70,7 @@ pub trait Component {
     /// of their *region* to avoid distortion or because they want to draw
     /// something that doesn't fill an entire rectangle (for instance a circle).
     ///
-    /// #### Filter mouse actions
+    /// ## Filter mouse actions
     /// Furthermore, it is possible (and optional) to set the `filter_mouse_actions`
     /// field of the return value. If that is true and this component is
     /// subscribed to mouse events, only the region(s) where the component has
@@ -83,6 +83,12 @@ pub trait Component {
     /// set to true, it will *not* be called because the component didn't render
     /// there. This can be convenient for many clickable components that don't
     /// always use their full component domain.
+    ///
+    /// ### Affected mouse events
+    /// The following mouse events will be affected by `filter_mouse_actions`: `MouseClickEvent`,
+    /// `MouseClickOutEvent`, `MouseMoveEvent`, `MouseEnterEvent`, and `MouseLeaveEvent`.
+    ///
+    /// This will *not* affect the `get_local_mouses` method of this buddy.
     fn render(
         &mut self,
         #[cfg(feature = "golem_rendering")] golem: &Context,
