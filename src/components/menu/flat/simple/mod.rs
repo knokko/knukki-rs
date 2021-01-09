@@ -1413,4 +1413,189 @@ mod tests {
 
     // TODO Test mouse move, enter, and leave subscriptions
     // TODO Test mouse move fully inside
+
+    #[test]
+    fn test_mouse_move_subscriptions() {
+        struct MouseMoveSubscribeComponent {
+            subscribe_mouse_move: Rc<Cell<bool>>,
+            subscribe_mouse_enter: Rc<Cell<bool>>,
+            subscribe_mouse_leave: Rc<Cell<bool>>,
+
+            mouse_move_log: Rc<RefCell<Vec<MouseMoveEvent>>>,
+            mouse_enter_log: Rc<RefCell<Vec<MouseEnterEvent>>>,
+            mouse_leave_log: Rc<RefCell<Vec<MouseLeaveEvent>>>,
+        }
+
+        impl Component for MouseMoveSubscribeComponent {
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(
+                &mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool
+            ) -> RenderResult {
+                if self.subscribe_mouse_move.get() {
+                    buddy.subscribe_mouse_move();
+                } else {
+                    buddy.unsubscribe_mouse_move();
+                }
+                if self.subscribe_mouse_enter.get() {
+                    buddy.subscribe_mouse_enter();
+                } else {
+                    buddy.unsubscribe_mouse_enter();
+                }
+                if self.subscribe_mouse_leave.get() {
+                    buddy.subscribe_mouse_leave();
+                } else {
+                    buddy.unsubscribe_mouse_leave();
+                }
+                entire_render_result()
+            }
+
+            fn on_mouse_move(&mut self, event: MouseMoveEvent, _buddy: &mut dyn ComponentBuddy) {
+                let mut move_log = self.mouse_move_log.borrow_mut();
+                move_log.push(event);
+            }
+
+            fn on_mouse_enter(&mut self, event: MouseEnterEvent, _buddy: &mut dyn ComponentBuddy) {
+                let mut enter_log = self.mouse_enter_log.borrow_mut();
+                enter_log.push(event);
+            }
+
+            fn on_mouse_leave(&mut self, event: MouseLeaveEvent, _buddy: &mut dyn ComponentBuddy) {
+                let mut leave_log = self.mouse_leave_log.borrow_mut();
+                leave_log.push(event);
+            }
+        }
+
+        let mouse_move_log = Rc::new(RefCell::new(Vec::new()));
+        let mouse_enter_log = Rc::new(RefCell::new(Vec::new()));
+        let mouse_leave_log = Rc::new(RefCell::new(Vec::new()));
+
+        let sub_mouse_move = Rc::new(Cell::new(false));
+        let sub_mouse_enter = Rc::new(Cell::new(false));
+        let sub_mouse_leave = Rc::new(Cell::new(false));
+
+        let component = MouseMoveSubscribeComponent {
+            mouse_move_log: Rc::clone(&mouse_move_log),
+            mouse_enter_log: Rc::clone(&mouse_enter_log),
+            mouse_leave_log: Rc::clone(&mouse_leave_log),
+
+            subscribe_mouse_move: Rc::clone(&sub_mouse_move),
+            subscribe_mouse_enter: Rc::clone(&sub_mouse_enter),
+            subscribe_mouse_leave: Rc::clone(&sub_mouse_leave),
+        };
+
+        let mut menu = SimpleFlatMenu::new(None);
+        let mut buddy = RootComponentBuddy::new();
+
+        menu.on_attach(&mut buddy);
+        menu.add_component(
+            Box::new(component),
+            ComponentDomain::between(0.0, 0.0, 0.5, 0.5)
+        );
+
+        let mut try_combination = |mouse_move: bool, mouse_enter: bool, mouse_leave: bool| {
+            sub_mouse_move.set(mouse_move);
+            sub_mouse_enter.set(mouse_enter);
+            sub_mouse_leave.set(mouse_leave);
+            menu.render(
+                RenderRegion::between(0, 1, 4, 7),
+                &mut buddy, true
+            ).unwrap();
+            let mouse = Mouse::new(2);
+            let original_enter_event1 = MouseEnterEvent::new(
+                mouse, Point::new(0.1, 0.6)
+            );
+            let original_enter_event2 = MouseMoveEvent::new(
+                mouse, Point::new(0.1, 0.6), Point::new(0.1, 0.25)
+            );
+            let original_move_event = MouseMoveEvent::new(
+                mouse, Point::new(0.1, 0.25), Point::new(0.4, 0.25)
+            );
+            let original_leave_event1 = MouseMoveEvent::new(
+                mouse, Point::new(0.4, 0.25), Point::new(0.4, 0.6)
+            );
+            let original_leave_event2 = MouseLeaveEvent::new(
+                mouse, Point::new(0.4, 0.6)
+            );
+            let transformed_enter_event1 = MouseEnterEvent::new(
+                mouse, Point::new(0.2, 1.0)
+            );
+            let transformed_enter_event2 = MouseMoveEvent::new(
+                mouse, Point::new(0.2, 1.0), Point::new(0.2, 0.5)
+            );
+            let transformed_move_event = MouseMoveEvent::new(
+                mouse, Point::new(0.2, 0.5), Point::new(0.8, 0.5)
+            );
+            let transformed_leave_event1 = MouseMoveEvent::new(
+                mouse, Point::new(0.8, 0.5), Point::new(0.8, 1.0)
+            );
+            let transformed_leave_event2 = MouseLeaveEvent::new(
+                mouse, Point::new(0.8, 1.0)
+            );
+
+            menu.on_mouse_enter(original_enter_event1, &mut buddy);
+            menu.on_mouse_move(original_enter_event2, &mut buddy);
+            menu.on_mouse_move(original_move_event, &mut buddy);
+            menu.on_mouse_move(original_leave_event1, &mut buddy);
+            menu.on_mouse_leave(original_leave_event2, &mut buddy);
+
+            let mut move_log = mouse_move_log.borrow_mut();
+            let mut enter_log = mouse_enter_log.borrow_mut();
+            let mut leave_log = mouse_leave_log.borrow_mut();
+
+            if mouse_move {
+                let move_event_eq = |expected: &MouseMoveEvent, actual: &MouseMoveEvent| {
+                    assert_eq!(expected.get_mouse(), actual.get_mouse());
+                    assert!(expected.get_from().nearly_equal(actual.get_from()));
+                    assert!(expected.get_to().nearly_equal(actual.get_to()));
+                };
+
+                assert_eq!(3, move_log.len());
+                move_event_eq(&transformed_enter_event2, &move_log[0]);
+                move_event_eq(&transformed_move_event, &move_log[1]);
+                move_event_eq(&transformed_leave_event1, &move_log[2]);
+            } else {
+                assert!(move_log.is_empty());
+            }
+
+            if mouse_enter {
+                let enter_event_eq = |expected: &MouseEnterEvent, actual: &MouseEnterEvent| {
+                    assert_eq!(expected.get_mouse(), actual.get_mouse());
+                    assert!(expected.get_entrance_point().nearly_equal(actual.get_entrance_point()));
+                };
+
+                assert_eq!(1, enter_log.len());
+                enter_event_eq(&transformed_enter_event1, &enter_log[0]);
+            } else {
+                assert!(enter_log.is_empty());
+            }
+
+            if mouse_leave {
+                let leave_event_eq = |expected: &MouseLeaveEvent, actual: &MouseLeaveEvent| {
+                    assert_eq!(expected.get_mouse(), actual.get_mouse());
+                    assert!(expected.get_exit_point().nearly_equal(actual.get_exit_point()));
+                };
+
+                assert_eq!(1, leave_log.len());
+                leave_event_eq(&transformed_leave_event2, &leave_log[0]);
+            } else {
+                assert!(leave_log.is_empty());
+            }
+
+            move_log.clear();
+            enter_log.clear();
+            leave_log.clear();
+        };
+
+        for _counter in 0 .. 2 {
+            try_combination(false, false, false);
+            try_combination(false, false, true);
+            try_combination(false, true, false);
+            try_combination(false, true, true);
+            try_combination(true, false, false);
+            try_combination(true, false, true);
+            try_combination(true, true, false);
+            try_combination(true, true, true);
+        }
+    }
 }
