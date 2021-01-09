@@ -1,3 +1,5 @@
+#![feature(drain_filter)]
+
 mod application;
 mod component;
 mod components;
