@@ -83,9 +83,11 @@ impl SimpleFlatMenu {
 impl Component for SimpleFlatMenu {
     fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
         self.update_internal(buddy, false);
-        // TODO Performance improvement: only subscribe when at least 1 component did
         buddy.subscribe_mouse_click();
         buddy.subscribe_mouse_click_out();
+        buddy.subscribe_mouse_move();
+        buddy.subscribe_mouse_enter();
+        buddy.subscribe_mouse_leave();
     }
 
     // Variables only used when the golem_rendering feature is enabled are
@@ -204,6 +206,16 @@ impl Component for SimpleFlatMenu {
         }
     }
 
+    fn on_mouse_move(&mut self, event: MouseMoveEvent, buddy: &mut dyn ComponentBuddy) {
+        // TODO Consider only the components intersecting the rectangle around the line from
+        // TODO event.from to event.to (using some kind of 2d range tree)
+        for entry_cell in &self.components {
+            let mut entry = entry_cell.borrow_mut();
+            entry.mouse_move(event);
+            self.check_buddy(buddy, &mut entry, false);
+        }
+    }
+
     fn on_mouse_enter(&mut self, event: MouseEnterEvent, buddy: &mut dyn ComponentBuddy) {
         if let Some(hit_component_entry) = self.get_component_at(event.get_entrance_point()) {
             let mut borrowed_entry = hit_component_entry.borrow_mut();
@@ -217,16 +229,6 @@ impl Component for SimpleFlatMenu {
             let mut borrowed_entry = hit_component_entry.borrow_mut();
             borrowed_entry.mouse_leave(event);
             self.check_buddy(buddy, &mut borrowed_entry, false);
-        }
-    }
-
-    fn on_mouse_move(&mut self, event: MouseMoveEvent, buddy: &mut dyn ComponentBuddy) {
-        // TODO Consider only the components intersecting the rectangle around the line from
-        // TODO event.from to event.to (using some kind of 2d range tree)
-        for entry_cell in &self.components {
-            let mut entry = entry_cell.borrow_mut();
-            entry.mouse_move(event);
-            self.check_buddy(buddy, &mut entry, false);
         }
     }
 
@@ -1597,5 +1599,40 @@ mod tests {
             try_combination(true, true, false);
             try_combination(true, true, true);
         }
+    }
+
+    #[test]
+    fn test_own_subscriptions() {
+        struct CuriousComponent {}
+
+        impl Component for CuriousComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+                buddy.subscribe_mouse_click();
+                buddy.subscribe_mouse_click_out();
+                buddy.subscribe_mouse_move();
+                buddy.subscribe_mouse_enter();
+                buddy.subscribe_mouse_leave();
+            }
+
+            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+                entire_render_result()
+            }
+        }
+
+        let mut menu = SimpleFlatMenu::new(None);
+        let mut buddy = RootComponentBuddy::new();
+        menu.on_attach(&mut buddy);
+        menu.add_component(
+            Box::new(CuriousComponent {}),
+            ComponentDomain::between(0.3, 0.6, 1.0, 0.9)
+        );
+
+        // The menu should have subscribed to all events
+        let subs = buddy.get_subscriptions();
+        assert!(subs.mouse_click);
+        assert!(subs.mouse_click_out);
+        assert!(subs.mouse_move);
+        assert!(subs.mouse_enter);
+        assert!(subs.mouse_leave);
     }
 }
