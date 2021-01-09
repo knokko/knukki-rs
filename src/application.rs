@@ -836,9 +836,9 @@ mod tests {
         }
 
         impl Component for SubscribeComponent {
-            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
-            fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+            fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
                 let new_subscriptions = self.desired_subscriptions.borrow();
                 if new_subscriptions.mouse_click {
                     buddy.subscribe_mouse_click();

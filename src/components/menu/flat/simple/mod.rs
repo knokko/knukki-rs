@@ -220,6 +220,16 @@ impl Component for SimpleFlatMenu {
         }
     }
 
+    fn on_mouse_move(&mut self, event: MouseMoveEvent, buddy: &mut dyn ComponentBuddy) {
+        // TODO Consider only the components intersecting the rectangle around the line from
+        // TODO event.from to event.to (using some kind of 2d range tree)
+        for entry_cell in &self.components {
+            let mut entry = entry_cell.borrow_mut();
+            entry.mouse_move(event);
+            self.check_buddy(buddy, &mut entry, false);
+        }
+    }
+
     fn on_detach(&mut self) {
         self.components.clear();
     }
@@ -303,6 +313,94 @@ impl ComponentEntry {
                     );
                     self.component.on_mouse_leave(transformed_event, &mut self.buddy);
                 }
+            }
+        }
+    }
+
+    fn mouse_move(&mut self, event: MouseMoveEvent) {
+        let sub_enter = self.buddy.get_subscriptions().mouse_enter;
+        let sub_move = self.buddy.get_subscriptions().mouse_move;
+        let sub_leave = self.buddy.get_subscriptions().mouse_leave;
+        if sub_enter || sub_move || sub_leave {
+            if let Some(render_result) = self.buddy.get_last_render_result() {
+                let transformed_from = self.domain.transform(event.get_from());
+                let transformed_to = self.domain.transform(event.get_to());
+                let backup_region = RectangularDrawnRegion::new(
+                    0.0, 0.0, 1.0, 1.0
+                );
+                let reference_region = match render_result.filter_mouse_actions {
+                    true => render_result.drawn_region.as_ref(),
+                    false => &backup_region
+                };
+                let intersection = reference_region.find_line_intersection(transformed_from, transformed_to);
+                match intersection {
+                    LineIntersection::FullyOutside => {
+                        // I don't need to do anything
+                    }, LineIntersection::FullyInside => {
+                        // Just pass a MouseMoveEvent
+                        if sub_move {
+                            let move_event = MouseMoveEvent::new(
+                                event.get_mouse(), transformed_from, transformed_to
+                            );
+                            self.component.on_mouse_move(move_event, &mut self.buddy);
+                        }
+                    }, LineIntersection::Enters { point } => {
+                        // Pass a MouseEnterEvent and a MouseMoveEvent
+                        if sub_enter {
+                            let enter_event = MouseEnterEvent::new(
+                                event.get_mouse(), point
+                            );
+                            self.component.on_mouse_enter(enter_event, &mut self.buddy);
+                        }
+
+                        // Note: the component might have subscribed during its on_mouse_enter
+                        if self.buddy.get_subscriptions().mouse_move {
+                            let move_event = MouseMoveEvent::new(
+                                event.get_mouse(), point, transformed_to
+                            );
+                            self.component.on_mouse_move(move_event, &mut self.buddy);
+                        }
+                    }, LineIntersection::Exits { point } => {
+                        // Pass a MouseMoveEvent and a MouseLeaveEvent
+                        if sub_move {
+                            let move_event = MouseMoveEvent::new(
+                                event.get_mouse(), transformed_from, point
+                            );
+                            self.component.on_mouse_move(move_event, &mut self.buddy);
+                        }
+
+                        // Note: the component might have subscribed during its on_mouse_move
+                        if self.buddy.get_subscriptions().mouse_leave {
+                            let leave_event = MouseLeaveEvent::new(
+                                event.get_mouse(), point
+                            );
+                            self.component.on_mouse_leave(leave_event, &mut self.buddy);
+                        }
+                    }, LineIntersection::Crosses { entrance, exit } => {
+                        // Pass a MouseEnterEvent, MouseMoveEvent, and MouseLeaveEvent
+                        if sub_enter {
+                            let enter_event = MouseEnterEvent::new(
+                                event.get_mouse(), entrance
+                            );
+                            self.component.on_mouse_enter(enter_event, &mut self.buddy);
+                        }
+
+                        // Note: the component might have subscribed during its on_mouse_enter
+                        if self.buddy.get_subscriptions().mouse_move {
+                            let move_event = MouseMoveEvent::new(
+                                event.get_mouse(), entrance, exit
+                            );
+                            self.component.on_mouse_move(move_event, &mut self.buddy);
+                        }
+
+                        if self.buddy.get_subscriptions().mouse_leave {
+                            let leave_event = MouseLeaveEvent::new(
+                                event.get_mouse(), exit
+                            );
+                            self.component.on_mouse_leave(leave_event, &mut self.buddy);
+                        }
+                    }
+                };
             }
         }
     }
@@ -1072,24 +1170,24 @@ mod tests {
             buddy.subscribe_mouse_leave();
         }
 
-        fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+        fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
             Ok(RenderResultStruct {
                 filter_mouse_actions: self.should_filter_mouse_actions.get(),
                 drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8))
             })
         }
 
-        fn on_mouse_move(&mut self, event: MouseMoveEvent, buddy: &mut dyn ComponentBuddy) {
+        fn on_mouse_move(&mut self, event: MouseMoveEvent, _buddy: &mut dyn ComponentBuddy) {
             let mut move_log = self.mouse_move_log.borrow_mut();
             move_log.push(event);
         }
 
-        fn on_mouse_enter(&mut self, event: MouseEnterEvent, buddy: &mut dyn ComponentBuddy) {
+        fn on_mouse_enter(&mut self, event: MouseEnterEvent, _buddy: &mut dyn ComponentBuddy) {
             let mut enter_log = self.mouse_enter_log.borrow_mut();
             enter_log.push(event);
         }
 
-        fn on_mouse_leave(&mut self, event: MouseLeaveEvent, buddy: &mut dyn ComponentBuddy) {
+        fn on_mouse_leave(&mut self, event: MouseLeaveEvent, _buddy: &mut dyn ComponentBuddy) {
             let mut leave_log = self.mouse_leave_log.borrow_mut();
             leave_log.push(event);
         }
@@ -1152,7 +1250,7 @@ mod tests {
         menu.on_mouse_leave(hit_leave_event, &mut buddy);
 
         // So let's render
-        menu.render(render_region, &mut buddy, false);
+        menu.render(render_region, &mut buddy, false).unwrap();
 
         // Due to the mouse filtering, the edge event shouldn't trigger any reaction either
         menu.on_mouse_enter(edge_enter_event, &mut buddy);
@@ -1161,6 +1259,10 @@ mod tests {
         // But, the hit events should have effect
         menu.on_mouse_enter(hit_enter_event, &mut buddy);
         menu.on_mouse_leave(hit_leave_event, &mut buddy);
+
+        // The miss events shouldn't have any effect anyway
+        menu.on_mouse_enter(miss_enter_event, &mut buddy);
+        menu.on_mouse_leave(miss_leave_event, &mut buddy);
 
         let enter_log1 = enter_log1.borrow();
         assert!(enter_log1.is_empty());
@@ -1176,6 +1278,139 @@ mod tests {
         assert!(leave_log2[0].get_exit_point().nearly_equal(Point::new(0.5, 0.5)));
     }
 
+    #[test]
+    fn test_mouse_move() {
+        let move_logs = vec![
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+        ];
+        let enter_logs = vec![
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+        ];
+        let leave_logs = vec![
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+            Rc::new(RefCell::new(Vec::new())),
+        ];
+
+        let mut menu = SimpleFlatMenu::new(None);
+        let mut buddy = RootComponentBuddy::new();
+        menu.on_attach(&mut buddy);
+
+        // The outer bottom-left component
+        menu.add_component(Box::new(MouseMotionComponent {
+            should_filter_mouse_actions: Rc::new(Cell::new(true)),
+            mouse_move_log: Rc::clone(&move_logs[0]),
+            mouse_enter_log: Rc::clone(&enter_logs[0]),
+            mouse_leave_log: Rc::clone(&leave_logs[0]),
+        }), ComponentDomain::between(0.0, 0.0, 0.25, 0.25));
+
+        // The inner bottom-left component
+        menu.add_component(Box::new(MouseMotionComponent {
+            should_filter_mouse_actions: Rc::new(Cell::new(false)),
+            mouse_move_log: Rc::clone(&move_logs[1]),
+            mouse_enter_log: Rc::clone(&enter_logs[1]),
+            mouse_leave_log: Rc::clone(&leave_logs[1]),
+        }), ComponentDomain::between(0.25, 0.25, 0.5, 0.5));
+
+        // The inner top-right component
+        menu.add_component(Box::new(MouseMotionComponent {
+            should_filter_mouse_actions: Rc::new(Cell::new(true)),
+            mouse_move_log: Rc::clone(&move_logs[2]),
+            mouse_enter_log: Rc::clone(&enter_logs[2]),
+            mouse_leave_log: Rc::clone(&leave_logs[2]),
+        }), ComponentDomain::between(0.5, 0.5, 0.75, 0.75));
+
+        // The outer top-right component
+        menu.add_component(Box::new(MouseMotionComponent {
+            should_filter_mouse_actions: Rc::new(Cell::new(true)),
+            mouse_move_log: Rc::clone(&move_logs[4]),
+            mouse_enter_log: Rc::clone(&enter_logs[4]),
+            mouse_leave_log: Rc::clone(&leave_logs[4]),
+        }), ComponentDomain::between(0.75, 0.75, 1.0, 1.0));
+
+        // This component should be missed entirely
+        menu.add_component(Box::new(MouseMotionComponent {
+            should_filter_mouse_actions: Rc::new(Cell::new(false)),
+            mouse_move_log: Rc::clone(&move_logs[3]),
+            mouse_enter_log: Rc::clone(&enter_logs[3]),
+            mouse_leave_log: Rc::clone(&leave_logs[3]),
+        }), ComponentDomain::between(0.5, 0.0, 0.75, 0.25));
+
+        menu.render(
+            RenderRegion::between(0, 0, 20, 30),
+            &mut buddy, false
+        ).unwrap();
+
+        let mouse = Mouse::new(3);
+        let entrance_x = 0.25 * 0.25;
+        let entrance_y = 0.25 * 0.25;
+        let entrance = Point::new(entrance_x, entrance_y);
+        let exit_x = 1.0 - entrance_x;
+        let exit_y = 1.0 - entrance_y;
+        let exit = Point::new(exit_x, exit_y);
+
+        let enter_event = MouseEnterEvent::new(mouse, entrance);
+        let move_event = MouseMoveEvent::new(
+            mouse, entrance, exit
+        );
+        let leave_event = MouseLeaveEvent::new(mouse, exit);
+        menu.on_mouse_enter(enter_event, &mut buddy);
+        menu.on_mouse_move(move_event, &mut buddy);
+        menu.on_mouse_leave(leave_event, &mut buddy);
+
+        // Time to check the results...
+
+        // But first some helper functions
+        let eq_mouse_move = |enter_x: f32, enter_y: f32, exit_x: f32, exit_y: f32, event: &MouseMoveEvent| {
+            assert_eq!(mouse, event.get_mouse());
+            assert!(Point::new(enter_x, enter_y).nearly_equal(event.get_from()));
+            assert!(Point::new(exit_x, exit_y).nearly_equal(event.get_to()));
+        };
+        let eq_mouse_enter = |enter_x: f32, enter_y: f32, event: &MouseEnterEvent| {
+            assert_eq!(mouse, event.get_mouse());
+            assert!(Point::new(enter_x, enter_y).nearly_equal(event.get_entrance_point()));
+        };
+        let eq_mouse_leave = |exit_x: f32, exit_y: f32, event: &MouseLeaveEvent| {
+            assert_eq!(mouse, event.get_mouse());
+            assert!(Point::new(exit_x, exit_y).nearly_equal(event.get_exit_point()));
+        };
+        let check_log = |index: usize, enter_x: f32, enter_y: f32, exit_x: f32, exit_y: f32| {
+            let move_log = move_logs[index].borrow();
+            assert_eq!(1, move_log.len());
+            eq_mouse_move(enter_x, enter_y, exit_x, exit_y, &move_log[0]);
+            let enter_log = enter_logs[index].borrow();
+            assert_eq!(1, enter_log.len());
+            eq_mouse_enter(enter_x, enter_y, &enter_log[0]);
+            let leave_log = leave_logs[index].borrow();
+            assert_eq!(1, leave_log.len());
+            eq_mouse_leave(exit_x, exit_y, &leave_log[0]);
+        };
+
+        // Finally check the actual results
+        check_log(0, 0.25, 0.25, 0.8, 0.8);
+        check_log(1, 0.0, 0.0, 1.0, 1.0);
+        check_log(2, 0.2, 0.2, 0.8, 0.8);
+        check_log(4, 0.2, 0.2, 0.75, 0.75);
+
+        // And check that the out-of-line component didn't receive any events
+        let move_log = move_logs[3].borrow();
+        assert!(move_log.is_empty());
+        let enter_log = enter_logs[3].borrow();
+        assert!(enter_log.is_empty());
+        let leave_log = leave_logs[3].borrow();
+        assert!(leave_log.is_empty());
+    }
+
     // TODO Test mouse move, enter, and leave subscriptions
-    // TODO Test mouse move events
+    // TODO Test mouse move fully inside
 }
