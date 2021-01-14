@@ -2,6 +2,8 @@ use crate::*;
 
 #[cfg(feature = "golem_rendering")]
 use golem::Context;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 /// The `Application` is the 'highest' object that is cross-platform. It
 /// encapsulates all the components and their buddies.
@@ -21,17 +23,26 @@ use golem::Context;
 pub struct Application {
     root_component: Box<dyn Component>,
     root_buddy: RootComponentBuddy,
+
+    mouse_store: Rc<RefCell<MouseStore>>,
 }
 
 impl Application {
     pub fn new(mut initial_root_component: Box<dyn Component>) -> Self {
+
+        let mouse_store = Rc::new(RefCell::new(MouseStore::new()));
+
         let mut root_buddy = RootComponentBuddy::new();
+        root_buddy.set_mouse_store(Rc::clone(&mouse_store));
+
         initial_root_component.on_attach(&mut root_buddy);
         // No need to call request_render, because the did_request_render field
         // of RootComponentBuddy starts as true
         let mut result = Self {
             root_component: initial_root_component,
             root_buddy,
+
+            mouse_store,
         };
         result.work_after_events();
         result
@@ -48,6 +59,8 @@ impl Application {
 
             // A fresh main component requires a fresh buddy
             self.root_buddy = RootComponentBuddy::new();
+            self.root_buddy.set_mouse_store(Rc::clone(&self.mouse_store));
+
             self.root_component.on_attach(&mut self.root_buddy);
             self.work_after_events();
             self.root_buddy.request_render();
@@ -177,6 +190,23 @@ impl Application {
     }
 
     pub fn fire_mouse_move_event(&mut self, event: MouseMoveEvent) {
+
+        // Keep the MouseStore up-to-date
+        let mut mouse_store = self.mouse_store.borrow_mut();
+        match mouse_store.update_mouse_state(event.get_mouse()) {
+            Some(state_to_update) => {
+                state_to_update.position = event.get_to();
+            }, None => {
+                // This shouldn't happen, but it's not critical enough for a release panic
+                debug_assert!(false);
+                mouse_store.add_mouse(event.get_mouse(), MouseState {
+                    position: event.get_to()
+                });
+            }
+        };
+        drop(mouse_store);
+
+        // Fire the necessary events
         if let Some(render_result) = self.root_buddy.get_last_render_result() {
             // Don't bother doing computations if the root component isn't interested in either event
             if self.sub_mouse_enter() || self.sub_mouse_move() || self.sub_mouse_leave() {
@@ -261,6 +291,15 @@ impl Application {
     }
 
     pub fn fire_mouse_enter_event(&mut self, event: MouseEnterEvent) {
+
+        // Keep the MouseStore up-to-date
+        let mut mouse_store = self.mouse_store.borrow_mut();
+        mouse_store.add_mouse(event.get_mouse(), MouseState {
+            position: event.get_entrance_point()
+        });
+        drop(mouse_store);
+
+        // Propagate the MouseEnterEvent
         if let Some(render_result) = self.root_buddy.get_last_render_result() {
             if self.root_buddy.get_subscriptions().mouse_enter {
                 let should_propagate = match render_result.filter_mouse_actions {
@@ -279,6 +318,13 @@ impl Application {
     }
 
     pub fn fire_mouse_leave_event(&mut self, event: MouseLeaveEvent) {
+
+        // Keep the MouseStore up-to-date
+        let mut mouse_store = self.mouse_store.borrow_mut();
+        mouse_store.remove_mouse(event.get_mouse());
+        drop(mouse_store);
+
+        // Propagate the MouseLeaveEvent
         if let Some(render_result) = self.root_buddy.get_last_render_result() {
             if self.root_buddy.get_subscriptions().mouse_leave {
                 let should_propagate = match render_result.filter_mouse_actions {
@@ -716,6 +762,9 @@ mod tests {
         };
 
         let mut application = Application::new(Box::new(component));
+        application.fire_mouse_enter_event(MouseEnterEvent::new(
+            Mouse::new(0), Point::new(0.0, 0.4)
+        ));
         let the_event =
             MouseMoveEvent::new(Mouse::new(0), Point::new(0.0, 0.4), Point::new(1.0, 0.4));
         let render_region = RenderRegion::with_size(0, 0, 30, 70);
@@ -776,6 +825,11 @@ mod tests {
 
         let mut application = Application::new(Box::new(component));
         application.render(RenderRegion::between(1, 2, 3, 4), false);
+
+        // Let the mouse enter the application
+        application.fire_mouse_enter_event(MouseEnterEvent::new(
+            Mouse::new(0), Point::new(0.0, 1.0)
+        ));
 
         // Move the mouse entirely outside
         let outside_event = MouseMoveEvent::new(

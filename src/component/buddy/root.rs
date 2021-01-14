@@ -1,7 +1,13 @@
 use crate::*;
+use std::rc::Rc;
+use std::cell::{RefCell, Ref};
 
 pub struct RootComponentBuddy {
     subscriptions: ComponentSubscriptions,
+
+    // This is optional to ease the writing of unit tests, but the *Application* is expected to
+    // call set_mouse_store in production environments.
+    mouse_store: Option<Rc<RefCell<MouseStore>>>,
 
     last_render_result: Option<RenderResultStruct>,
 
@@ -14,6 +20,7 @@ impl RootComponentBuddy {
     pub fn new() -> Self {
         Self {
             subscriptions: ComponentSubscriptions::new(),
+            mouse_store: None,
             last_render_result: None,
             create_next_menu: None,
 
@@ -25,6 +32,14 @@ impl RootComponentBuddy {
 
     pub fn get_subscriptions(&self) -> &ComponentSubscriptions {
         &self.subscriptions
+    }
+
+    pub fn set_mouse_store(&mut self, mouse_store: Rc<RefCell<MouseStore>>) {
+        self.mouse_store = Some(mouse_store);
+    }
+
+    fn get_mouse_store(&self) -> Ref<MouseStore> {
+        self.mouse_store.as_ref().expect("The application should use set_mouse_store").borrow()
     }
 
     pub fn did_request_render(&self) -> bool {
@@ -124,7 +139,9 @@ impl ComponentBuddy for RootComponentBuddy {
     }
 
     fn get_mouse_position(&self, mouse: Mouse) -> Option<Point> {
-        unimplemented!()
+        let mouse_store = self.get_mouse_store();
+        // No transformation needed because we are the root
+        mouse_store.get_mouse_state(mouse).map(|state| state.position)
     }
 
     fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> bool {
@@ -136,10 +153,13 @@ impl ComponentBuddy for RootComponentBuddy {
     }
 
     fn get_local_mouses(&self) -> Vec<Mouse> {
-        unimplemented!()
+        let mouse_store = self.get_mouse_store();
+        // No filtering needed since we are the root
+        mouse_store.get_mouses()
     }
 
     fn get_all_mouses(&self) -> Vec<Mouse> {
-        unimplemented!()
+        // All mouses are local for the root component
+        self.get_local_mouses()
     }
 }
