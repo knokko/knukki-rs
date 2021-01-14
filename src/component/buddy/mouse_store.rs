@@ -57,6 +57,12 @@ impl MouseStore {
         self.remove_mouse(mouse);
         self.entries.push(MouseEntry { mouse, state: initial_state });
     }
+
+    /// Creates and returns a `Vec` containing all `Mouse`s that have been added to this store, but
+    /// *not* (yet) removed.
+    pub fn get_mouses(&self) -> Vec<Mouse> {
+        self.entries.iter().map(|entry| entry.mouse).collect()
+    }
 }
 
 struct MouseEntry {
@@ -88,10 +94,13 @@ mod tests {
         };
 
         assert!(store.get_mouse_state(mouse1).is_none());
+        assert_eq!(Vec::<Mouse>::new(), store.get_mouses());
 
         store.add_mouse(mouse2, test_state.clone());
         assert!(store.get_mouse_state(mouse1).is_none());
+        assert_eq!(vec![mouse2], store.get_mouses());
         store.add_mouse(mouse1, test_state.clone());
+        assert_eq!(vec![mouse2, mouse1], store.get_mouses());
         assert!(store.get_mouse_state(mouse1).is_some());
         assert!(store.get_mouse_state(mouse2).is_some());
 
@@ -99,29 +108,35 @@ mod tests {
         store.remove_mouse(mouse3);
         assert!(store.get_mouse_state(mouse1).is_some());
         assert!(store.get_mouse_state(mouse2).is_some());
+        assert_eq!(vec![mouse2, mouse1], store.get_mouses());
 
         // This should remove only the second mouse
         store.remove_mouse(mouse2);
         assert!(store.get_mouse_state(mouse1).is_some());
         assert!(store.get_mouse_state(mouse2).is_none());
+        assert_eq!(vec![mouse1], store.get_mouses());
 
         // Adding the first mouse again shouldn't have any effect
         store.add_mouse(mouse1, test_state.clone());
         assert!(store.get_mouse_state(mouse1).is_some());
         assert!(store.get_mouse_state(mouse2).is_none());
+        assert_eq!(vec![mouse1], store.get_mouses());
 
         // Adding the second mouse again should be possible
         store.add_mouse(mouse2, test_state.clone());
         assert!(store.get_mouse_state(mouse1).is_some());
         assert!(store.get_mouse_state(mouse2).is_some());
+        assert_eq!(vec![mouse1, mouse2], store.get_mouses());
 
         // Check that we can remove both mouses...
         store.remove_mouse(mouse1);
         assert!(store.get_mouse_state(mouse1).is_none());
         assert!(store.get_mouse_state(mouse2).is_some());
+        assert_eq!(vec![mouse2], store.get_mouses());
         store.remove_mouse(mouse2);
         assert!(store.get_mouse_state(mouse1).is_none());
         assert!(store.get_mouse_state(mouse2).is_none());
+        assert_eq!(Vec::<Mouse>::new(), store.get_mouses());
     }
 
     #[test]
@@ -143,9 +158,11 @@ mod tests {
         // Test overwriting
         store.add_mouse(mouse1, state2.clone());
         assert_eq!(Some(&mut state2), store.update_mouse_state(mouse1));
+        assert_eq!(vec![mouse1], store.get_mouses());
 
         // Check that it's not possible to update a mouse the store doesn't have
         assert!(store.update_mouse_state(mouse2).is_none());
+        assert_eq!(vec![mouse1], store.get_mouses());
 
         // But it should be possible once mouse2 has been added
         store.add_mouse(mouse2, state3.clone());
@@ -153,6 +170,7 @@ mod tests {
 
         // Of course, we should be able to actually mutate it
         store.update_mouse_state(mouse2).unwrap().position = state1.position;
+        assert_eq!(vec![mouse1, mouse2], store.get_mouses());
 
         // This should update the state of mouse2
         assert_eq!(state1.position, store.get_mouse_state(mouse2).unwrap().position);
@@ -167,5 +185,6 @@ mod tests {
         // But we should keep the state of mouse2
         assert_eq!(state1.position, store.get_mouse_state(mouse2).unwrap().position);
         assert_eq!(state1.position, store.update_mouse_state(mouse2).unwrap().position);
+        assert_eq!(vec![mouse2], store.get_mouses());
     }
 }
