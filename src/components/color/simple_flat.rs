@@ -1,16 +1,16 @@
 use crate::*;
 
-pub struct FlatColorComponent {
+pub struct SimpleFlatColorComponent {
     color: Color,
 }
 
-impl FlatColorComponent {
+impl SimpleFlatColorComponent {
     pub fn new(color: Color) -> Self {
         Self { color }
     }
 }
 
-impl Component for FlatColorComponent {
+impl Component for SimpleFlatColorComponent {
     fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
     fn render(

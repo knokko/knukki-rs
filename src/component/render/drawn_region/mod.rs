@@ -4,11 +4,13 @@ mod composite;
 mod line_intersection;
 mod rectangle;
 mod transformed;
+mod oval;
 
 pub use composite::*;
 pub use line_intersection::*;
 pub use rectangle::*;
 pub use transformed::*;
+pub use oval::*;
 
 /// Represents a part of the domain of a `Component` and is used to indicate in
 /// which part of its domain a component has actually drawn something.
@@ -28,10 +30,11 @@ pub use transformed::*;
 /// domain and a y-coordinate of 1.0 indicates the top border of the component.
 ///
 /// ### Implementations
-/// The simplest implementation of this trait is `RectangularDrawnRegion`.
-/// There is also the `CompositeDrawnRegion`. I am planning to add more
-/// implementations in the future. You can also create your own
-/// implementations to define more complex shapes.
+/// The simplest implementation of this trait are `RectangularDrawnRegion` and
+/// `OvalDrawnRegion`. There is also the `CompositeDrawnRegion`, which can be used
+/// to construct reasonably complex shapes by combining multiple other regions.
+/// I am planning to add more implementations in the future. You can also create your
+/// own implementations to define more complex shapes.
 pub trait DrawnRegion {
     /// Checks if `point` is inside this region and returns true if (and only if) so
     fn is_inside(&self, point: Point) -> bool;

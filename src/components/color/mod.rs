@@ -1,6 +1,7 @@
-mod flat;
+mod simple_flat;
+mod hover_circle;
 
-pub use flat::*;
+pub use simple_flat::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Color {
