@@ -938,4 +938,147 @@ mod tests {
             try_events(true, true, true);
         }
     }
+
+    #[test]
+    fn test_buddy_get_mouses() {
+        struct GetMouseComponent {
+            expected: Rc<RefCell<Vec<Mouse>>>
+        }
+
+        impl Component for GetMouseComponent {
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+                let expected = self.expected.borrow();
+                assert_eq!(expected.as_ref() as &Vec<Mouse>, &buddy.get_local_mouses());
+                assert_eq!(expected.as_ref() as &Vec<Mouse>, &buddy.get_all_mouses());
+                entire_render_result()
+            }
+        }
+
+        let expected_mouses = Rc::new(RefCell::new(Vec::new()));
+
+        let mut application = Application::new(
+            Box::new(GetMouseComponent { expected: Rc::clone(&expected_mouses) })
+        );
+
+        let region = RenderRegion::with_size(1, 2, 3, 4);
+
+        // The mouses should be empty initially
+        application.render(region, true);
+
+        let enter_event = |mouse_id: u16| MouseEnterEvent::new(
+            Mouse::new(mouse_id), Point::new(0.2, 0.3)
+        );
+        let leave_event = |mouse_id: u16| MouseLeaveEvent::new(
+            Mouse::new(mouse_id), Point::new(0.2, 0.3)
+        );
+        let mouse_vec = |ids: &[u16]| ids.iter().map(|id| Mouse::new(*id)).collect();
+
+        // Add the first mouse
+        application.fire_mouse_enter_event(enter_event(123));
+        expected_mouses.replace(mouse_vec(&[123]));
+        application.render(region, true);
+
+        // Add the second mouse
+        application.fire_mouse_enter_event(enter_event(1));
+        expected_mouses.replace(mouse_vec(&[123, 1]));
+        application.render(region, true);
+
+        // Remove the first mouse
+        application.fire_mouse_leave_event(leave_event(123));
+        expected_mouses.replace(mouse_vec(&[1]));
+        application.render(region, true);
+
+        // Add the first mouse back, and add yet another mouse
+        application.fire_mouse_enter_event(enter_event(123));
+        application.fire_mouse_enter_event(enter_event(8));
+        expected_mouses.replace(mouse_vec(&[1, 123, 8]));
+        application.render(region, true);
+
+        // Remove all mouses
+        application.fire_mouse_leave_event(leave_event(123));
+        application.fire_mouse_leave_event(leave_event(8));
+        application.fire_mouse_leave_event(leave_event(1));
+        expected_mouses.replace(mouse_vec(&[]));
+        application.render(region, true);
+    }
+
+    #[test]
+    fn test_buddy_get_mouse_position() {
+        #[derive(Copy, Clone)]
+        struct MouseCheck {
+            mouse: Mouse,
+            expected_position: Option<Point>,
+        }
+
+        fn check(mouse: Mouse, expected_x: f32, expected_y: f32) -> MouseCheck {
+            MouseCheck { mouse, expected_position: Some(Point::new(expected_x, expected_y)) }
+        }
+
+        fn check_none(mouse: Mouse) -> MouseCheck {
+            MouseCheck { mouse, expected_position: None }
+        }
+
+        struct MouseCheckingComponent {
+            check: Rc<Cell<MouseCheck>>,
+        }
+
+        impl Component for MouseCheckingComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+                assert_eq!(self.check.get().expected_position, buddy.get_mouse_position(self.check.get().mouse));
+                entire_render_result()
+            }
+        }
+
+        let mouse1 = Mouse::new(1);
+        let mouse2 = Mouse::new(0);
+
+        let next_check = Rc::new(Cell::new(
+            check_none(mouse1)
+        ));
+
+        let region = RenderRegion::with_size(1, 2, 3, 4);
+        let mut application = Application::new(Box::new(
+            MouseCheckingComponent { check: Rc::clone(&next_check) }
+        ));
+        application.render(region, true);
+        application.fire_mouse_enter_event(MouseEnterEvent::new(
+            mouse1, Point::new(0.3, 0.4)
+        ));
+        next_check.set(check(mouse1, 0.3, 0.4));
+        application.render(region, true);
+        next_check.set(check_none(mouse2));
+        application.render(region, true);
+        application.fire_mouse_move_event(MouseMoveEvent::new(
+            mouse1, Point::new(0.3, 0.4), Point::new(0.6, 0.5)
+        ));
+        next_check.set(check(mouse1, 0.6, 0.5));
+        application.render(region, true);
+
+        application.fire_mouse_enter_event(MouseEnterEvent::new(
+            mouse2, Point::new(0.1, 0.2)
+        ));
+        next_check.set(check(mouse2, 0.1, 0.2));
+        application.render(region, true);
+        next_check.set(check(mouse1, 0.6, 0.5));
+        application.render(region, true);
+
+        application.fire_mouse_move_event(MouseMoveEvent::new(
+            mouse2, Point::new(0.1, 0.2), Point::new(0.7, 0.1)
+        ));
+        application.render(region, true);
+        next_check.set(check(mouse2, 0.7, 0.1));
+        application.render(region, true);
+
+        application.fire_mouse_leave_event(MouseLeaveEvent::new(
+            mouse1, Point::new(0.6, 0.5)
+        ));
+        next_check.set(check_none(mouse1));
+        application.render(region, true);
+        next_check.set(check(mouse2, 0.7, 0.1));
+        application.render(region, true);
+    }
 }
