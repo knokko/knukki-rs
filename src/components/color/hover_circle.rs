@@ -92,6 +92,7 @@ impl Component for HoverColorCircleComponent {
             }",
                 fragment_shader: "
             void main() {
+                // TODO Wait... isn't this the formula for a rectangle rather than a circle?
                 if (
                     passPosition.x >= 0.5 - radius.x && passPosition.x <= 0.5 + radius.x &&
                     passPosition.y >= 0.5 - radius.y && passPosition.y <= 0.5 + radius.y
@@ -145,5 +146,50 @@ impl Component for HoverColorCircleComponent {
 
 #[cfg(test)]
 mod tests {
-    // TODO Check the returned drawn region
+    use crate::*;
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    #[test]
+    fn test_render_returned_region() {
+        let mut component = HoverColorCircleComponent::new(
+            Color::rgb(10, 20, 30),
+            Color::rgb(100, 110, 120)
+        );
+        let mut buddy = RootComponentBuddy::new();
+        buddy.set_mouse_store(Rc::new(RefCell::new(MouseStore::new())));
+
+        let square_region = RenderRegion::with_size(10, 20, 50, 50);
+        let square_result = component.render(
+            square_region, &mut buddy, true
+        ).unwrap().drawn_region;
+        assert!(Point::new(0.0, 0.0).nearly_equal(
+            Point::new(square_result.get_left(), square_result.get_bottom())
+        ));
+        assert!(Point::new(1.0, 1.0).nearly_equal(
+            Point::new(square_result.get_right(), square_result.get_top())
+        ));
+
+        let wide_region = RenderRegion::with_size(10, 20, 100, 50);
+        let wide_result = component.render(
+            wide_region, &mut buddy, true
+        ).unwrap().drawn_region;
+        assert!(Point::new(0.25, 0.0).nearly_equal(
+            Point::new(wide_result.get_left(), wide_result.get_bottom())
+        ));
+        assert!(Point::new(0.75, 1.0).nearly_equal(
+            Point::new(wide_result.get_right(), wide_result.get_top())
+        ));
+
+        let high_region = RenderRegion::with_size(10, 20, 50, 100);
+        let high_result = component.render(
+            high_region, &mut buddy, true
+        ).unwrap().drawn_region;
+        assert!(Point::new(0.0, 0.25).nearly_equal(
+            Point::new(high_result.get_left(), high_result.get_bottom())
+        ));
+        assert!(Point::new(1.0, 0.75).nearly_equal(
+            Point::new(high_result.get_right(), high_result.get_top())
+        ));
+    }
 }
