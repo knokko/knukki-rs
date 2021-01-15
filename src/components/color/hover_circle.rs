@@ -92,11 +92,9 @@ impl Component for HoverColorCircleComponent {
             }",
                 fragment_shader: "
             void main() {
-                // TODO Wait... isn't this the formula for a rectangle rather than a circle?
-                if (
-                    passPosition.x >= 0.5 - radius.x && passPosition.x <= 0.5 + radius.x &&
-                    passPosition.y >= 0.5 - radius.y && passPosition.y <= 0.5 + radius.y
-                ) {
+                float dx = passPosition.x / radius.x;
+                float dy = passPosition.y / radius.y;
+                if (dx * dx + dy * dy <= 1.0) {
                     gl_FragColor = vec4(color, 1.0);
                 } else {
                     discard;
@@ -111,16 +109,16 @@ impl Component for HoverColorCircleComponent {
             element_buffer.set_data(&quad_indices);
 
             shader.bind();
-            let color = match if_hovering {
+            let color = match is_hovering {
                 true => self.hover_color,
                 false => self.base_color
             };
             shader.set_uniform("color", UniformValue::Vector3([
                 color.get_red_float(), color.get_green_float(), color.get_blue_float()
-            ]));
+            ]))?;
             shader.set_uniform("radius", UniformValue::Vector2([
-                used_width * 0.5, used_height * 0.5
-            ]));
+                used_width, used_height
+            ]))?;
             unsafe {
                 shader.draw(
                     &vertex_buffer, &element_buffer,
