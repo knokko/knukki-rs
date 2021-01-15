@@ -2,6 +2,7 @@ mod simple_flat;
 mod hover_circle;
 
 pub use simple_flat::*;
+pub use hover_circle::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Color {
