@@ -1634,4 +1634,75 @@ mod tests {
         assert!(subs.mouse_enter);
         assert!(subs.mouse_leave);
     }
+    
+    // TODO Test buddy.get_local_mouses
+    // TODO Test buddy.get_mouse_position
+    
+    #[test]
+    fn test_buddy_get_all_mouses() {
+        struct GetMouseComponent {
+            expected: Rc<RefCell<Vec<Mouse>>>
+        }
+
+        impl Component for GetMouseComponent {
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+                let expected = self.expected.borrow();
+                assert_eq!(expected.as_ref() as &Vec<Mouse>, &buddy.get_all_mouses());
+                entire_render_result()
+            }
+        }
+
+        let expected_mouses = Rc::new(RefCell::new(Vec::new()));
+
+        let mut menu = SimpleFlatMenu::new(None);
+        menu.add_component(
+            Box::new(GetMouseComponent { expected: Rc::clone(&expected_mouses) }), 
+            ComponentDomain::between(0.1, 0.2, 0.3, 0.4)
+        );
+        
+        let mut buddy = RootComponentBuddy::new();
+
+        let region = RenderRegion::with_size(1, 2, 3, 4);
+
+        // The mouses should be empty initially
+        menu.render(region, &mut buddy, true);
+
+        let enter_event = |mouse_id: u16| MouseEnterEvent::new(
+            Mouse::new(mouse_id), Point::new(0.2, 0.3)
+        );
+        let leave_event = |mouse_id: u16| MouseLeaveEvent::new(
+            Mouse::new(mouse_id), Point::new(0.2, 0.3)
+        );
+        let mouse_vec = |ids: &[u16]| ids.iter().map(|id| Mouse::new(*id)).collect();
+
+        // Add the first mouse
+        menu.on_mouse_enter(enter_event(123), &mut buddy);
+        expected_mouses.replace(mouse_vec(&[123]));
+        menu.render(region, &mut buddy, true);
+
+        // Add the second mouse
+        menu.on_mouse_enter(enter_event(1), &mut buddy);
+        expected_mouses.replace(mouse_vec(&[123, 1]));
+        menu.render(region, &mut buddy, true);
+
+        // Remove the first mouse
+        menu.on_mouse_leave(leave_event(123), &mut buddy);
+        expected_mouses.replace(mouse_vec(&[1]));
+        menu.render(region, &mut buddy, true);
+
+        // Add the first mouse back, and add yet another mouse
+        menu.on_mouse_enter(enter_event(123), &mut buddy);
+        menu.on_mouse_enter(enter_event(8), &mut buddy);
+        expected_mouses.replace(mouse_vec(&[1, 123, 8]));
+        menu.render(region, &mut buddy, true);
+
+        // Remove all mouses
+        menu.on_mouse_leave(leave_event(123), &mut buddy);
+        menu.on_mouse_leave(leave_event(8), &mut buddy);
+        menu.on_mouse_leave(leave_event(1), &mut buddy);
+        expected_mouses.replace(mouse_vec(&[]));
+        menu.render(region, &mut buddy, true);
+    }
 }
