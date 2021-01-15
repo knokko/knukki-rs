@@ -81,8 +81,6 @@ impl DrawnRegion for OvalDrawnRegion {
 mod tests {
     use crate::*;
 
-    // TODO Check find_line_intersection
-
     #[test]
     fn test_bounds() {
         let oval = OvalDrawnRegion::new(Point::new(0.5, -0.5), 2.5, 0.5);
@@ -182,5 +180,83 @@ mod tests {
         assert_eq!(LineIntersection::FullyOutside, oval.find_line_intersection(
             Point::new(6.1, 2.0), Point::new(6.1, 4.0)
         ));
+
+        // This is root(3) / 2, which is an important constant for circles and ovals
+        let hsq3 = 0.5 * 3.0f32.sqrt();
+
+        // A horizontal line that goes 1.5 units above the center
+        assert!(LineIntersection::Crosses {
+            entrance: Point::new(10.0 - 4.0 * hsq3, 6.5),
+            exit: Point::new(10.0 + 4.0 * hsq3, 6.5)
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(0.0, 6.5), Point::new(20.0, 6.5)
+        )));
+        // Variations of that line that intersect the oval only once
+        assert!(LineIntersection::Exits {
+            point: Point::new(10.0 + 4.0 * hsq3, 6.5)
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(8.0, 6.5), Point::new(20.0, 6.5)
+        )));
+        assert!(LineIntersection::Enters {
+            point: Point::new(10.0 - 4.0 * hsq3, 6.5),
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(0.0, 6.5), Point::new(12.0, 6.5)
+        )));
+
+        // The last 3 lines, but in the other direction
+        // A horizontal line that goes 1.5 units above the center
+        assert!(LineIntersection::Crosses {
+            exit: Point::new(10.0 - 4.0 * hsq3, 6.5),
+            entrance: Point::new(10.0 + 4.0 * hsq3, 6.5)
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(20.0, 6.5), Point::new(0.0, 6.5)
+        )));
+        // Variations of that line that intersect the oval only once
+        assert!(LineIntersection::Enters {
+            point: Point::new(10.0 + 4.0 * hsq3, 6.5)
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(20.0, 6.5), Point::new(8.0, 6.5)
+        )));
+        assert!(LineIntersection::Exits {
+            point: Point::new(10.0 - 4.0 * hsq3, 6.5),
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(12.0, 6.5), Point::new(0.0, 6.5)
+        )));
+
+        // Vertical lines going through the center
+        assert!(LineIntersection::Crosses {
+            entrance: Point::new(10.0, 2.0),
+            exit: Point::new(10.0, 8.0)
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(10.0, -10.0), Point::new(10.0, 123.0)
+        )));
+        assert!(LineIntersection::Exits {
+            point: Point::new(10.0, 8.0)
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(10.0, 3.0), Point::new(10.0, 123.0)
+        )));
+        assert!(LineIntersection::Enters {
+            point: Point::new(10.0, 2.0),
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(10.0, -10.0), Point::new(10.0, 7.0)
+        )));
+
+        // The last 3 lines, but in the other direction
+        assert!(LineIntersection::Crosses {
+            exit: Point::new(10.0, 2.0),
+            entrance: Point::new(10.0, 8.0)
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(10.0, 123.0), Point::new(10.0, -10.0)
+        )));
+        assert!(LineIntersection::Enters {
+            point: Point::new(10.0, 8.0)
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(10.0, 123.0), Point::new(10.0, 3.0)
+        )));
+        assert!(LineIntersection::Exits {
+            point: Point::new(10.0, 2.0),
+        }.nearly_equal(oval.find_line_intersection(
+            Point::new(10.0, 7.0), Point::new(10.0, -10.0)
+        )));
     }
 }
