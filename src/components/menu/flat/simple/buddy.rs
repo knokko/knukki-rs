@@ -1,7 +1,12 @@
 use crate::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct SimpleFlatBuddy {
     subscriptions: ComponentSubscriptions,
+
+    mouse_buddy: Rc<RefCell<MouseBuddy>>,
+    domain: ComponentDomain,
 
     last_render_result: Option<RenderResultStruct>,
 
@@ -12,9 +17,13 @@ pub struct SimpleFlatBuddy {
 }
 
 impl SimpleFlatBuddy {
-    pub fn new() -> Self {
+    pub(super) fn new(domain: ComponentDomain, mouse_buddy: Rc<RefCell<MouseBuddy>>) -> Self {
         Self {
             subscriptions: ComponentSubscriptions::new(),
+
+            mouse_buddy,
+            domain,
+
             last_render_result: None,
             create_next_menu: None,
 
@@ -184,6 +193,19 @@ impl ComponentBuddy for SimpleFlatBuddy {
     }
 
     fn get_all_mouses(&self) -> Vec<Mouse> {
-        unimplemented!()
+        let mouse_buddy = self.mouse_buddy.borrow();
+        return mouse_buddy.all_mouses.clone();
     }
+}
+
+#[derive(Clone, Debug)]
+pub(super) struct MouseBuddy {
+    pub all_mouses: Vec<Mouse>,
+    pub local_mouses: Vec<MouseEntry>,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub(super) struct MouseEntry {
+    pub mouse: Mouse,
+    pub position: Point
 }

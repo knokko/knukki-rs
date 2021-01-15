@@ -17,6 +17,8 @@ pub struct SimpleFlatMenu {
     components_to_add: Vec<ComponentToAdd>,
     background_color: Option<Color>,
     has_rendered_before: bool,
+
+    mouse_buddy: RR<MouseBuddy>,
 }
 
 impl SimpleFlatMenu {
@@ -26,6 +28,11 @@ impl SimpleFlatMenu {
             components_to_add: Vec::new(),
             background_color,
             has_rendered_before: false,
+
+            mouse_buddy: Rc::new(RefCell::new(MouseBuddy {
+                all_mouses: Vec::new(),
+                local_mouses: Vec::new(),
+            })),
         }
     }
 
@@ -40,7 +47,7 @@ impl SimpleFlatMenu {
             let mut entry_to_add = ComponentEntry {
                 component: to_add.component,
                 domain: to_add.domain,
-                buddy: SimpleFlatBuddy::new(),
+                buddy: SimpleFlatBuddy::new(to_add.domain, Rc::clone(&self.mouse_buddy)),
             };
 
             entry_to_add.attach();
@@ -49,6 +56,26 @@ impl SimpleFlatMenu {
             // Don't forget this x)
             self.components.push(Rc::new(RefCell::new(entry_to_add)));
         }
+
+        // Keep the mouse buddy up-to-date
+        let mut mouse_buddy = self.mouse_buddy.borrow_mut();
+        mouse_buddy.all_mouses = own_buddy.get_all_mouses();
+        let local_mouses = own_buddy.get_local_mouses();
+        mouse_buddy.local_mouses.clear();
+        for mouse in local_mouses {
+            let should_have_position = own_buddy.get_mouse_position(mouse);
+            if let Some(position) = should_have_position {
+                mouse_buddy.local_mouses.push(MouseEntry {
+                    mouse,
+                    position
+                });
+            } else {
+                // This is weird behavior that should be investigated, but not worth a production
+                // crash
+                debug_assert!(false);
+            }
+        }
+        drop(mouse_buddy);
     }
 
     fn check_buddy(
@@ -454,6 +481,16 @@ mod tests {
     use std::cell::*;
     use std::rc::Rc;
 
+    fn root_buddy() -> RootComponentBuddy {
+        let mut buddy = RootComponentBuddy::new();
+        init(&mut buddy);
+        buddy
+    }
+
+    fn init(buddy: &mut RootComponentBuddy) {
+        buddy.set_mouse_store(Rc::new(RefCell::new(MouseStore::new())));
+    }
+
     #[test]
     fn test_attach_and_detach() {
         struct CountingComponent {
@@ -490,7 +527,7 @@ mod tests {
             ComponentDomain::between(0.0, 0.0, 0.5, 1.0),
         );
 
-        let mut buddy = RootComponentBuddy::new();
+        let mut buddy = root_buddy();
         menu.on_attach(&mut buddy);
 
         // The first component should have been attached
@@ -671,7 +708,7 @@ mod tests {
         }
 
         let mut menu = SimpleFlatMenu::new(None);
-        let mut buddy = RootComponentBuddy::new();
+        let mut buddy = root_buddy();
         let render_region = RenderRegion::between(10, 20, 30, 40);
 
         let click_counter = Rc::new(Cell::new(0));
@@ -822,7 +859,7 @@ mod tests {
         let click2 =
             MouseClickEvent::new(Mouse::new(0), Point::new(0.6, 0.6), MouseButton::primary());
         let render_region = RenderRegion::between(0, 0, 100, 40);
-        let mut buddy = RootComponentBuddy::new();
+        let mut buddy = root_buddy();
 
         let result = menu.render(render_region, &mut buddy, false).unwrap();
         // This menu should never request filtering mouse actions
@@ -924,7 +961,7 @@ mod tests {
             }
         }
 
-        let mut buddy = RootComponentBuddy::new();
+        let mut buddy = root_buddy();
         let mut menu = SimpleFlatMenu::new(None);
         let in1 = Rc::new(Cell::new(0));
         let in2 = Rc::new(Cell::new(0));
@@ -1053,7 +1090,7 @@ mod tests {
         let click_out_count1 = Rc::new(Cell::new(0));
         let click_out_count2 = Rc::new(Cell::new(0));
 
-        let buddy = RootComponentBuddy::new();
+        let buddy = root_buddy();
         let region = RenderRegion::between(0, 10, 20, 30);
         let mut menu = SimpleFlatMenu::new(None);
         menu.add_component(
@@ -1214,7 +1251,7 @@ mod tests {
             mouse_leave_log: Rc::clone(&leave_log2)
         };
 
-        let mut buddy = RootComponentBuddy::new();
+        let mut buddy = root_buddy();
         let mut menu = SimpleFlatMenu::new(None);
         menu.on_attach(&mut buddy);
         menu.add_component(
@@ -1304,7 +1341,7 @@ mod tests {
         ];
 
         let mut menu = SimpleFlatMenu::new(None);
-        let mut buddy = RootComponentBuddy::new();
+        let mut buddy = root_buddy();
         menu.on_attach(&mut buddy);
 
         // The outer bottom-left component
@@ -1486,7 +1523,7 @@ mod tests {
         };
 
         let mut menu = SimpleFlatMenu::new(None);
-        let mut buddy = RootComponentBuddy::new();
+        let mut buddy = root_buddy();
 
         menu.on_attach(&mut buddy);
         menu.add_component(
@@ -1619,7 +1656,7 @@ mod tests {
         }
 
         let mut menu = SimpleFlatMenu::new(None);
-        let mut buddy = RootComponentBuddy::new();
+        let mut buddy = root_buddy();
         menu.on_attach(&mut buddy);
         menu.add_component(
             Box::new(CuriousComponent {}),
@@ -1641,7 +1678,8 @@ mod tests {
     #[test]
     fn test_buddy_get_all_mouses() {
         struct GetMouseComponent {
-            expected: Rc<RefCell<Vec<Mouse>>>
+            expected: Rc<RefCell<Vec<Mouse>>>,
+            call_counter: Rc<Cell<u8>>,
         }
 
         impl Component for GetMouseComponent {
@@ -1650,24 +1688,31 @@ mod tests {
             fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
                 let expected = self.expected.borrow();
                 assert_eq!(expected.as_ref() as &Vec<Mouse>, &buddy.get_all_mouses());
+                self.call_counter.set(self.call_counter.get() + 1);
                 entire_render_result()
             }
         }
 
         let expected_mouses = Rc::new(RefCell::new(Vec::new()));
+        let call_counter = Rc::new(Cell::new(0));
 
         let mut menu = SimpleFlatMenu::new(None);
         menu.add_component(
-            Box::new(GetMouseComponent { expected: Rc::clone(&expected_mouses) }), 
+            Box::new(GetMouseComponent {
+                expected: Rc::clone(&expected_mouses),
+                call_counter: Rc::clone(&call_counter)
+            }),
             ComponentDomain::between(0.1, 0.2, 0.3, 0.4)
         );
-        
-        let mut buddy = RootComponentBuddy::new();
+
+        let mut application = Application::new(
+            Box::new(menu)
+        );
 
         let region = RenderRegion::with_size(1, 2, 3, 4);
 
         // The mouses should be empty initially
-        menu.render(region, &mut buddy, true);
+        application.render(region, true);
 
         let enter_event = |mouse_id: u16| MouseEnterEvent::new(
             Mouse::new(mouse_id), Point::new(0.2, 0.3)
@@ -1678,31 +1723,33 @@ mod tests {
         let mouse_vec = |ids: &[u16]| ids.iter().map(|id| Mouse::new(*id)).collect();
 
         // Add the first mouse
-        menu.on_mouse_enter(enter_event(123), &mut buddy);
+        application.fire_mouse_enter_event(enter_event(123));
         expected_mouses.replace(mouse_vec(&[123]));
-        menu.render(region, &mut buddy, true);
+        application.render(region, true);
 
         // Add the second mouse
-        menu.on_mouse_enter(enter_event(1), &mut buddy);
+        application.fire_mouse_enter_event(enter_event(1));
         expected_mouses.replace(mouse_vec(&[123, 1]));
-        menu.render(region, &mut buddy, true);
+        application.render(region, true);
 
         // Remove the first mouse
-        menu.on_mouse_leave(leave_event(123), &mut buddy);
+        application.fire_mouse_leave_event(leave_event(123));
         expected_mouses.replace(mouse_vec(&[1]));
-        menu.render(region, &mut buddy, true);
+        application.render(region, true);
 
         // Add the first mouse back, and add yet another mouse
-        menu.on_mouse_enter(enter_event(123), &mut buddy);
-        menu.on_mouse_enter(enter_event(8), &mut buddy);
+        application.fire_mouse_enter_event(enter_event(123));
+        application.fire_mouse_enter_event(enter_event(8));
         expected_mouses.replace(mouse_vec(&[1, 123, 8]));
-        menu.render(region, &mut buddy, true);
+        application.render(region, true);
 
         // Remove all mouses
-        menu.on_mouse_leave(leave_event(123), &mut buddy);
-        menu.on_mouse_leave(leave_event(8), &mut buddy);
-        menu.on_mouse_leave(leave_event(1), &mut buddy);
+        application.fire_mouse_leave_event(leave_event(123));
+        application.fire_mouse_leave_event(leave_event(8));
+        application.fire_mouse_leave_event(leave_event(1));
         expected_mouses.replace(mouse_vec(&[]));
-        menu.render(region, &mut buddy, true);
+        application.render(region, true);
+
+        assert_eq!(6, call_counter.get());
     }
 }
