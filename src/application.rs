@@ -119,6 +119,13 @@ impl Application {
             #[cfg(feature = "golem_rendering")]
             region.set_scissor(golem);
 
+            // If we are forced to redraw, we should clean the previous render actions up
+            #[cfg(feature = "golem_rendering")]
+            if force {
+                golem.set_clear_color(0.0, 0.0, 0.0, 1.0);
+                golem.clear();
+            }
+
             // Let the root component render itself
             let result = self
                 .root_component

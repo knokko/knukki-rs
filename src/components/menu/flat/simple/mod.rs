@@ -106,7 +106,6 @@ impl Component for SimpleFlatMenu {
         // Now onto the 'actual' drawing
         if force || !self.has_rendered_before {
             if let Some(bc) = self.background_color {
-                // TODO This really needs a scissor...
                 // TODO And take more care when this is partially transparent...
                 #[cfg(feature = "golem_rendering")]
                 golem.set_clear_color(
