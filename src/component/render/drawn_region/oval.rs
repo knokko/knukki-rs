@@ -53,26 +53,108 @@ impl DrawnRegion for OvalDrawnRegion {
     }
 
     fn find_line_intersection(&self, from: Point, to: Point) -> LineIntersection {
-        let distance = from.distance_to(to);
+        //let distance = from.distance_to(to);
+        let distance = 1.0; //TODO Clean up
         let direction_x = (to.get_x() - from.get_x()) / distance;
         let direction_y = (to.get_y() - from.get_y()) / distance;
 
-        let from_inside = self.is_inside(from);
-        let to_inside = self.is_inside(to);
-        match (from_inside, to_inside) {
-            (true, true) => LineIntersection::FullyInside,
-            (true, false) => {
-                // TODO Line leaves the oval
-                unimplemented!()
-            },
-            (false, true) => {
-                // TODO Line enters the oval
-                unimplemented!()
-            },
-            (false, false) => {
-                // TODO Determine whether or not there is an intersection
-                unimplemented!()
+        /*
+         * To keep things short, use:
+         * dx = direction_x, dy = direction_y, cx = center.x, cy = center.y, fx = from.x,
+         * fy = from.y, rx = radius_x, ry = radius_y
+         * with the unknown L('s)
+         *
+         * wx = weighted distance X = (fx + L*dx - cx) / rx
+         * wy = weighted distance Y = (fy + L*dy - cy) / ry
+         *
+         * We need to solve wx * wx + wy * wy = 1.0:
+         * (fx + L*dx - cx)^2 / rx^2 + (fy + L*dy - cy)^2 / ry^2 = 1.0
+         * To keep things short, use hx = fx - cx and hy = fy - cy
+         * (L*dx + hx)^2 / rx^2 + (L*dy + hy)^2 / ry^2 = 1.0
+         * (L^2*dx^2 + 2*L*dx*hx + hx^2) / rx^2 + (L^2*dy^2 + 2*L*dy*hy + hy^2) / ry^2 = 1.0
+         * L^2*(dx^2*rx^-2 + dy^2*ry^-2) + L*2*(dx*hx*rx^-2 + dy*hy*ry^-2) + hx^2*rx^-2 + hy^2*ry^-2 = 1.0
+         *
+         * Solve this with the quadratic formula:
+         * a = (dx^2*rx^-2 + dy^2*ry^-2)
+         * b = 2*(dx*hx*rx^-2 + dy*hy*ry^-2)
+         * c = hx^2*rx^-2 + hy^2*ry^-2 - 1.0
+         *
+         * D = b^2 - 4*a*c
+         * L = (-b +- sqrt(D)) / (2*a) if D > 0.0
+         * I will ignore the D = 0.0 case since it's not reliable due to rounding errors. When D is
+         * 0.0, I will consider it as a 'miss'
+         */
+
+        let helper_x = from.get_x() - self.center.get_x();
+        let helper_y = from.get_y() - self.center.get_y();
+
+        let a_x = direction_x * direction_x / (self.radius_x * self.radius_x);
+        let a_y = (direction_y * direction_y) / (self.radius_y * self.radius_y);
+        let a = a_x + a_y;
+
+        let b_x = direction_x * helper_x / (self.radius_x * self.radius_x);
+        let b_y = direction_y * helper_y / (self.radius_y * self.radius_y);
+        let b = 2.0 * (b_x + b_y);
+
+        let c_x = helper_x * helper_x / (self.radius_x * self.radius_x);
+        let c_y = helper_y * helper_y / (self.radius_y * self.radius_y);
+        let c = c_x + c_y - 1.0;
+
+        let discriminant = b * b - 4.0 * a * c;
+        return if discriminant > 0.0 {
+            // The line would cross the circle if it had unbounded length
+            let lambda1 = (-b - discriminant.sqrt()) / (2.0 * a);
+            let lambda2 = (-b + discriminant.sqrt()) / (2.0 * a);
+
+            let x1 = from.get_x() + lambda1 * direction_x;
+            let y1 = from.get_y() + lambda1 * direction_y;
+            let point1 = Point::new(x1, y1);
+
+            let x2 = from.get_x() + lambda2 * direction_x;
+            let y2 = from.get_y() + lambda2 * direction_y;
+            let point2 = Point::new(x2, y2);
+
+            if lambda1 <= 0.0 {
+                // The line can't enter the oval
+                if lambda2 < 0.0 {
+                    // The line ends before it would intersect the oval
+                    LineIntersection::FullyOutside
+                } else {
+                    // The line exits the oval or is entirely inside it
+                    if lambda2 > 1.0 {
+                        // The line is entirely inside the oval
+                        LineIntersection::FullyInside
+                    } else {
+                        // The line exits the oval
+                        LineIntersection::Exits {
+                            point: point2
+                        }
+                    }
+                }
+            } else {
+                // The line can't exit the oval
+                if lambda1 <= 1.0 {
+                    // The line enters or crosses the oval
+                    if lambda2 <= 1.0 {
+                        // The line crosses the oval
+                        LineIntersection::Crosses {
+                            entrance: point1,
+                            exit: point2
+                        }
+                    } else {
+                        // The line enters the oval
+                        LineIntersection::Enters {
+                            point: point1
+                        }
+                    }
+                } else {
+                    // The line ends before it could intersect the oval
+                    LineIntersection::FullyOutside
+                }
             }
+        } else {
+            // The line won't cross the circle
+            LineIntersection::FullyOutside
         }
     }
 }
