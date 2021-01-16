@@ -35,6 +35,10 @@ required-features = ["golem_rendering", "provider"]
 name = "hover_color_circle"
 required-features = ["golem_rendering", "provider"]
 
+[[example]]
+name = "hover_color_circle_menu"
+required-features = ["golem_rendering", "provider"]
+
 [dependencies]
 golem = { path = "../golem", optional = true }
 glutin = { version = "0.22.0", optional = true }
