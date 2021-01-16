@@ -8,6 +8,7 @@ mod point;
 
 #[cfg(feature = "provider")]
 mod provider;
+mod renderer;
 
 pub use application::*;
 pub use component::*;
@@ -17,3 +18,4 @@ pub use point::*;
 
 #[cfg(feature = "provider")]
 pub use provider::*;
+pub use renderer::*;

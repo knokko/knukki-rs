@@ -12,7 +12,7 @@ impl Component for DummyComponent {
 
     fn render(
         &mut self,
-        #[cfg(feature = "golem_rendering")] _golem: &golem::Context,
+        _renderer: Renderer,
         _region: RenderRegion,
         _buddy: &mut dyn ComponentBuddy,
         _force: bool,

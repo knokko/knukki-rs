@@ -1,4 +1,3 @@
-use golem::*;
 use knukki::*;
 
 fn main() {
@@ -30,6 +29,18 @@ impl Component for TestComponent {
         buddy.subscribe_mouse_click_out();
     }
 
+    fn render(
+        &mut self,
+        renderer: Renderer,
+        _region: RenderRegion,
+        _buddy: &mut dyn ComponentBuddy,
+        _force: bool,
+    ) -> RenderResult {
+        renderer.get_context().set_clear_color(self.red as f32 / 255.0, self.green as f32 / 255.0, 1.0, 1.0);
+        renderer.get_context().clear();
+        entire_render_result()
+    }
+
     fn on_mouse_click(&mut self, _event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
         self.red = self.red.wrapping_add(100);
         buddy.request_render();
@@ -38,17 +49,5 @@ impl Component for TestComponent {
     fn on_mouse_click_out(&mut self, _event: MouseClickOutEvent, buddy: &mut dyn ComponentBuddy) {
         self.green = self.green.wrapping_add(17);
         buddy.request_render();
-    }
-
-    fn render(
-        &mut self,
-        golem: &Context,
-        _region: RenderRegion,
-        _buddy: &mut dyn ComponentBuddy,
-        _force: bool,
-    ) -> RenderResult {
-        golem.set_clear_color(self.red as f32 / 255.0, self.green as f32 / 255.0, 1.0, 1.0);
-        golem.clear();
-        entire_render_result()
     }
 }

@@ -25,8 +25,7 @@ impl Component for HoverColorCircleComponent {
 
     fn render(
         &mut self,
-        #[cfg(feature = "golem_rendering")]
-        golem: &golem::Context,
+        renderer: Renderer,
         region: RenderRegion,
         buddy: &mut dyn ComponentBuddy,
         _force: bool
@@ -60,6 +59,8 @@ impl Component for HoverColorCircleComponent {
         #[cfg(feature = "golem_rendering")]
         {
             use golem::*;
+
+            let golem = renderer.get_context();
             // TODO Optimize this by storing the model and shaders rather than recreating them
             // all the time
 
@@ -159,7 +160,7 @@ mod tests {
 
         let square_region = RenderRegion::with_size(10, 20, 50, 50);
         let square_result = component.render(
-            square_region, &mut buddy, true
+            (), square_region, &mut buddy, true
         ).unwrap().drawn_region;
         assert!(Point::new(0.0, 0.0).nearly_equal(
             Point::new(square_result.get_left(), square_result.get_bottom())
@@ -170,7 +171,7 @@ mod tests {
 
         let wide_region = RenderRegion::with_size(10, 20, 100, 50);
         let wide_result = component.render(
-            wide_region, &mut buddy, true
+            (), wide_region, &mut buddy, true
         ).unwrap().drawn_region;
         assert!(Point::new(0.25, 0.0).nearly_equal(
             Point::new(wide_result.get_left(), wide_result.get_bottom())
@@ -181,7 +182,7 @@ mod tests {
 
         let high_region = RenderRegion::with_size(10, 20, 50, 100);
         let high_result = component.render(
-            high_region, &mut buddy, true
+            (), high_region, &mut buddy, true
         ).unwrap().drawn_region;
         assert!(Point::new(0.0, 0.25).nearly_equal(
             Point::new(high_result.get_left(), high_result.get_bottom())

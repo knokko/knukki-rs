@@ -122,7 +122,7 @@ impl Component for SimpleFlatMenu {
     #[allow(unused_variables)]
     fn render(
         &mut self,
-        #[cfg(feature = "golem_rendering")] golem: &golem::Context,
+        renderer: Renderer,
         region: RenderRegion,
         buddy: &mut dyn ComponentBuddy,
         force: bool,
@@ -135,14 +135,14 @@ impl Component for SimpleFlatMenu {
             if let Some(bc) = self.background_color {
                 // TODO And take more care when this is partially transparent...
                 #[cfg(feature = "golem_rendering")]
-                golem.set_clear_color(
+                renderer.get_context().set_clear_color(
                     bc.get_red_float(),
                     bc.get_green_float(),
                     bc.get_blue_float(),
                     bc.get_alpha_float(),
                 );
                 #[cfg(feature = "golem_rendering")]
-                golem.clear();
+                renderer.get_context().clear();
             }
         }
         let mut drawn_regions: Vec<Box<dyn DrawnRegion>> = Vec::new();
@@ -157,8 +157,7 @@ impl Component for SimpleFlatMenu {
             );
 
             if let Some(entry_result) = entry.render(
-                #[cfg(feature = "golem_rendering")]
-                golem,
+                renderer,
                 child_region,
                 force,
             ) {
@@ -435,7 +434,7 @@ impl ComponentEntry {
 
     fn render(
         &mut self,
-        #[cfg(feature = "golem_rendering")] golem: &golem::Context,
+        renderer: Renderer,
         region: RenderRegion,
         force: bool,
     ) -> Option<RenderResult> {
@@ -443,13 +442,12 @@ impl ComponentEntry {
             self.buddy.clear_render_request();
             #[cfg(feature = "golem_rendering")]
             {
-                region.set_viewport(golem);
-                region.set_scissor(golem);
+                region.set_viewport(renderer.get_context());
+                region.set_scissor(renderer.get_context());
             }
 
             let render_result = self.component.render(
-                #[cfg(feature = "golem_rendering")]
-                golem,
+                renderer,
                 region,
                 &mut self.buddy,
                 force,
@@ -504,6 +502,7 @@ mod tests {
 
             fn render(
                 &mut self,
+                _renderer: Renderer,
                 _region: RenderRegion,
                 _buddy: &mut dyn ComponentBuddy,
                 _force: bool,
@@ -542,13 +541,13 @@ mod tests {
         );
 
         // It should attach the second component as soon as possible
-        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy, false)
+        menu.render((), RenderRegion::between(0, 0, 10, 10), &mut buddy, false)
             .unwrap();
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
 
         // But they should be attached only once
-        menu.render(RenderRegion::between(0, 0, 10, 10), &mut buddy, false)
+        menu.render((), RenderRegion::between(0, 0, 10, 10), &mut buddy, false)
             .unwrap();
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
@@ -579,6 +578,7 @@ mod tests {
 
             fn render(
                 &mut self,
+                _renderer: Renderer,
                 _region: RenderRegion,
                 _buddy: &mut dyn ComponentBuddy,
                 _force: bool,
@@ -602,6 +602,7 @@ mod tests {
 
             fn render(
                 &mut self,
+                _renderer: Renderer,
                 _region: RenderRegion,
                 _buddy: &mut dyn ComponentBuddy,
                 _force: bool,
@@ -643,7 +644,7 @@ mod tests {
         assert_eq!(0, half_counter.get());
 
         // After at least 1 render call, clicking should have effect
-        application.render(RenderRegion::between(0, 0, 10, 10), false);
+        application.render((), RenderRegion::between(0, 0, 10, 10), false);
         application.fire_mouse_click_event(click_event(0.2, 0.2));
         application.fire_mouse_click_event(click_event(0.7, 0.7));
         assert_eq!(1, full_counter.get());
@@ -673,6 +674,7 @@ mod tests {
 
             fn render(
                 &mut self,
+                _renderer: Renderer,
                 _region: RenderRegion,
                 buddy: &mut dyn ComponentBuddy,
                 _force: bool,
@@ -698,6 +700,7 @@ mod tests {
 
             fn render(
                 &mut self,
+                _renderer: Renderer,
                 _region: RenderRegion,
                 _buddy: &mut dyn ComponentBuddy,
                 _force: bool,
@@ -724,7 +727,7 @@ mod tests {
         // All components should be rendered during their first render call
         assert!(buddy.did_request_render());
         buddy.clear_render_request();
-        menu.render(render_region, &mut buddy, false).unwrap();
+        menu.render((), render_region, &mut buddy, false).unwrap();
         assert_eq!(1, click_counter.get());
 
         // But the menu shouldn't request another one until we click the component
@@ -736,7 +739,7 @@ mod tests {
         menu.on_mouse_click(hit_click, &mut buddy);
         assert!(buddy.did_request_render());
         buddy.clear_render_request();
-        menu.render(render_region, &mut buddy, false).unwrap();
+        menu.render((), render_region, &mut buddy, false).unwrap();
         assert!(!buddy.did_request_render());
         assert_eq!(2, click_counter.get());
 
@@ -752,7 +755,7 @@ mod tests {
         // Force rendering should cause the render method to be called
         // And thus increment the click counter
         buddy.clear_render_request();
-        menu.render(render_region, &mut buddy, true).unwrap();
+        menu.render((), render_region, &mut buddy, true).unwrap();
         assert!(!buddy.did_request_render());
         assert_eq!(3, click_counter.get());
 
@@ -766,7 +769,7 @@ mod tests {
 
         // Only the busy component should render
         buddy.clear_render_request();
-        menu.render(render_region, &mut buddy, false).unwrap();
+        menu.render((), render_region, &mut buddy, false).unwrap();
         // And it should have requested a redraw right away
         assert!(buddy.did_request_render());
         assert_eq!(3, click_counter.get());
@@ -774,7 +777,7 @@ mod tests {
 
         // Again, only the busy component should render
         buddy.clear_render_request();
-        menu.render(render_region, &mut buddy, false).unwrap();
+        menu.render((), render_region, &mut buddy, false).unwrap();
         // And it should have requested a redraw again
         assert!(buddy.did_request_render());
         assert_eq!(3, click_counter.get());
@@ -782,7 +785,7 @@ mod tests {
 
         // When we force a render, both components should be redrawn
         buddy.clear_render_request();
-        menu.render(render_region, &mut buddy, true).unwrap();
+        menu.render((), render_region, &mut buddy, true).unwrap();
         // Like usual, it should request a next render
         assert!(buddy.did_request_render());
         assert_eq!(4, click_counter.get());
@@ -790,14 +793,14 @@ mod tests {
 
         // But when we render without force again, only the busy one should be drawn
         buddy.clear_render_request();
-        menu.render(render_region, &mut buddy, false).unwrap();
+        menu.render((), render_region, &mut buddy, false).unwrap();
         assert!(buddy.did_request_render());
         assert_eq!(4, click_counter.get());
         assert_eq!(4, busy_counter.get());
 
         // Unless we click it...
         menu.on_mouse_click(hit_click, &mut buddy);
-        menu.render(render_region, &mut buddy, false).unwrap();
+        menu.render((), render_region, &mut buddy, false).unwrap();
         assert!(buddy.did_request_render());
         assert_eq!(5, click_counter.get());
         assert_eq!(5, busy_counter.get());
@@ -814,6 +817,7 @@ mod tests {
 
         fn render(
             &mut self,
+            _renderer: Renderer,
             _region: RenderRegion,
             _buddy: &mut dyn ComponentBuddy,
             _force: bool,
@@ -861,7 +865,7 @@ mod tests {
         let render_region = RenderRegion::between(0, 0, 100, 40);
         let mut buddy = root_buddy();
 
-        let result = menu.render(render_region, &mut buddy, false).unwrap();
+        let result = menu.render((), render_region, &mut buddy, false).unwrap();
         // This menu should never request filtering mouse actions
         assert!(!result.filter_mouse_actions);
         // It should have rendered both components, and maybe the area outside
@@ -877,7 +881,7 @@ mod tests {
         }
 
         menu.on_mouse_click(click1, &mut buddy);
-        let result = menu.render(render_region, &mut buddy, false).unwrap();
+        let result = menu.render((), render_region, &mut buddy, false).unwrap();
         // This time, it should only have drawn the first component
         {
             let region = &result.drawn_region;
@@ -887,7 +891,7 @@ mod tests {
         }
 
         menu.on_mouse_click(click2, &mut buddy);
-        let result = menu.render(render_region, &mut buddy, false).unwrap();
+        let result = menu.render((), render_region, &mut buddy, false).unwrap();
         // This time, it should only have drawn the second component
         {
             let region = &result.drawn_region;
@@ -899,7 +903,7 @@ mod tests {
         }
 
         // When we force, it should draw both components again, and maybe even background
-        let result = menu.render(render_region, &mut buddy, true).unwrap();
+        let result = menu.render((), render_region, &mut buddy, true).unwrap();
         {
             let region = &result.drawn_region;
             assert_eq!(draw_background, region.is_inside(Point::new(1.0, 0.0)));
@@ -913,7 +917,7 @@ mod tests {
 
         // And when we do a normal render thereafter, it should only draw component 1
         menu.on_mouse_click(click1, &mut buddy);
-        let result = menu.render(render_region, &mut buddy, false).unwrap();
+        let result = menu.render((), render_region, &mut buddy, false).unwrap();
         // This time, it should only have drawn the first component
         {
             let region = &result.drawn_region;
@@ -938,6 +942,7 @@ mod tests {
 
             fn render(
                 &mut self,
+                _renderer: Renderer,
                 _region: RenderRegion,
                 _buddy: &mut dyn ComponentBuddy,
                 _force: bool,
@@ -1007,7 +1012,7 @@ mod tests {
         check_counters(0, 0, 0, 0);
 
         // So let's render
-        menu.render(RenderRegion::between(0, 0, 120, 10), &mut buddy, false)
+        menu.render((), RenderRegion::between(0, 0, 120, 10), &mut buddy, false)
             .unwrap();
 
         // Clicking outside the menu should increment both out counters
@@ -1050,6 +1055,7 @@ mod tests {
 
             fn render(
                 &mut self,
+                _renderer: Renderer,
                 _region: RenderRegion,
                 buddy: &mut dyn ComponentBuddy,
                 _force: bool,
@@ -1117,7 +1123,7 @@ mod tests {
         let do_render = || {
             let mut menu = menu_cell.borrow_mut();
             let mut buddy = buddy_cell.borrow_mut();
-            menu.render(region, &mut *buddy, true).unwrap();
+            menu.render((), region, &mut *buddy, true).unwrap();
         };
 
         let fire_click = || {
@@ -1208,7 +1214,13 @@ mod tests {
             buddy.subscribe_mouse_leave();
         }
 
-        fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+        fn render(
+            &mut self,
+            _renderer: Renderer,
+            _region: RenderRegion, 
+            _buddy: &mut dyn ComponentBuddy, 
+            _force: bool
+        ) -> RenderResult {
             Ok(RenderResultStruct {
                 filter_mouse_actions: self.should_filter_mouse_actions.get(),
                 drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8))
@@ -1288,7 +1300,7 @@ mod tests {
         menu.on_mouse_leave(hit_leave_event, &mut buddy);
 
         // So let's render
-        menu.render(render_region, &mut buddy, false).unwrap();
+        menu.render((), render_region, &mut buddy, false).unwrap();
 
         // Due to the mouse filtering, the edge event shouldn't trigger any reaction either
         menu.on_mouse_enter(edge_enter_event, &mut buddy);
@@ -1385,6 +1397,7 @@ mod tests {
         }), ComponentDomain::between(0.5, 0.0, 0.75, 0.25));
 
         menu.render(
+            (),
             RenderRegion::between(0, 0, 20, 30),
             &mut buddy, false
         ).unwrap();
@@ -1468,7 +1481,11 @@ mod tests {
             fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
             fn render(
-                &mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool
+                &mut self,
+                _renderer: Renderer,
+                _region: RenderRegion, 
+                buddy: &mut dyn ComponentBuddy, 
+                _force: bool
             ) -> RenderResult {
                 if self.subscribe_mouse_move.get() {
                     buddy.subscribe_mouse_move();
@@ -1536,6 +1553,7 @@ mod tests {
             sub_mouse_enter.set(mouse_enter);
             sub_mouse_leave.set(mouse_leave);
             menu.render(
+                (),
                 RenderRegion::between(0, 1, 4, 7),
                 &mut buddy, true
             ).unwrap();
@@ -1650,7 +1668,13 @@ mod tests {
                 buddy.subscribe_mouse_leave();
             }
 
-            fn render(&mut self, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _renderer: Renderer,
+                _region: RenderRegion, 
+                _buddy: &mut dyn ComponentBuddy, 
+                _force: bool
+            ) -> RenderResult {
                 entire_render_result()
             }
         }
@@ -1682,7 +1706,13 @@ mod tests {
         impl Component for GetMouseComponent {
             fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
-            fn render(&mut self, _region: RenderRegion, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _renderer: Renderer,
+                _region: RenderRegion,
+                buddy: &mut dyn ComponentBuddy,
+                _force: bool
+            ) -> RenderResult {
                 let expected = self.expected.borrow();
                 assert_eq!(expected.as_ref() as &Vec<Mouse>, &buddy.get_all_mouses());
                 self.call_counter.set(self.call_counter.get() + 1);
@@ -1709,7 +1739,7 @@ mod tests {
         let region = RenderRegion::with_size(1, 2, 3, 4);
 
         // The mouses should be empty initially
-        application.render(region, true);
+        application.render((), region, true);
 
         let enter_event = |mouse_id: u16| MouseEnterEvent::new(
             Mouse::new(mouse_id), Point::new(0.2, 0.3)
@@ -1722,30 +1752,30 @@ mod tests {
         // Add the first mouse
         application.fire_mouse_enter_event(enter_event(123));
         expected_mouses.replace(mouse_vec(&[123]));
-        application.render(region, true);
+        application.render((), region, true);
 
         // Add the second mouse
         application.fire_mouse_enter_event(enter_event(1));
         expected_mouses.replace(mouse_vec(&[123, 1]));
-        application.render(region, true);
+        application.render((), region, true);
 
         // Remove the first mouse
         application.fire_mouse_leave_event(leave_event(123));
         expected_mouses.replace(mouse_vec(&[1]));
-        application.render(region, true);
+        application.render((), region, true);
 
         // Add the first mouse back, and add yet another mouse
         application.fire_mouse_enter_event(enter_event(123));
         application.fire_mouse_enter_event(enter_event(8));
         expected_mouses.replace(mouse_vec(&[1, 123, 8]));
-        application.render(region, true);
+        application.render((), region, true);
 
         // Remove all mouses
         application.fire_mouse_leave_event(leave_event(123));
         application.fire_mouse_leave_event(leave_event(8));
         application.fire_mouse_leave_event(leave_event(1));
         expected_mouses.replace(mouse_vec(&[]));
-        application.render(region, true);
+        application.render((), region, true);
 
         assert_eq!(6, call_counter.get());
     }
@@ -1764,7 +1794,13 @@ mod tests {
         impl Component for LocalMouseCheckComponent {
             fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
 
-            fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _renderer: Renderer,
+                region: RenderRegion, 
+                buddy: &mut dyn ComponentBuddy, 
+                force: bool
+            ) -> RenderResult {
                 let local_mouses = buddy.get_local_mouses();
                 let expected_mouses = self.expected_mouses.borrow();
                 assert_eq!(expected_mouses.len(), local_mouses.len());
@@ -1822,7 +1858,7 @@ mod tests {
 
         let mut application = Application::new(Box::new(menu));
         let region = RenderRegion::between(10, 20, 30, 40);
-        application.render(region, true);
+        application.render((), region, true);
 
         // Start with 1 mouse, and spawn it in the middle of the first component
         let mouse1 = Mouse::new(6);
@@ -1831,7 +1867,7 @@ mod tests {
         ));
         set1(vec![LocalMouse { mouse: mouse1, position: Point::new(0.5, 0.5)}]);
         set2(vec![]);
-        application.render(region, true);
+        application.render((), region, true);
 
         // Move the mouse to the other component
         application.fire_mouse_move_event(MouseMoveEvent::new(
@@ -1839,7 +1875,7 @@ mod tests {
         ));
         set1(vec![]);
         set2(vec![LocalMouse { mouse: mouse1, position: Point::new(0.2, 0.8) }]);
-        application.render(region, true);
+        application.render((), region, true);
 
         // Move the mouse away from both components
         application.fire_mouse_move_event(MouseMoveEvent::new(
@@ -1847,7 +1883,7 @@ mod tests {
         ));
         set1(vec![]);
         set2(vec![]);
-        application.render(region, true);
+        application.render((), region, true);
 
         // Introduce the second mouse
         let mouse2 = Mouse::new(120);
@@ -1855,7 +1891,7 @@ mod tests {
             mouse2, Point::new(0.1, 0.1)
         ));
         // Neither of the mouses is inside any of the components
-        application.render(region, true);
+        application.render((), region, true);
 
         // Move the second mouse to the second component
         application.fire_mouse_move_event(MouseMoveEvent::new(
@@ -1863,7 +1899,7 @@ mod tests {
         ));
         set1(vec![]);
         set2(vec![LocalMouse { mouse: mouse2, position: Point::new(0.4, 0.6) }]);
-        application.render(region, true);
+        application.render((), region, true);
 
         // Move the first mouse to the first component
         application.fire_mouse_move_event(MouseMoveEvent::new(
@@ -1871,7 +1907,7 @@ mod tests {
         ));
         set1(vec![LocalMouse { mouse: mouse1, position: Point::new(0.5, 0.5) }]);
         set2(vec![LocalMouse { mouse: mouse2, position: Point::new(0.4, 0.6) }]);
-        application.render(region, true);
+        application.render((), region, true);
 
         // Move the first mouse to the second component
         application.fire_mouse_move_event(MouseMoveEvent::new(
@@ -1882,7 +1918,7 @@ mod tests {
             LocalMouse { mouse: mouse1, position: Point::new(0.6, 0.4) },
             LocalMouse { mouse: mouse2, position: Point::new(0.4, 0.6) },
         ]);
-        application.render(region, true);
+        application.render((), region, true);
 
         // Remove the second mouse
         application.fire_mouse_leave_event(MouseLeaveEvent::new(
@@ -1890,6 +1926,6 @@ mod tests {
         ));
         set1(vec![]);
         set2(vec![LocalMouse { mouse: mouse1, position: Point::new(0.6, 0.4) }]);
-        application.render(region, true);
+        application.render((), region, true);
     }
 }

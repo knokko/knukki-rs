@@ -1,4 +1,4 @@
-use crate::{Application, RenderRegion, MouseMoveEvent, MouseLeaveEvent, MouseEnterEvent};
+use crate::{Application, RenderRegion, MouseMoveEvent, MouseLeaveEvent, MouseEnterEvent, GolemRenderer};
 
 use golem::Context;
 
@@ -33,6 +33,7 @@ pub fn start(mut app: Application, title: &str) {
         windowed_context.get_proc_address(function_name)
     }))
     .expect("Should be able to create Golem context");
+    let renderer = GolemRenderer::new(golem);
 
     let mut start_time = Instant::now();
 
@@ -178,7 +179,7 @@ pub fn start(mut app: Application, title: &str) {
                 start_time = Instant::now();
 
                 // Only swap the buffers if the application actually rendered
-                if app.render(&golem, region, force) {
+                if app.render(&renderer, region, force) {
                     windowed_context.swap_buffers().expect("Good context");
                 }
             }
@@ -191,7 +192,7 @@ pub fn start(mut app: Application, title: &str) {
                 let size = windowed_context.window().inner_size();
                 let region = RenderRegion::with_size(0, 0, size.width, size.height);
 
-                app.render(&golem, region, force);
+                app.render(&renderer, region, force);
                 windowed_context.swap_buffers().expect("Good context");
             }
             _ => (),

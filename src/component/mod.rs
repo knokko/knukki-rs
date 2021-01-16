@@ -1,8 +1,5 @@
 use crate::*;
 
-#[cfg(feature = "golem_rendering")]
-use golem::Context;
-
 mod buddy;
 mod dummy;
 mod render;
@@ -91,7 +88,7 @@ pub trait Component {
     /// This will *not* affect the `get_local_mouses` method of this buddy.
     fn render(
         &mut self,
-        #[cfg(feature = "golem_rendering")] golem: &Context,
+        renderer: Renderer,
         region: RenderRegion,
         buddy: &mut dyn ComponentBuddy,
         force: bool,

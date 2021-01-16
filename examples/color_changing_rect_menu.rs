@@ -1,4 +1,3 @@
-use golem::Context;
 use knukki::*;
 
 fn main() {
@@ -33,14 +32,20 @@ impl Component for ColorChangingRectComponent {
         buddy.subscribe_mouse_leave();
     }
 
-    fn render(&mut self, golem: &Context, _region: RenderRegion, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
-        golem.set_clear_color(
+    fn render(
+        &mut self,
+        renderer: Renderer,
+        _region: RenderRegion,
+        _buddy: &mut dyn ComponentBuddy,
+        _force: bool
+    ) -> RenderResult {
+        renderer.get_context().set_clear_color(
             self.red as f32 / 255.0,
             self.green as f32 / 255.0,
             self.blue as f32 / 255.0,
             1.0
         );
-        golem.clear();
+        renderer.get_context().clear();
 
         Ok(RenderResultStruct {
             filter_mouse_actions: false,
