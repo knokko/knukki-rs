@@ -180,7 +180,10 @@ impl ComponentBuddy for SimpleFlatBuddy {
         let mouse_buddy = self.mouse_buddy.borrow();
         for entry in &mouse_buddy.local_mouses {
             if entry.mouse == mouse {
-                return Some(self.domain.transform(entry.position));
+                return match self.domain.is_inside(entry.position) {
+                    true => Some(self.domain.transform(entry.position)),
+                    false => None
+                };
             }
         }
         None

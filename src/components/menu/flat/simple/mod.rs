@@ -1768,16 +1768,31 @@ mod tests {
                 let local_mouses = buddy.get_local_mouses();
                 let expected_mouses = self.expected_mouses.borrow();
                 assert_eq!(expected_mouses.len(), local_mouses.len());
-                'outer: for mouse in local_mouses {
-                    // TODO Test the test
+
+                // Test that all local mouses are present and have the right position
+                'outer: for mouse in &local_mouses {
                     for entry in &*expected_mouses {
-                        if entry.mouse == mouse {
-                            assert!(entry.position.nearly_equal(buddy.get_mouse_position(mouse).unwrap()));
+                        if entry.mouse == *mouse {
+                            assert!(entry.position.nearly_equal(buddy.get_mouse_position(*mouse).unwrap()));
                             continue 'outer;
                         }
                     }
                     panic!("Expected mouse {:?}, but didn't find its entry", mouse);
                 }
+
+                // Test that the other mouses do not have a position
+                'outer: for mouse in buddy.get_all_mouses() {
+                    for local_mouse in &local_mouses {
+                        if *local_mouse == mouse {
+                            continue 'outer;
+                        }
+                    }
+                    assert!(buddy.get_mouse_position(mouse).is_none());
+                }
+
+                // Neither should a non-existing mouse
+                assert!(buddy.get_mouse_position(Mouse::new(8347)).is_none());
+
                 entire_render_result()
             }
         }
