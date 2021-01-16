@@ -1672,9 +1672,6 @@ mod tests {
         assert!(subs.mouse_leave);
     }
     
-    // TODO Test buddy.get_local_mouses
-    // TODO Test buddy.get_mouse_position
-    
     #[test]
     fn test_buddy_get_all_mouses() {
         struct GetMouseComponent {
@@ -1751,5 +1748,133 @@ mod tests {
         application.render(region, true);
 
         assert_eq!(6, call_counter.get());
+    }
+
+    #[test]
+    fn test_buddy_get_local_mouses_and_positions() {
+        struct LocalMouse {
+            mouse: Mouse,
+            position: Point
+        }
+
+        struct LocalMouseCheckComponent {
+            expected_mouses: Rc<RefCell<Vec<LocalMouse>>>
+        }
+
+        impl Component for LocalMouseCheckComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(&mut self, region: RenderRegion, buddy: &mut dyn ComponentBuddy, force: bool) -> RenderResult {
+                let local_mouses = buddy.get_local_mouses();
+                let expected_mouses = self.expected_mouses.borrow();
+                assert_eq!(expected_mouses.len(), local_mouses.len());
+                'outer: for mouse in local_mouses {
+                    // TODO Test the test
+                    for entry in &*expected_mouses {
+                        if entry.mouse == mouse {
+                            assert!(entry.position.nearly_equal(buddy.get_mouse_position(mouse).unwrap()));
+                            continue 'outer;
+                        }
+                    }
+                    panic!("Expected mouse {:?}, but didn't find its entry", mouse);
+                }
+                entire_render_result()
+            }
+        }
+
+        let expected_mouses1 = Rc::new(RefCell::new(Vec::new()));
+        let expected_mouses2 = Rc::new(RefCell::new(Vec::new()));
+
+        let set = |target: &Rc<RefCell<Vec<LocalMouse>>>, mut expected: Vec<LocalMouse>| {
+            let mut mouses = target.borrow_mut();
+            mouses.clear();
+            mouses.append(&mut expected);
+        };
+        let set1 = |mut expected: Vec<LocalMouse>| set(&expected_mouses1, expected);
+        let set2 = |mut expected: Vec<LocalMouse>| set(&expected_mouses2, expected);
+
+        let mut menu = SimpleFlatMenu::new(None);
+        menu.add_component(
+            Box::new(LocalMouseCheckComponent {
+                expected_mouses: Rc::clone(&expected_mouses1)
+            }), ComponentDomain::between(0.2, 0.0, 0.5, 0.7)
+        );
+        menu.add_component(
+            Box::new(LocalMouseCheckComponent {
+                expected_mouses: Rc::clone(&expected_mouses2)
+            }), ComponentDomain::between(0.5, 0.5, 1.0, 1.0)
+        );
+
+        let mut application = Application::new(Box::new(menu));
+        let region = RenderRegion::between(10, 20, 30, 40);
+        application.render(region, true);
+
+        // Start with 1 mouse, and spawn it in the middle of the first component
+        let mouse1 = Mouse::new(6);
+        application.fire_mouse_enter_event(MouseEnterEvent::new(
+            mouse1, Point::new(0.35, 0.35)
+        ));
+        set1(vec![LocalMouse { mouse: mouse1, position: Point::new(0.5, 0.5)}]);
+        set2(vec![]);
+        application.render(region, true);
+
+        // Move the mouse to the other component
+        application.fire_mouse_move_event(MouseMoveEvent::new(
+            mouse1, Point::new(0.35, 0.35), Point::new(0.6, 0.9)
+        ));
+        set1(vec![]);
+        set2(vec![LocalMouse { mouse: mouse1, position: Point::new(0.2, 0.8) }]);
+        application.render(region, true);
+
+        // Move the mouse away from both components
+        application.fire_mouse_move_event(MouseMoveEvent::new(
+            mouse1, Point::new(0.6, 0.9), Point::new(0.1, 0.1)
+        ));
+        set1(vec![]);
+        set2(vec![]);
+        application.render(region, true);
+
+        // Introduce the second mouse
+        let mouse2 = Mouse::new(120);
+        application.fire_mouse_enter_event(MouseEnterEvent::new(
+            mouse2, Point::new(0.1, 0.1)
+        ));
+        // Neither of the mouses is inside any of the components
+        application.render(region, true);
+
+        // Move the second mouse to the second component
+        application.fire_mouse_move_event(MouseMoveEvent::new(
+            mouse2, Point::new(0.1, 0.1), Point::new(0.7, 0.8)
+        ));
+        set1(vec![]);
+        set2(vec![LocalMouse { mouse: mouse2, position: Point::new(0.4, 0.6) }]);
+        application.render(region, true);
+
+        // Move the first mouse to the first component
+        application.fire_mouse_move_event(MouseMoveEvent::new(
+            mouse1, Point::new(0.1, 0.1), Point::new(0.35, 0.35)
+        ));
+        set1(vec![LocalMouse { mouse: mouse1, position: Point::new(0.5, 0.5) }]);
+        set2(vec![LocalMouse { mouse: mouse2, position: Point::new(0.4, 0.6) }]);
+        application.render(region, true);
+
+        // Move the first mouse to the second component
+        application.fire_mouse_move_event(MouseMoveEvent::new(
+            mouse1, Point::new(0.35, 0.35), Point::new(0.8, 0.7)
+        ));
+        set1(vec![]);
+        set2(vec![
+            LocalMouse { mouse: mouse1, position: Point::new(0.6, 0.4) },
+            LocalMouse { mouse: mouse2, position: Point::new(0.4, 0.6) },
+        ]);
+        application.render(region, true);
+
+        // Remove the second mouse
+        application.fire_mouse_leave_event(MouseLeaveEvent::new(
+            mouse2, Point::new(0.7, 0.8)
+        ));
+        set1(vec![]);
+        set2(vec![LocalMouse { mouse: mouse1, position: Point::new(0.6, 0.4) }]);
+        application.render(region, true);
     }
 }

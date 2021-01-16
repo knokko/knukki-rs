@@ -177,7 +177,13 @@ impl ComponentBuddy for SimpleFlatBuddy {
     }
 
     fn get_mouse_position(&self, mouse: Mouse) -> Option<Point> {
-        unimplemented!()
+        let mouse_buddy = self.mouse_buddy.borrow();
+        for entry in &mouse_buddy.local_mouses {
+            if entry.mouse == mouse {
+                return Some(self.domain.transform(entry.position));
+            }
+        }
+        None
     }
 
     fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> bool {
@@ -189,7 +195,10 @@ impl ComponentBuddy for SimpleFlatBuddy {
     }
 
     fn get_local_mouses(&self) -> Vec<Mouse> {
-        unimplemented!()
+        let mouse_buddy = self.mouse_buddy.borrow();
+        return mouse_buddy.local_mouses.iter().filter(|mouse| {
+            self.domain.is_inside(mouse.position)
+        }).map(|mouse_entry| mouse_entry.mouse).collect();
     }
 
     fn get_all_mouses(&self) -> Vec<Mouse> {
