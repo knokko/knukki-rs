@@ -34,6 +34,9 @@ pub fn start(mut app: Application, title: &str) {
         windowed_context.get_proc_address(function_name)
     }))
     .expect("Should be able to create Golem context");
+
+    let mut copy_pack = create_copy_pack(&golem).expect("Should be able to create copy pack");
+
     let renderer = GolemRenderer::new(golem);
 
     let mut start_time = Instant::now();
@@ -181,7 +184,10 @@ pub fn start(mut app: Application, title: &str) {
                 }
                 start_time = Instant::now();
 
-                draw_application(&mut app, &renderer, &mut render_surface, size, force, &windowed_context).expect("Should be able to draw app");
+                draw_application(
+                    &mut app, &renderer, &mut copy_pack, &mut render_surface,
+                    size, force, &windowed_context
+                ).expect("Should be able to draw app");
             }
             Event::RedrawRequested(_) => {
                 // This provider will never request a winit redraw, so when this
@@ -191,7 +197,10 @@ pub fn start(mut app: Application, title: &str) {
                 // Draw onto the entire inner window buffer
                 let size = windowed_context.window().inner_size();
 
-                draw_application(&mut app, &renderer, &mut render_surface, size, force, &windowed_context).expect("Should be able to force draw app");
+                draw_application(
+                    &mut app, &renderer, &mut copy_pack, &mut render_surface,
+                    size, force, &windowed_context
+                ).expect("Should be able to force draw app");
             }
             _ => (),
         }
@@ -199,6 +208,7 @@ pub fn start(mut app: Application, title: &str) {
 
     fn draw_application(
         app: &mut Application, renderer: &GolemRenderer,
+        copy_pack: &mut (ShaderProgram, VertexBuffer, ElementBuffer),
         render_surface: &mut Option<Surface>,
         size: PhysicalSize<u32>, force: bool, windowed_context: &ContextWrapper<PossiblyCurrent, Window>
     ) -> Result<(), GolemError> {
@@ -225,43 +235,12 @@ pub fn start(mut app: Application, title: &str) {
             golem.set_viewport(0, 0, size.width, size.height);
             golem.disable_scissor();
 
-            // TODO Improve performance by creating the GPU resources only once
-            let mut vb = VertexBuffer::new(golem)?;
-            let mut eb = ElementBuffer::new(golem)?;
+            let shader = &mut copy_pack.0;
+            let vb = &mut copy_pack.1;
+            let eb = &mut copy_pack.2;
 
-            #[rustfmt::skip]
-                let vertices = [
-                -1.0, -1.0,
-                1.0, -1.0,
-                1.0, 1.0,
-                -1.0, 1.0,
-            ];
-            let indices = [0, 1, 2, 2, 3, 0];
-            let mut shader = ShaderProgram::new(
-                golem,
-                ShaderDescription {
-                    vertex_input: &[
-                        Attribute::new("position", AttributeType::Vector(D2)),
-                    ],
-                    fragment_input: &[Attribute::new("passPosition", AttributeType::Vector(D2))],
-                    uniforms: &[
-                        Uniform::new("image", UniformType::Sampler2D),
-                    ],
-                    vertex_shader: r#" void main() {
-            gl_Position = vec4(position.x, position.y, 0.0, 1.0);
-            passPosition = position;
-        }"#,
-                    fragment_shader: r#" void main() {
-            vec4 theColor = texture(image, vec2(0.5 + passPosition.x * 0.5, 0.5 + passPosition.y * 0.5));
-            gl_FragColor = theColor;
-        }"#,
-                },
-            )?;
-            vb.set_data(&vertices);
-            eb.set_data(&indices);
             shader.bind();
             shader.prepare_draw(&vb, &eb)?;
-            shader.set_uniform("image", UniformValue::Int(1))?;
 
             let bind_point = std::num::NonZeroU32::new(1).unwrap();
             unsafe {
@@ -269,7 +248,8 @@ pub fn start(mut app: Application, title: &str) {
                 texture.set_active(bind_point);
             }
             unsafe {
-                shader.draw_prepared(0..indices.len(), GeometryMode::Triangles);
+                // There are always 6 indices when there are 2 triangles, like in this case
+                shader.draw_prepared(0..6, GeometryMode::Triangles);
             }
 
             windowed_context.swap_buffers().expect("Good context");
@@ -277,5 +257,45 @@ pub fn start(mut app: Application, title: &str) {
             render_surface.bind();
         }
         Ok(())
+    }
+
+    fn create_copy_pack(golem: &Context) -> Result<(ShaderProgram, VertexBuffer, ElementBuffer), GolemError> {
+        let mut vb = VertexBuffer::new(&golem)?;
+        let mut eb = ElementBuffer::new(&golem)?;
+
+        #[rustfmt::skip]
+            let vertices = [
+            -1.0, -1.0,
+            1.0, -1.0,
+            1.0, 1.0,
+            -1.0, 1.0,
+        ];
+        let indices = [0, 1, 2, 2, 3, 0];
+        let mut shader = ShaderProgram::new(
+            &golem,
+            ShaderDescription {
+                vertex_input: &[
+                    Attribute::new("position", AttributeType::Vector(D2)),
+                ],
+                fragment_input: &[Attribute::new("passPosition", AttributeType::Vector(D2))],
+                uniforms: &[
+                    Uniform::new("image", UniformType::Sampler2D),
+                ],
+                vertex_shader: r#" void main() {
+            gl_Position = vec4(position.x, position.y, 0.0, 1.0);
+            passPosition = position;
+        }"#,
+                fragment_shader: r#" void main() {
+            vec4 theColor = texture(image, vec2(0.5 + passPosition.x * 0.5, 0.5 + passPosition.y * 0.5));
+            gl_FragColor = theColor;
+        }"#,
+            },
+        )?;
+        vb.set_data(&vertices);
+        eb.set_data(&indices);
+        shader.bind();
+        shader.set_uniform("image", UniformValue::Int(1))?;
+
+        Ok((shader, vb, eb))
     }
 }
