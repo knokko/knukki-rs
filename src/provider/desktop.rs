@@ -1,4 +1,4 @@
-use crate::{Application, RenderRegion, MouseMoveEvent, MouseLeaveEvent, MouseEnterEvent, GolemRenderer};
+use crate::{Application, RenderRegion, MouseMoveEvent, MouseLeaveEvent, MouseEnterEvent, Renderer, RendererStruct};
 
 use golem::*;
 
@@ -37,7 +37,7 @@ pub fn start(mut app: Application, title: &str) {
 
     let mut copy_pack = create_copy_pack(&golem).expect("Should be able to create copy pack");
 
-    let renderer = GolemRenderer::new(golem);
+    let renderer = RendererStruct::new(golem);
 
     let mut start_time = Instant::now();
 
@@ -207,7 +207,7 @@ pub fn start(mut app: Application, title: &str) {
     });
 
     fn draw_application(
-        app: &mut Application, renderer: &GolemRenderer,
+        app: &mut Application, renderer: Renderer,
         copy_pack: &mut (ShaderProgram, VertexBuffer, ElementBuffer),
         render_surface: &mut Option<Surface>,
         size: PhysicalSize<u32>, force: bool, windowed_context: &ContextWrapper<PossiblyCurrent, Window>

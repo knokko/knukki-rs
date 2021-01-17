@@ -1,8 +1,14 @@
 #[cfg(feature = "golem_rendering")]
 mod golem_renderer;
 
-#[cfg(not(feature = "golem_rendering"))]
-pub type Renderer = ();
+pub struct RendererStruct {
+    #[cfg(feature = "golem_rendering")] context: golem::Context
+}
 
-#[cfg(feature = "golem_rendering")]
-pub use golem_renderer::*;
+pub type Renderer<'a> = &'a RendererStruct;
+
+#[cfg(test)]
+#[cfg(not(feature = "golem_rendering"))]
+pub(crate) fn test_renderer<'a>() -> Renderer<'a> {
+    &RendererStruct {}
+}
