@@ -34,8 +34,7 @@ impl Component for ColorChangingRectComponent {
 
     fn render(
         &mut self,
-        renderer: Renderer,
-        _region: RenderRegion,
+        renderer: &Renderer,
         _buddy: &mut dyn ComponentBuddy,
         _force: bool
     ) -> RenderResult {

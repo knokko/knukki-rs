@@ -12,8 +12,7 @@ impl Component for DummyComponent {
 
     fn render(
         &mut self,
-        _renderer: Renderer,
-        _region: RenderRegion,
+        _renderer: &Renderer,
         _buddy: &mut dyn ComponentBuddy,
         _force: bool,
     ) -> RenderResult {

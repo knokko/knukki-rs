@@ -1,18 +1,23 @@
 use crate::*;
 use golem::*;
 
-impl RendererStruct {
-    pub fn new(context: Context) -> Self {
-        Self { context }
+impl Renderer {
+    pub fn new(context: Context, initial_viewport: RenderRegion) -> Self {
+        Self {
+            context,
+            viewport_stack: vec![initial_viewport],
+            scissor_stack: vec![initial_viewport],
+        }
     }
 
     pub fn get_context(&self) -> &Context {
         &self.context
     }
 
-    // TODO Create some kind of stack for the viewport and scissor
-    // I guess some kind of closure system would be best: push; run closure; pop;
-    // Pushing a scissor should be affected by the last viewport
+    pub fn apply_viewport_and_scissor(&self) {
+        let viewport = self.viewport_stack.last().expect("viewport stack is never empty");
+        viewport.set_viewport(&self.context);
+        let scissor = self.scissor_stack.last().expect("scissor stack is never empty");
+        scissor.set_scissor(&self.context);
+    }
 }
-
-//pub type Renderer<'a> = &'a GolemRenderer;

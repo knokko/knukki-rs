@@ -1,14 +1,22 @@
+use crate::RenderRegion;
+
 #[cfg(feature = "golem_rendering")]
 mod golem_renderer;
+mod core;
 
-pub struct RendererStruct {
-    #[cfg(feature = "golem_rendering")] context: golem::Context
+pub struct Renderer {
+    #[cfg(feature = "golem_rendering")] context: golem::Context,
+    viewport_stack: Vec<RenderRegion>,
+    scissor_stack: Vec<RenderRegion>,
 }
-
-pub type Renderer<'a> = &'a RendererStruct;
 
 #[cfg(test)]
 #[cfg(not(feature = "golem_rendering"))]
-pub(crate) fn test_renderer<'a>() -> Renderer<'a> {
-    &RendererStruct {}
+pub(crate) fn test_renderer(initial_viewport: RenderRegion) -> Renderer {
+    Renderer {
+        viewport_stack: vec![initial_viewport],
+        scissor_stack: vec![initial_viewport],
+    }
 }
+
+// TODO Update the documentation of the render methods of Application and Component

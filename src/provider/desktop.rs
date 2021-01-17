@@ -1,4 +1,4 @@
-use crate::{Application, RenderRegion, MouseMoveEvent, MouseLeaveEvent, MouseEnterEvent, Renderer, RendererStruct};
+use crate::{Application, RenderRegion, MouseMoveEvent, MouseLeaveEvent, MouseEnterEvent, Renderer};
 
 use golem::*;
 
@@ -35,9 +35,13 @@ pub fn start(mut app: Application, title: &str) {
     }))
     .expect("Should be able to create Golem context");
 
-    let mut copy_pack = create_copy_pack(&golem).expect("Should be able to create copy pack");
+    let mut renderer = Renderer::new(
+        // The initial viewport doesn't matter in this situation because it will be overwritten
+        // before rendering anyway
+        golem, RenderRegion::with_size(0, 0, 1, 1)
+    );
 
-    let renderer = RendererStruct::new(golem);
+    let mut copy_pack = create_copy_pack(renderer.get_context()).expect("Should be able to create copy pack");
 
     let mut start_time = Instant::now();
 
@@ -185,7 +189,7 @@ pub fn start(mut app: Application, title: &str) {
                 start_time = Instant::now();
 
                 draw_application(
-                    &mut app, &renderer, &mut copy_pack, &mut render_surface,
+                    &mut app, &mut renderer, &mut copy_pack, &mut render_surface,
                     size, force, &windowed_context
                 ).expect("Should be able to draw app");
             }
@@ -198,7 +202,7 @@ pub fn start(mut app: Application, title: &str) {
                 let size = windowed_context.window().inner_size();
 
                 draw_application(
-                    &mut app, &renderer, &mut copy_pack, &mut render_surface,
+                    &mut app, &mut renderer, &mut copy_pack, &mut render_surface,
                     size, force, &windowed_context
                 ).expect("Should be able to force draw app");
             }
@@ -207,33 +211,33 @@ pub fn start(mut app: Application, title: &str) {
     });
 
     fn draw_application(
-        app: &mut Application, renderer: Renderer,
+        app: &mut Application, renderer: &mut Renderer,
         copy_pack: &mut (ShaderProgram, VertexBuffer, ElementBuffer),
         render_surface: &mut Option<Surface>,
         size: PhysicalSize<u32>, force: bool, windowed_context: &ContextWrapper<PossiblyCurrent, Window>
     ) -> Result<(), GolemError> {
         let region = RenderRegion::with_size(0, 0, size.width, size.height);
-        let golem = renderer.get_context();
 
         let mut created_surface = false;
 
         // Make sure there is an up-to-date render texture to draw the application on
         if render_surface.is_none() {
-            let mut render_texture = Texture::new(golem).expect("Should be able to create texture");
+            let mut render_texture = Texture::new(renderer.get_context()).expect("Should be able to create texture");
             render_texture.set_image(None, size.width, size.height, ColorFormat::RGBA);
-            *render_surface = Some(Surface::new(golem, render_texture).expect("Should be able to create surface"));
+            *render_surface = Some(Surface::new(renderer.get_context(), render_texture).expect("Should be able to create surface"));
             created_surface = true;
             render_surface.as_ref().unwrap().bind();
         }
 
         // Draw the application on the render texture
         let render_surface = render_surface.as_ref().unwrap();
-        if app.render(renderer, region, force || created_surface) {
+        renderer.reset_viewport(region);
+        if app.render(&renderer, force || created_surface) {
 
             // Draw the render texture onto the presenting texture
             Surface::unbind(renderer.get_context());
-            golem.set_viewport(0, 0, size.width, size.height);
-            golem.disable_scissor();
+            renderer.get_context().set_viewport(0, 0, size.width, size.height);
+            renderer.get_context().disable_scissor();
 
             let shader = &mut copy_pack.0;
             let vb = &mut copy_pack.1;

@@ -26,21 +26,22 @@ impl Component for ColorChangingRectComponent {
 
     fn render(
         &mut self,
-        renderer: Renderer,
-        region: RenderRegion,
+        renderer: &Renderer,
         _buddy: &mut dyn ComponentBuddy,
         _force: bool
     ) -> RenderResult {
-        region.child_region(
-            0.2, 0.2, 0.8, 0.8
-        ).set_scissor(renderer.get_context());
-        renderer.get_context().set_clear_color(
-            self.red as f32 / 255.0,
-            self.green as f32 / 255.0,
-            self.blue as f32 / 255.0,
-            1.0
+        renderer.push_viewport(
+            0.2, 0.2, 0.8, 0.8,
+            || {
+                renderer.get_context().set_clear_color(
+                    self.red as f32 / 255.0,
+                    self.green as f32 / 255.0,
+                    self.blue as f32 / 255.0,
+                    1.0
+                );
+                renderer.get_context().clear();
+            }
         );
-        renderer.get_context().clear();
 
         Ok(RenderResultStruct {
             filter_mouse_actions: true,

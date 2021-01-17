@@ -88,8 +88,7 @@ pub trait Component {
     /// This will *not* affect the `get_local_mouses` method of this buddy.
     fn render(
         &mut self,
-        renderer: Renderer,
-        region: RenderRegion,
+        renderer: &Renderer,
         buddy: &mut dyn ComponentBuddy,
         force: bool,
     ) -> RenderResult;

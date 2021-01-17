@@ -104,18 +104,14 @@ impl Application {
     /// forced to do so) and false if the application chose not to render.
     pub fn render(
         &mut self,
-        renderer: Renderer,
-        region: RenderRegion,
+        renderer: &Renderer,
         force: bool,
     ) -> bool {
         if force || self.root_buddy.did_request_render() {
             self.root_buddy.clear_render_request();
 
             // Make sure we draw onto the right area
-            #[cfg(feature = "golem_rendering")]
-            region.set_viewport(renderer.get_context());
-            #[cfg(feature = "golem_rendering")]
-            region.set_scissor(renderer.get_context());
+            renderer.start();
 
             // If we are forced to redraw, we should clean the previous render actions up
             #[cfg(feature = "golem_rendering")]
@@ -129,7 +125,6 @@ impl Application {
                 .root_component
                 .render(
                     renderer,
-                    region,
                     &mut self.root_buddy,
                     force,
                 )
@@ -371,8 +366,7 @@ mod tests {
 
         fn render(
             &mut self,
-            _renderer: Renderer,
-            _region: RenderRegion,
+            _renderer: &Renderer,
             _buddy: &mut dyn ComponentBuddy,
             _force: bool,
         ) -> RenderResult {
@@ -425,25 +419,25 @@ mod tests {
         assert_eq!(1, counter.get());
 
         // If we simulate 1 render call, the component should draw once
-        application.render(test_renderer(), dummy_region, false);
+        application.render(&test_renderer(dummy_region), false);
         assert_eq!(4, counter.get());
 
         // But, rendering again shouldn't change anything because the component
         // didn't request another render
-        application.render(test_renderer(), dummy_region, false);
+        application.render(&test_renderer(dummy_region), false);
         assert_eq!(4, counter.get());
 
         // Unless we force it to do so...
-        application.render(test_renderer(), dummy_region, true);
+        application.render(&test_renderer(dummy_region), true);
         assert_eq!(7, counter.get());
 
         // After we forced it, things should continue normally...
-        application.render(test_renderer(), dummy_region, false);
+        application.render(&test_renderer(dummy_region), false);
         assert_eq!(7, counter.get());
 
         // And no matter how often we request without force, nothing will happen
         for _counter in 0..100 {
-            application.render(test_renderer(), dummy_region, false);
+            application.render(&test_renderer(dummy_region), false);
             assert_eq!(7, counter.get());
         }
     }
@@ -467,7 +461,7 @@ mod tests {
 
         // Rendering 10 times should only increase it once by 3
         for _counter in 0..10 {
-            application.render(test_renderer(), dummy_region, false);
+            application.render(&test_renderer(dummy_region), false);
         }
         assert_eq!(4, counter.get());
 
@@ -475,18 +469,18 @@ mod tests {
         application.fire_mouse_click_event(miss_event);
         assert_eq!(9, counter.get());
         // But rendering won't have effect because we missed
-        application.render(test_renderer(), dummy_region, false);
+        application.render(&test_renderer(dummy_region), false);
         assert_eq!(9, counter.get());
 
         // If we hit, the counter should also be increased by 5
         application.fire_mouse_click_event(hit_event);
         assert_eq!(14, counter.get());
         // But this time, rendering will also increase it by 3
-        application.render(test_renderer(), dummy_region, false);
+        application.render(&test_renderer(dummy_region), false);
         assert_eq!(17, counter.get());
 
         // But rendering again shouldn't matter
-        application.render(test_renderer(), dummy_region, false);
+        application.render(&test_renderer(dummy_region), false);
         assert_eq!(17, counter.get());
     }
 
@@ -505,8 +499,7 @@ mod tests {
 
             fn render(
                 &mut self,
-                _renderer: Renderer,
-                _region: RenderRegion,
+                _renderer: &Renderer,
                 _buddy: &mut dyn ComponentBuddy,
                 _force: bool,
             ) -> RenderResult {
@@ -546,7 +539,7 @@ mod tests {
         assert_eq!(0, counter.get());
         assert_eq!(0, out_counter.get());
 
-        application.render(test_renderer(), RenderRegion::between(0, 0, 1, 1), false);
+        application.render(&test_renderer(RenderRegion::between(0, 0, 1, 1)), false);
 
         // Miss clicks should increment only the out counter
         application.fire_mouse_click_event(miss_click);
@@ -575,8 +568,7 @@ mod tests {
 
         fn render(
             &mut self,
-            _renderer: Renderer,
-            _region: RenderRegion,
+            _renderer: &Renderer,
             _buddy: &mut dyn ComponentBuddy,
             _force: bool,
         ) -> RenderResult {
@@ -642,7 +634,7 @@ mod tests {
         check_leaves(vec![]);
 
         // But events after the first render should be registered
-        application.render(test_renderer(), render_region, false);
+        application.render(&test_renderer(render_region), false);
         check_enters(vec![]);
         check_leaves(vec![]);
         application.fire_mouse_enter_event(inner_enter_event);
@@ -654,7 +646,7 @@ mod tests {
 
         // If we enable mouse filtering, only the inner events should be received
         should_filter_mouse_actions.set(true);
-        application.render(test_renderer(), render_region, true);
+        application.render(&test_renderer(render_region), true);
         application.fire_mouse_enter_event(inner_enter_event);
         application.fire_mouse_leave_event(inner_leave_event);
         application.fire_mouse_enter_event(outer_enter_event);
@@ -721,8 +713,7 @@ mod tests {
 
             fn render(
                 &mut self,
-                _renderer: Renderer,
-                _region: RenderRegion,
+                _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
                 _force: bool,
             ) -> RenderResult {
@@ -778,20 +769,20 @@ mod tests {
         let render_region = RenderRegion::with_size(0, 0, 30, 70);
 
         // It shouldn't have subscribed to any of the events yet
-        application.render(test_renderer(), render_region, false);
+        application.render(&test_renderer(render_region), false);
         application.fire_mouse_move_event(the_event);
         check_received(false, false, false);
 
         // Until we filter mouse events, only mouse move can be received
         set_subscriptions(true, true, true);
-        application.render(test_renderer(), render_region, true);
+        application.render(&test_renderer(render_region), true);
         application.fire_mouse_move_event(the_event);
         check_received(true, false, false);
 
         // But things get more complex when we do filter mouse events
         let mut test_combination = |mouse_move: bool, mouse_enter: bool, mouse_leave: bool| {
             set_subscriptions(mouse_move, mouse_enter, mouse_leave);
-            application.render(test_renderer(), render_region, true);
+            application.render(&test_renderer(render_region), true);
             application.fire_mouse_move_event(the_event);
             check_received(mouse_move, mouse_enter, mouse_leave);
         };
@@ -832,7 +823,7 @@ mod tests {
         };
 
         let mut application = Application::new(Box::new(component));
-        application.render(test_renderer(), RenderRegion::between(1, 2, 3, 4), false);
+        application.render(&test_renderer(RenderRegion::between(1, 2, 3, 4)), false);
 
         // Let the mouse enter the application
         application.fire_mouse_enter_event(MouseEnterEvent::new(
@@ -902,9 +893,8 @@ mod tests {
 
             fn render(
                 &mut self,
-                _renderer: Renderer,
-                _region: RenderRegion, 
-                buddy: &mut dyn ComponentBuddy, 
+                _renderer: &Renderer,
+                buddy: &mut dyn ComponentBuddy,
                 _force: bool
             ) -> RenderResult {
                 let new_subscriptions = self.desired_subscriptions.borrow();
@@ -976,7 +966,7 @@ mod tests {
             drop(clear_received_flags);
 
             let render_region = RenderRegion::between(1, 2, 3, 4);
-            application.render(test_renderer(), render_region, true);
+            application.render(&test_renderer(render_region), true);
 
             let point = Point::new(0.5, 0.5);
             let mouse = Mouse::new(0);
@@ -1018,9 +1008,8 @@ mod tests {
 
             fn render(
                 &mut self,
-                _renderer: Renderer,
-                _region: RenderRegion, 
-                buddy: &mut dyn ComponentBuddy, 
+                _renderer: &Renderer,
+                buddy: &mut dyn ComponentBuddy,
                 _force: bool
             ) -> RenderResult {
                 let expected = self.expected.borrow();
@@ -1039,7 +1028,7 @@ mod tests {
         let region = RenderRegion::with_size(1, 2, 3, 4);
 
         // The mouses should be empty initially
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
 
         let enter_event = |mouse_id: u16| MouseEnterEvent::new(
             Mouse::new(mouse_id), Point::new(0.2, 0.3)
@@ -1052,30 +1041,30 @@ mod tests {
         // Add the first mouse
         application.fire_mouse_enter_event(enter_event(123));
         expected_mouses.replace(mouse_vec(&[123]));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
 
         // Add the second mouse
         application.fire_mouse_enter_event(enter_event(1));
         expected_mouses.replace(mouse_vec(&[123, 1]));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
 
         // Remove the first mouse
         application.fire_mouse_leave_event(leave_event(123));
         expected_mouses.replace(mouse_vec(&[1]));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
 
         // Add the first mouse back, and add yet another mouse
         application.fire_mouse_enter_event(enter_event(123));
         application.fire_mouse_enter_event(enter_event(8));
         expected_mouses.replace(mouse_vec(&[1, 123, 8]));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
 
         // Remove all mouses
         application.fire_mouse_leave_event(leave_event(123));
         application.fire_mouse_leave_event(leave_event(8));
         application.fire_mouse_leave_event(leave_event(1));
         expected_mouses.replace(mouse_vec(&[]));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
     }
 
     #[test]
@@ -1103,9 +1092,8 @@ mod tests {
 
             fn render(
                 &mut self,
-                _renderer: Renderer,
-                region: RenderRegion, 
-                buddy: &mut dyn ComponentBuddy, 
+                _renderer: &Renderer,
+                buddy: &mut dyn ComponentBuddy,
                 force: bool
             ) -> RenderResult {
                 assert_eq!(self.check.get().expected_position, buddy.get_mouse_position(self.check.get().mouse));
@@ -1124,41 +1112,43 @@ mod tests {
         let mut application = Application::new(Box::new(
             MouseCheckingComponent { check: Rc::clone(&next_check) }
         ));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
         application.fire_mouse_enter_event(MouseEnterEvent::new(
             mouse1, Point::new(0.3, 0.4)
         ));
         next_check.set(check(mouse1, 0.3, 0.4));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
         next_check.set(check_none(mouse2));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
         application.fire_mouse_move_event(MouseMoveEvent::new(
             mouse1, Point::new(0.3, 0.4), Point::new(0.6, 0.5)
         ));
         next_check.set(check(mouse1, 0.6, 0.5));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
 
         application.fire_mouse_enter_event(MouseEnterEvent::new(
             mouse2, Point::new(0.1, 0.2)
         ));
         next_check.set(check(mouse2, 0.1, 0.2));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
         next_check.set(check(mouse1, 0.6, 0.5));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
 
         application.fire_mouse_move_event(MouseMoveEvent::new(
             mouse2, Point::new(0.1, 0.2), Point::new(0.7, 0.1)
         ));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
         next_check.set(check(mouse2, 0.7, 0.1));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
 
         application.fire_mouse_leave_event(MouseLeaveEvent::new(
             mouse1, Point::new(0.6, 0.5)
         ));
         next_check.set(check_none(mouse1));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
         next_check.set(check(mouse2, 0.7, 0.1));
-        application.render(test_renderer(), region, true);
+        application.render(&test_renderer(region), true);
     }
+
+    // TODO Write a test for starting the Renderer (checking that the viewport and scissor are right)
 }

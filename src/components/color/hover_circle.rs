@@ -25,15 +25,14 @@ impl Component for HoverColorCircleComponent {
 
     fn render(
         &mut self,
-        renderer: Renderer,
-        region: RenderRegion,
+        renderer: &Renderer,
         buddy: &mut dyn ComponentBuddy,
         _force: bool
     ) -> RenderResult {
 
         // The first challenge is to avoid distortion: if the *region* is rectangular rather than
         // square, we will ignore a part of it such that a square part remains, and use that.
-        let ar = region.get_aspect_ratio();
+        let ar = renderer.get_viewport().get_aspect_ratio();
         let used_width = 1.0 / ar.max(1.0);
         let used_height = 1.0 / (1.0 / ar).max(1.0);
 
@@ -160,7 +159,7 @@ mod tests {
 
         let square_region = RenderRegion::with_size(10, 20, 50, 50);
         let square_result = component.render(
-            test_renderer(), square_region, &mut buddy, true
+            &test_renderer(square_region), &mut buddy, true
         ).unwrap().drawn_region;
         assert!(Point::new(0.0, 0.0).nearly_equal(
             Point::new(square_result.get_left(), square_result.get_bottom())
@@ -171,7 +170,7 @@ mod tests {
 
         let wide_region = RenderRegion::with_size(10, 20, 100, 50);
         let wide_result = component.render(
-            test_renderer(), wide_region, &mut buddy, true
+            &test_renderer(wide_region), &mut buddy, true
         ).unwrap().drawn_region;
         assert!(Point::new(0.25, 0.0).nearly_equal(
             Point::new(wide_result.get_left(), wide_result.get_bottom())
@@ -182,7 +181,7 @@ mod tests {
 
         let high_region = RenderRegion::with_size(10, 20, 50, 100);
         let high_result = component.render(
-            test_renderer(), high_region, &mut buddy, true
+            &test_renderer(high_region), &mut buddy, true
         ).unwrap().drawn_region;
         assert!(Point::new(0.0, 0.25).nearly_equal(
             Point::new(high_result.get_left(), high_result.get_bottom())
