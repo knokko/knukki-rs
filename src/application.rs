@@ -1149,6 +1149,4 @@ mod tests {
         next_check.set(check(mouse2, 0.7, 0.1));
         application.render(&test_renderer(region), true);
     }
-
-    // TODO Write a test for starting the Renderer (checking that the viewport and scissor are right)
 }

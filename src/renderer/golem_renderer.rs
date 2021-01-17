@@ -1,12 +1,13 @@
 use crate::*;
 use golem::*;
+use std::cell::RefCell;
 
 impl Renderer {
     pub fn new(context: Context, initial_viewport: RenderRegion) -> Self {
         Self {
             context,
-            viewport_stack: vec![initial_viewport],
-            scissor_stack: vec![initial_viewport],
+            viewport_stack: RefCell::new(vec![initial_viewport]),
+            scissor_stack: RefCell::new(vec![initial_viewport]),
         }
     }
 
@@ -15,9 +16,7 @@ impl Renderer {
     }
 
     pub fn apply_viewport_and_scissor(&self) {
-        let viewport = self.viewport_stack.last().expect("viewport stack is never empty");
-        viewport.set_viewport(&self.context);
-        let scissor = self.scissor_stack.last().expect("scissor stack is never empty");
-        scissor.set_scissor(&self.context);
+        self.get_viewport().set_viewport(&self.context);
+        self.get_scissor().set_scissor(&self.context);
     }
 }

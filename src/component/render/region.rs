@@ -137,6 +137,8 @@ impl RenderRegion {
         relative_max_x: f32,
         relative_max_y: f32,
     ) -> Self {
+
+        // TODO Make the result Option<Self>, and return None if the child region would have an area of 0
         let relative_width = relative_max_x - relative_min_x;
         let relative_height = relative_max_y - relative_min_y;
 
@@ -148,6 +150,41 @@ impl RenderRegion {
 
         return Self::with_size(min_x, min_y, width, height);
     }
+
+    /// Computes the intersection of this region with the other region. That is, a new `RenderRegion`
+    /// that covers the region where this region intersects/overlaps the other region. If this
+    /// region doesn't have any overlap with the other region, this method returns `None`.
+    ///
+    /// # Examples
+    /// ```
+    /// use knukki::RenderRegion;
+    ///
+    /// // Simple case: the left region has some overlap with the right region
+    /// let left = RenderRegion::between(0, 0, 40, 10);
+    /// let right = RenderRegion::between(30, 0, 60, 10);
+    /// let intersection = RenderRegion::between(30, 0, 40, 10);
+    /// assert_eq!(intersection, left.intersection(right));
+    /// // The intersection is symmetric
+    /// assert_eq!(intersection, right.intersection(left));
+    ///
+    /// // This one has no intersection with the left region
+    /// let far_right = RenderRegion::between(100, 0, 200, 10);
+    /// assert!(left.intersection(far_right).is_none());
+    /// ```
+    pub fn intersection(&self, other: Self) -> Option<Self> {
+        let min_x = self.get_min_x().max(other.get_min_x());
+        let min_y = self.get_min_y().max(other.get_min_y());
+        let max_x = self.get_max_x().min(other.get_max_x());
+        let max_y = self.get_max_y().min(other.get_max_y());
+
+        if min_x < max_x && min_y < max_y {
+            Some(Self::between(min_x, min_y, max_x, max_y))
+        } else {
+            None
+        }
+    }
+
+    // TODO Write a unit test for intersection (also for the empty intersection)
 
     /// Sets the viewport of the given golem `Context` to this render region.
     #[cfg(feature = "golem_rendering")]
@@ -218,5 +255,10 @@ mod tests {
             parent.child_region(0.0, 0.5, 0.5, 1.0)
         );
         assert_eq!(parent, parent.child_region(0.0, 0.0, 1.0, 1.0));
+    }
+
+    #[test]
+    fn test_edge_intersection() {
+        // TODO Idea: let the bottom rectangle touch the top rectangle
     }
 }
