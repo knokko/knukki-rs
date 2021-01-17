@@ -22,7 +22,7 @@ struct ColorChangingRectComponent {
 
     red: u8,
     green: u8,
-    blue: u8
+    blue: u8,
 }
 
 impl Component for ColorChangingRectComponent {
