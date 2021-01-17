@@ -3,15 +3,15 @@ use knukki::*;
 fn main() {
     let mut menu = SimpleFlatMenu::new(Some(Color::rgb(50, 150, 100)));
     menu.add_component(
-        Box::new(ColorChangingRectComponent { red: 200, green: 100, blue: 0 }),
+        Box::new(ColorChangingRectComponent { red: 200, green: 100, blue: 0, id: 1 }),
         ComponentDomain::between(0.1, 0.1, 0.8, 0.4)
     );
     menu.add_component(
-        Box::new(ColorChangingRectComponent { red: 50, green: 200, blue: 150 }),
+        Box::new(ColorChangingRectComponent { red: 50, green: 200, blue: 150, id: 2 }),
         ComponentDomain::between(0.5, 0.5, 0.9, 0.9)
     );
     menu.add_component(
-        Box::new(ColorChangingRectComponent { red: 200, green: 0, blue: 150 }),
+        Box::new(ColorChangingRectComponent { red: 200, green: 0, blue: 150, id: 3 }),
         ComponentDomain::between(0.05, 0.7, 0.4, 0.95)
     );
     let application = Application::new(Box::new(menu));
@@ -22,7 +22,9 @@ struct ColorChangingRectComponent {
 
     red: u8,
     green: u8,
-    blue: u8
+    blue: u8,
+
+    id: u8
 }
 
 impl Component for ColorChangingRectComponent {

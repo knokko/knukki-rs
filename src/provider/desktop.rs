@@ -1,17 +1,18 @@
 use crate::{Application, RenderRegion, MouseMoveEvent, MouseLeaveEvent, MouseEnterEvent, GolemRenderer};
 
-use golem::Context;
+use golem::*;
 
 use glutin::{
-    dpi::PhysicalPosition,
+    dpi::PhysicalPosition, dpi::PhysicalSize,
     event::{ElementState, Event, MouseButton, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
+    window::WindowBuilder, ContextWrapper, PossiblyCurrent, window::Window
 };
 
 use std::thread::sleep;
 use std::time::Duration;
 use std::time::Instant;
+use golem::Dimension::D2;
 
 pub fn start(mut app: Application, title: &str) {
     let event_loop = EventLoop::new();
@@ -40,6 +41,8 @@ pub fn start(mut app: Application, title: &str) {
     let mut mouse_position: Option<PhysicalPosition<i32>> = None;
     let mut should_fire_mouse_enter_event = false;
 
+    let mut render_surface: Option<Surface> = None;
+
     event_loop.run(move |event, _target, control_flow| {
         // I use `Poll` instead of `Wait` to get more control over the control flow.
         // I use a simple custom system to avoid too large power usage
@@ -57,6 +60,8 @@ pub fn start(mut app: Application, title: &str) {
                 match window_event {
                     WindowEvent::Resized(_) => {
                         // TODO app.on_resize
+                        println!("Resize");
+                        render_surface = None;
                     }
                     WindowEvent::MouseInput {
                         device_id: _,
@@ -168,7 +173,6 @@ pub fn start(mut app: Application, title: &str) {
 
                 // Draw onto the entire inner window buffer
                 let size = windowed_context.window().inner_size();
-                let region = RenderRegion::with_size(0, 0, size.width, size.height);
 
                 // Give the application a render opportunity every ~16 milliseconds
                 let current_time = Instant::now();
@@ -178,10 +182,7 @@ pub fn start(mut app: Application, title: &str) {
                 }
                 start_time = Instant::now();
 
-                // Only swap the buffers if the application actually rendered
-                if app.render(&renderer, region, force) {
-                    windowed_context.swap_buffers().expect("Good context");
-                }
+                draw_application(&mut app, &renderer, &mut render_surface, size, force, &windowed_context);
             }
             Event::RedrawRequested(_) => {
                 // This provider will never request a winit redraw, so when this
@@ -190,12 +191,83 @@ pub fn start(mut app: Application, title: &str) {
 
                 // Draw onto the entire inner window buffer
                 let size = windowed_context.window().inner_size();
-                let region = RenderRegion::with_size(0, 0, size.width, size.height);
 
-                app.render(&renderer, region, force);
-                windowed_context.swap_buffers().expect("Good context");
+                draw_application(&mut app, &renderer, &mut render_surface, size, force, &windowed_context);
             }
             _ => (),
         }
     });
+
+    fn draw_application(
+        app: &mut Application, renderer: &GolemRenderer,
+        render_surface: &mut Option<Surface>,
+        size: PhysicalSize<u32>, force: bool, windowed_context: &ContextWrapper<PossiblyCurrent, Window>
+    ) -> Result<(), GolemError> {
+        let region = RenderRegion::with_size(0, 0, size.width, size.height);
+        let golem = renderer.get_context();
+
+        // Make sure there is an up-to-date render texture to draw the application on
+        if render_surface.is_none() {
+            let mut render_texture = Texture::new(golem).expect("Should be able to create texture");
+            render_texture.set_image(None, size.width, size.height, ColorFormat::RGBA);
+            *render_surface = Some(Surface::new(golem, render_texture).expect("Should be able to create surface"));
+            render_surface.as_ref().unwrap().bind();
+        }
+
+        // Draw the application on the render texture
+        if app.render(renderer, region, force) {
+            Surface::unbind(renderer.get_context());
+            golem.set_viewport(0, 0, size.width, size.height);
+
+            // Draw the render texture onto the presenting texture
+            // TODO Improve performance by creating the GPU resources only once
+            let mut vb = VertexBuffer::new(golem)?;
+            let mut eb = ElementBuffer::new(golem)?;
+
+            #[rustfmt::skip]
+                let vertices = [
+                -1.0, -1.0,
+                1.0, -1.0,
+                1.0, 1.0,
+                -1.0, 1.0,
+            ];
+            let indices = [0, 1, 2, 2, 3, 0];
+            let mut shader = ShaderProgram::new(
+                golem,
+                ShaderDescription {
+                    vertex_input: &[
+                        Attribute::new("position", AttributeType::Vector(D2)),
+                    ],
+                    fragment_input: &[Attribute::new("passPosition", AttributeType::Vector(D2))],
+                    uniforms: &[
+                        Uniform::new("image", UniformType::Sampler2D),
+                    ],
+                    vertex_shader: r#" void main() {
+            gl_Position = vec4(position.x, position.y, 0.0, 1.0);
+            passPosition = position;
+        }"#,
+                    fragment_shader: r#" void main() {
+            gl_FragColor = texture(image, vec2(0.5 + passPosition.x * 0.5, 0.5 + passPosition.y * 0.5));
+        }"#,
+                },
+            )?;
+            vb.set_data(&vertices);
+            eb.set_data(&indices);
+            shader.bind();
+            shader.prepare_draw(&vb, &eb)?;
+            shader.set_uniform("image", UniformValue::Int(1))?;
+
+            let bind_point = std::num::NonZeroU32::new(1).unwrap();
+            unsafe {
+                let texture = render_surface.as_ref().unwrap().borrow_texture().unwrap();
+                texture.set_active(bind_point);
+            }
+            unsafe {
+                shader.draw_prepared(0..indices.len(), GeometryMode::Triangles);
+            }
+
+            windowed_context.swap_buffers().expect("Good context");
+        }
+        Ok(())
+    }
 }
