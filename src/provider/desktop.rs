@@ -60,7 +60,6 @@ pub fn start(mut app: Application, title: &str) {
                 match window_event {
                     WindowEvent::Resized(_) => {
                         // TODO app.on_resize
-                        println!("Resize");
                         render_surface = None;
                     }
                     WindowEvent::MouseInput {
@@ -214,37 +213,18 @@ pub fn start(mut app: Application, title: &str) {
             render_texture.set_image(None, size.width, size.height, ColorFormat::RGBA);
             *render_surface = Some(Surface::new(golem, render_texture).expect("Should be able to create surface"));
             created_surface = true;
+            render_surface.as_ref().unwrap().bind();
         }
 
         // Draw the application on the render texture
         let render_surface = render_surface.as_ref().unwrap();
-        if !render_surface.is_bound() {
-            render_surface.bind();
-            println!("Bind render surface");
-        }
         if app.render(renderer, region, force || created_surface) {
-            println!("Expected pixels:");
-            let mut pixel_data = vec![0; 4 * size.width as usize * size.height as usize];
-            render_surface.get_pixel_data(0, 0, size.width, size.height, ColorFormat::RGBA, &mut pixel_data);
-            let mut y = 0;
-            while y < size.height {
-                let mut x = 0;
-                while x < size.width {
-                    let index = 4 * (x + y * size.width) as usize;
-                    print!("{}{}{} ", pixel_data[index + 0] / 26, pixel_data[index + 1] / 26, pixel_data[index + 2] / 26);
-                    x += 30;
-                }
-                y += 30;
-                println!();
-            }
-            println!();
-            println!();
 
             // Draw the render texture onto the presenting texture
-            println!("Unbind render surface");
             Surface::unbind(renderer.get_context());
             golem.set_viewport(0, 0, size.width, size.height);
             golem.disable_scissor();
+
             // TODO Improve performance by creating the GPU resources only once
             let mut vb = VertexBuffer::new(golem)?;
             let mut eb = ElementBuffer::new(golem)?;
@@ -293,6 +273,8 @@ pub fn start(mut app: Application, title: &str) {
             }
 
             windowed_context.swap_buffers().expect("Good context");
+
+            render_surface.bind();
         }
         Ok(())
     }
