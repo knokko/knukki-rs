@@ -1,7 +1,7 @@
 use knukki::*;
 
 fn main() {
-    let mut menu = SimpleFlatMenu::new(Some(Color::rgb(50, 150, 100)));
+    let mut menu = SimpleFlatMenu::new(Some(Color::rgb(0, 0, 0)));
     menu.add_component(
         Box::new(ColorChangingRectComponent { red: 200, green: 100, blue: 0, id: 1 }),
         ComponentDomain::between(0.1, 0.1, 0.8, 0.4)

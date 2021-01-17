@@ -182,7 +182,7 @@ pub fn start(mut app: Application, title: &str) {
                 }
                 start_time = Instant::now();
 
-                draw_application(&mut app, &renderer, &mut render_surface, size, force, &windowed_context);
+                draw_application(&mut app, &renderer, &mut render_surface, size, force, &windowed_context).expect("Should be able to draw app");
             }
             Event::RedrawRequested(_) => {
                 // This provider will never request a winit redraw, so when this
@@ -192,7 +192,7 @@ pub fn start(mut app: Application, title: &str) {
                 // Draw onto the entire inner window buffer
                 let size = windowed_context.window().inner_size();
 
-                draw_application(&mut app, &renderer, &mut render_surface, size, force, &windowed_context);
+                draw_application(&mut app, &renderer, &mut render_surface, size, force, &windowed_context).expect("Should be able to force draw app");
             }
             _ => (),
         }
@@ -206,20 +206,45 @@ pub fn start(mut app: Application, title: &str) {
         let region = RenderRegion::with_size(0, 0, size.width, size.height);
         let golem = renderer.get_context();
 
+        let mut created_surface = false;
+
         // Make sure there is an up-to-date render texture to draw the application on
         if render_surface.is_none() {
             let mut render_texture = Texture::new(golem).expect("Should be able to create texture");
             render_texture.set_image(None, size.width, size.height, ColorFormat::RGBA);
             *render_surface = Some(Surface::new(golem, render_texture).expect("Should be able to create surface"));
-            render_surface.as_ref().unwrap().bind();
+            created_surface = true;
         }
 
         // Draw the application on the render texture
-        if app.render(renderer, region, force) {
-            Surface::unbind(renderer.get_context());
-            golem.set_viewport(0, 0, size.width, size.height);
+        let render_surface = render_surface.as_ref().unwrap();
+        if !render_surface.is_bound() {
+            render_surface.bind();
+            println!("Bind render surface");
+        }
+        if app.render(renderer, region, force || created_surface) {
+            println!("Expected pixels:");
+            let mut pixel_data = vec![0; 4 * size.width as usize * size.height as usize];
+            render_surface.get_pixel_data(0, 0, size.width, size.height, ColorFormat::RGBA, &mut pixel_data);
+            let mut y = 0;
+            while y < size.height {
+                let mut x = 0;
+                while x < size.width {
+                    let index = 4 * (x + y * size.width) as usize;
+                    print!("{}{}{} ", pixel_data[index + 0] / 26, pixel_data[index + 1] / 26, pixel_data[index + 2] / 26);
+                    x += 30;
+                }
+                y += 30;
+                println!();
+            }
+            println!();
+            println!();
 
             // Draw the render texture onto the presenting texture
+            println!("Unbind render surface");
+            Surface::unbind(renderer.get_context());
+            golem.set_viewport(0, 0, size.width, size.height);
+            golem.disable_scissor();
             // TODO Improve performance by creating the GPU resources only once
             let mut vb = VertexBuffer::new(golem)?;
             let mut eb = ElementBuffer::new(golem)?;
@@ -247,7 +272,8 @@ pub fn start(mut app: Application, title: &str) {
             passPosition = position;
         }"#,
                     fragment_shader: r#" void main() {
-            gl_FragColor = texture(image, vec2(0.5 + passPosition.x * 0.5, 0.5 + passPosition.y * 0.5));
+            vec4 theColor = texture(image, vec2(0.5 + passPosition.x * 0.5, 0.5 + passPosition.y * 0.5));
+            gl_FragColor = theColor;
         }"#,
                 },
             )?;
@@ -259,7 +285,7 @@ pub fn start(mut app: Application, title: &str) {
 
             let bind_point = std::num::NonZeroU32::new(1).unwrap();
             unsafe {
-                let texture = render_surface.as_ref().unwrap().borrow_texture().unwrap();
+                let texture = render_surface.borrow_texture().unwrap();
                 texture.set_active(bind_point);
             }
             unsafe {
