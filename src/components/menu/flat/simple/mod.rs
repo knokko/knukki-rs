@@ -1958,12 +1958,12 @@ mod tests {
 
         viewport1.set(RenderRegion::between(0, 0, 50, 50));
         viewport2.set(RenderRegion::between(20, 50, 90, 100));
-        menu.render(&renderer, &mut buddy, true);
+        menu.render(&renderer, &mut buddy, true).unwrap();
 
         renderer.reset_viewport(RenderRegion::between(100, 200, 300, 400));
         viewport1.set(RenderRegion::between(100, 200, 200, 300));
         viewport2.set(RenderRegion::between(140, 300, 280, 400));
-        menu.render(&renderer, &mut buddy, true);
+        menu.render(&renderer, &mut buddy, true).unwrap();
 
         // Check that the render methods were actually called twice per component
         assert_eq!(4, render_counter.get());

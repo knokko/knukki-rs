@@ -1149,4 +1149,95 @@ mod tests {
         next_check.set(check(mouse2, 0.7, 0.1));
         application.render(&test_renderer(region), true);
     }
+
+    #[test]
+    fn test_change_menu() {
+        struct ChangingComponent {
+            click_counter: Rc<Cell<u8>>,
+            changed_counter: Rc<Cell<u8>>,
+        }
+
+        impl Component for ChangingComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+                buddy.subscribe_mouse_click();
+            }
+
+            fn render(
+                &mut self,
+                _renderer: &Renderer,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool
+            ) -> RenderResult {
+                entire_render_result()
+            }
+
+            fn on_mouse_click(&mut self, _event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
+                self.click_counter.set(self.click_counter.get() + 1);
+                let changed_counter = Rc::clone(&self.changed_counter);
+                buddy.change_menu(Box::new(
+                    move |_old_menu: Box<dyn Component>| Box::new(ChangedComponent {
+                        counter: changed_counter
+                    })
+                ));
+            }
+
+            fn on_detach(&mut self) {
+                self.click_counter.set(self.click_counter.get() * 4);
+            }
+        }
+
+        struct ChangedComponent {
+            counter: Rc<Cell<u8>>,
+        }
+
+        impl Component for ChangedComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+                buddy.subscribe_mouse_click();
+                self.counter.set(10);
+            }
+
+            fn render(&mut self, _renderer: &Renderer, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+                self.counter.set(self.counter.get() * 5);
+                entire_render_result()
+            }
+
+            fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.counter.set(self.counter.get() + 1);
+            }
+        }
+
+        let counter1 = Rc::new(Cell::new(0));
+        let counter2 = Rc::new(Cell::new(0));
+
+        let mut application = Application::new(Box::new(ChangingComponent {
+            click_counter: Rc::clone(&counter1),
+            changed_counter: Rc::clone(&counter2)
+        }));
+
+        let click_event = MouseClickEvent::new(
+            Mouse::new(0), Point::new(0.2, 0.6), MouseButton::primary()
+        );
+        let renderer = test_renderer(RenderRegion::with_size(1, 2, 3, 4));
+
+        application.render(&renderer, false);
+        // Firing the click event should cause the second component to be attached
+        application.fire_mouse_click_event(click_event);
+        assert_eq!(4, counter1.get());
+        assert_eq!(10, counter2.get());
+
+        // It should receive the render event
+        application.render(&renderer, false);
+        assert_eq!(50, counter2.get());
+
+        // And this click event
+        application.fire_mouse_click_event(click_event);
+        assert_eq!(51, counter2.get());
+
+        // Rendering it again shouldn't have any effect
+        application.render(&renderer, false);
+        assert_eq!(51, counter2.get());
+
+        // And component 1 shouldn't have received any more events
+        assert_eq!(4, counter1.get());
+    }
 }

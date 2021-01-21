@@ -115,7 +115,7 @@ impl DrawnRegion for OvalDrawnRegion {
             if lambda1 <= 0.0 {
                 // The line can't enter the oval
                 if lambda2 < 0.0 {
-                    // The line ends before it would intersect the oval
+                    // The line starts after it would intersect the oval
                     LineIntersection::FullyOutside
                 } else {
                     // The line exits the oval or is entirely inside it
@@ -151,7 +151,7 @@ impl DrawnRegion for OvalDrawnRegion {
                 }
             }
         } else {
-            // The line won't cross the circle
+            // The line won't cross the oval
             LineIntersection::FullyOutside
         }
     }
@@ -253,6 +253,9 @@ mod tests {
         ));
         assert_eq!(LineIntersection::FullyOutside, oval.find_line_intersection(
             Point::new(10.0, 20.0), Point::new(10.0, 14.3)
+        ));
+        assert_eq!(LineIntersection::FullyOutside, oval.find_line_intersection(
+            Point::new(20.0, 5.0), Point::new(30.0, 7.0)
         ));
         assert_eq!(LineIntersection::FullyOutside, oval.find_line_intersection(
             Point::new(5.9, 2.0), Point::new(5.9, 20.0)

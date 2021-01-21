@@ -46,7 +46,7 @@ pub trait ComponentBuddy {
     /// the request for other reasons as well, but this should be uncommon.
     fn change_menu(
         &mut self,
-        create_new_menu: Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>,
+        create_new_menu: Box<dyn FnOnce(Box<dyn Component>) -> Box<dyn Component>>,
     );
 
     /// Prompts the user to type some text for the component.

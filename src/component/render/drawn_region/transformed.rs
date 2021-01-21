@@ -159,5 +159,62 @@ mod tests {
         .nearly_equal(
             transformed_region.find_line_intersection(Point::new(-2.0, 1.1), Point::new(20.0, 1.1))
         ));
+
+        assert!(LineIntersection::Enters {
+            point: Point::new(0.6, 1.1),
+        }
+        .nearly_equal(
+            transformed_region.find_line_intersection(Point::new(-2.0, 1.1), Point::new(1.0, 1.1))
+        ));
+
+        assert!(LineIntersection::Exits {
+            point: Point::new(1.2, 1.1)
+        }
+        .nearly_equal(
+            transformed_region.find_line_intersection(Point::new(1.0, 1.1), Point::new(20.0, 1.1))
+        ));
+
+        assert_eq!(
+            LineIntersection::FullyOutside,
+            transformed_region.find_line_intersection(
+                Point::new(-2.0, 1.1), Point::new(0.0, 1.1)
+            )
+        );
+
+        assert_eq!(
+            LineIntersection::FullyInside,
+            transformed_region.find_line_intersection(
+                Point::new(0.8, 1.1), Point::new(1.0, 1.1)
+            )
+        );
+    }
+
+    #[test]
+    fn test_clone() {
+        let original_region = Box::new(RectangularDrawnRegion::new(0.0, 1.0, 3.0, 2.0));
+        let transform_function =
+            |point: Point| Point::new(5.0 * point.get_x() - 3.0, -4.0 * point.get_y() + 6.0);
+        let transform_back_function =
+            |point: Point| Point::new((point.get_x() + 3.0) / 5.0, (point.get_y() - 6.0) / -4.0);
+        let transformed_region = TransformedDrawnRegion::new(
+            original_region,
+            transform_function,
+            transform_back_function,
+        );
+
+        let cloned_region = transformed_region.clone();
+        assert_eq!(transformed_region.get_left(), cloned_region.get_left());
+        assert_eq!(transformed_region.get_bottom(), cloned_region.get_bottom());
+        assert_eq!(transformed_region.get_right(), cloned_region.get_right());
+        assert_eq!(transformed_region.get_top(), cloned_region.get_top());
+
+        for ix in 0 .. 30 {
+            for iy in 0 .. 30 {
+                let x = ix as f32 * 0.1 - 1.5;
+                let y = iy as f32 * 0.1 - 1.5;
+                let point = Point::new(x, y);
+                assert_eq!(transformed_region.is_inside(point), cloned_region.is_inside(point));
+            }
+        }
     }
 }

@@ -10,7 +10,7 @@ pub struct SimpleFlatBuddy {
 
     last_render_result: Option<RenderResultStruct>,
 
-    create_next_menu: Option<Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>>,
+    create_next_menu: Option<Box<dyn FnOnce(Box<dyn Component>) -> Box<dyn Component>>>,
 
     requested_render: bool,
     has_changes: bool,
@@ -67,21 +67,15 @@ impl SimpleFlatBuddy {
     }
 
     pub fn create_next_menu(&mut self, current_menu: Box<dyn Component>) -> Box<dyn Component> {
-        let new_menu = self
-            .create_next_menu
-            .as_ref()
-            .expect("Only call this method after has_next_menu returned true")(
-            current_menu
-        );
-        self.create_next_menu = None;
-        new_menu
+        let create_next_menu = self.create_next_menu.take().expect("Only call this method after has_next_menu returned true");
+        create_next_menu(current_menu)
     }
 }
 
 impl ComponentBuddy for SimpleFlatBuddy {
     fn change_menu(
         &mut self,
-        create_new_menu: Box<dyn Fn(Box<dyn Component>) -> Box<dyn Component>>,
+        create_new_menu: Box<dyn FnOnce(Box<dyn Component>) -> Box<dyn Component>>,
     ) {
         self.create_next_menu = Some(create_new_menu);
         self.has_changes = true;
