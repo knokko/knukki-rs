@@ -25,7 +25,13 @@ pub struct RenderRegion {
 impl RenderRegion {
     /// Constructs a new `RenderRegion` with the given minimum x-coordinate,
     /// minimum y-coordinate, width, and height.
+    ///
+    /// ## Panics
+    /// This function will panic if `width == 0` or `height == 0`
     pub fn with_size(min_x: u32, min_y: u32, width: u32, height: u32) -> Self {
+        if width == 0 || height == 0 {
+            panic!("width is {} and height is {}", width, height);
+        }
         Self {
             min_x,
             min_y,
@@ -41,13 +47,13 @@ impl RenderRegion {
     /// maximum (right) x-coordinate and the bound y-coordinate is the y-coordinate
     /// that comes right after the maximum (bottom) y-coordinate.
     ///
-    /// ### Panic
-    /// This function will panic if *bound_x* < *min_x* or *bound_y* < *min_y*
+    /// ## Panic
+    /// This function will panic if `bound_x <= min_x` or `bound_y <= min_y`
     pub fn between(min_x: u32, min_y: u32, bound_x: u32, bound_y: u32) -> Self {
-        if bound_x < min_x {
+        if bound_x <= min_x {
             panic!("Bound x is {}, but min x is {}", bound_x, min_x);
         }
-        if bound_y < min_y {
+        if bound_y <= min_y {
             panic!("Bound y is {}, but min y is {}", bound_y, min_y);
         }
         Self {
@@ -117,18 +123,20 @@ impl RenderRegion {
     ///
     /// As example, using (0.0, 0.0, 1.0, 1.0) would return a copy of this region
     /// and using (0.0, 0.0, 0.5, 0.5) would return the bottom-left quarter of this
-    /// region. See the Examples for details.
+    /// region. If the area of the returned region would be 0, this method will return
+    /// `None` instead. See the Examples for details.
     ///
     /// ### Examples
     /// ```
     /// use knukki::RenderRegion;
     ///
     /// let region = RenderRegion::between(20, 20, 30, 30);
-    /// assert_eq!(region, region.child_region(0.0, 0.0, 1.0, 1.0));
+    /// assert_eq!(Some(region), region.child_region(0.0, 0.0, 1.0, 1.0));
     /// assert_eq!(
-    ///     RenderRegion::between(20, 20, 25, 25),
+    ///     Some(RenderRegion::between(20, 20, 25, 25)),
     ///     region.child_region(0.0, 0.0, 0.5, 0.5)
     /// );
+    /// assert!(region.child_region(0.0, 0.0, 0.001, 0.001).is_none());
     /// ```
     pub fn child_region(
         &self,
@@ -136,19 +144,19 @@ impl RenderRegion {
         relative_min_y: f32,
         relative_max_x: f32,
         relative_max_y: f32,
-    ) -> Self {
-
-        // TODO Make the result Option<Self>, and return None if the child region would have an area of 0
-        let relative_width = relative_max_x - relative_min_x;
-        let relative_height = relative_max_y - relative_min_y;
-
-        let width = (self.get_width() as f32 * relative_width).round() as u32;
-        let height = (self.get_height() as f32 * relative_height).round() as u32;
+    ) -> Option<Self> {
 
         let min_x = self.get_min_x() + (self.get_width() as f32 * relative_min_x).round() as u32;
         let min_y = self.get_min_y() + (self.get_height() as f32 * relative_min_y).round() as u32;
 
-        return Self::with_size(min_x, min_y, width, height);
+        let bound_x = self.get_min_x() + (self.get_width() as f32 * relative_max_x).round() as u32;
+        let bound_y = self.get_min_y() + (self.get_height() as f32 * relative_max_y).round() as u32;
+
+        if bound_x > min_x && bound_y > min_y {
+            Some(Self::between(min_x, min_y, bound_x, bound_y))
+        } else {
+            None
+        }
     }
 
     /// Computes the intersection of this region with the other region. That is, a new `RenderRegion`
@@ -162,7 +170,7 @@ impl RenderRegion {
     /// // Simple case: the left region has some overlap with the right region
     /// let left = RenderRegion::between(0, 0, 40, 10);
     /// let right = RenderRegion::between(30, 0, 60, 10);
-    /// let intersection = RenderRegion::between(30, 0, 40, 10);
+    /// let intersection = Some(RenderRegion::between(30, 0, 40, 10));
     /// assert_eq!(intersection, left.intersection(right));
     /// // The intersection is symmetric
     /// assert_eq!(intersection, right.intersection(left));
@@ -177,7 +185,7 @@ impl RenderRegion {
         let max_x = self.get_max_x().min(other.get_max_x());
         let max_y = self.get_max_y().min(other.get_max_y());
 
-        if min_x < max_x && min_y < max_y {
+        if min_x <= max_x && min_y <= max_y {
             Some(Self::between(min_x, min_y, max_x + 1, max_y + 1))
         } else {
             None
@@ -241,18 +249,23 @@ mod tests {
     fn test_child_region() {
         let parent = RenderRegion::between(200, 500, 300, 600);
         assert_eq!(
-            RenderRegion::between(230, 530, 270, 570),
+            Some(RenderRegion::between(230, 530, 270, 570)),
             parent.child_region(0.3, 0.3, 0.7, 0.7)
         );
         assert_eq!(
-            RenderRegion::between(200, 500, 250, 550),
+            Some(RenderRegion::between(200, 500, 250, 550)),
             parent.child_region(0.0, 0.0, 0.5, 0.5)
         );
         assert_eq!(
-            RenderRegion::between(200, 550, 250, 600),
+            Some(RenderRegion::between(200, 550, 250, 600)),
             parent.child_region(0.0, 0.5, 0.5, 1.0)
         );
-        assert_eq!(parent, parent.child_region(0.0, 0.0, 1.0, 1.0));
+        assert_eq!(Some(parent), parent.child_region(0.0, 0.0, 1.0, 1.0));
+
+        let mini_region = RenderRegion::with_size(100, 200, 1, 1);
+        assert_eq!(Some(mini_region), mini_region.child_region(0.45, 0.45, 0.55, 0.55));
+        assert_eq!(Some(mini_region), mini_region.child_region(0.0, 0.0, 1.0, 1.0));
+        assert!(mini_region.child_region(0.1, 0.1, 0.4, 0.4).is_none());
     }
 
     #[test]
@@ -273,5 +286,8 @@ mod tests {
 
         let region_far = RenderRegion::with_size(100, 200, 300, 400);
         assert!(region1.intersection(region_far).is_none());
+
+        let region_mini = RenderRegion::with_size(19, 19, 5, 5);
+        assert_eq!(Some(RenderRegion::with_size(19, 19, 1, 1)), region1.intersection(region_mini));
     }
 }
