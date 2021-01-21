@@ -432,7 +432,7 @@ impl ComponentEntry {
         if force || self.buddy.did_request_render() {
             self.buddy.clear_render_request();
 
-            let render_result = renderer.push_viewport(
+            let maybe_render_result = renderer.push_viewport(
                 self.domain.get_min_x(), self.domain.get_min_y(),
                 self.domain.get_max_x(), self.domain.get_max_y(),
                 || {
@@ -443,13 +443,18 @@ impl ComponentEntry {
                     )
                 }
             );
-            if render_result.is_err() {
-                return Some(render_result);
-            }
 
-            let good_result = render_result.unwrap();
-            self.buddy.set_last_render_result(good_result.clone());
-            Some(Ok(good_result))
+            if let Some(render_result) = maybe_render_result {
+                if render_result.is_err() {
+                    return Some(render_result);
+                }
+
+                let good_result = render_result.unwrap();
+                self.buddy.set_last_render_result(good_result.clone());
+                Some(Ok(good_result))
+            } else {
+                None
+            }
         } else {
             None
         }
