@@ -53,10 +53,8 @@ impl DrawnRegion for OvalDrawnRegion {
     }
 
     fn find_line_intersection(&self, from: Point, to: Point) -> LineIntersection {
-        //let distance = from.distance_to(to);
-        let distance = 1.0; //TODO Clean up
-        let direction_x = (to.get_x() - from.get_x()) / distance;
-        let direction_y = (to.get_y() - from.get_y()) / distance;
+        let delta_x = to.get_x() - from.get_x();
+        let delta_y = to.get_y() - from.get_y();
 
         /*
          * To keep things short, use:
@@ -88,12 +86,12 @@ impl DrawnRegion for OvalDrawnRegion {
         let helper_x = from.get_x() - self.center.get_x();
         let helper_y = from.get_y() - self.center.get_y();
 
-        let a_x = direction_x * direction_x / (self.radius_x * self.radius_x);
-        let a_y = (direction_y * direction_y) / (self.radius_y * self.radius_y);
+        let a_x = delta_x * delta_x / (self.radius_x * self.radius_x);
+        let a_y = (delta_y * delta_y) / (self.radius_y * self.radius_y);
         let a = a_x + a_y;
 
-        let b_x = direction_x * helper_x / (self.radius_x * self.radius_x);
-        let b_y = direction_y * helper_y / (self.radius_y * self.radius_y);
+        let b_x = delta_x * helper_x / (self.radius_x * self.radius_x);
+        let b_y = delta_y * helper_y / (self.radius_y * self.radius_y);
         let b = 2.0 * (b_x + b_y);
 
         let c_x = helper_x * helper_x / (self.radius_x * self.radius_x);
@@ -106,12 +104,12 @@ impl DrawnRegion for OvalDrawnRegion {
             let lambda1 = (-b - discriminant.sqrt()) / (2.0 * a);
             let lambda2 = (-b + discriminant.sqrt()) / (2.0 * a);
 
-            let x1 = from.get_x() + lambda1 * direction_x;
-            let y1 = from.get_y() + lambda1 * direction_y;
+            let x1 = from.get_x() + lambda1 * delta_x;
+            let y1 = from.get_y() + lambda1 * delta_y;
             let point1 = Point::new(x1, y1);
 
-            let x2 = from.get_x() + lambda2 * direction_x;
-            let y2 = from.get_y() + lambda2 * direction_y;
+            let x2 = from.get_x() + lambda2 * delta_x;
+            let y2 = from.get_y() + lambda2 * delta_y;
             let point2 = Point::new(x2, y2);
 
             if lambda1 <= 0.0 {

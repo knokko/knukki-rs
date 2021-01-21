@@ -60,7 +60,7 @@ impl Component for HoverColorCircleComponent {
             use golem::*;
 
             let golem = renderer.get_context();
-            // TODO Optimize this by storing the model and shaders rather than recreating them
+            // TODO PERFORMANCE Optimize this by storing the model and shaders rather than recreating them
             // all the time
 
             // I will use the fragment shader to ensure the quad looks like a circle

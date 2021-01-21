@@ -63,7 +63,7 @@ impl DrawnRegion for RectangularDrawnRegion {
         }
 
         // Use case distinction to avoid divisions by 0 (or numbers like 0.0001)
-        // TODO Test both cases
+        // TODO Code coverage showed that I forgot two cases. Write tests for those cases as well!
         if dx.abs() > dy.abs() {
             // Express line formula as: y = slope * x + adder
             let slope = dy / dx;

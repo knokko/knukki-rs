@@ -140,7 +140,6 @@ mod tests {
 
     #[test]
     fn test_find_line_intersection() {
-        // TODO Well... the test
         let original_region = Box::new(RectangularDrawnRegion::new(0.0, 1.0, 3.0, 2.0));
         let transform_function =
             |point: Point| Point::new(5.0 * point.get_x() - 3.0, -4.0 * point.get_y() + 6.0);

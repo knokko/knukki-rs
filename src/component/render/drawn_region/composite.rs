@@ -227,7 +227,6 @@ mod tests {
         assert_eq!(2.0, double.get_top());
     }
 
-    // TODO Unit tests for the line intersection logic!
     #[test]
     fn test_line_intersection_empty() {
         let region = CompositeDrawnRegion::new(Vec::new());
