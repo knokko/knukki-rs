@@ -95,7 +95,7 @@ impl SimpleFlatMenu {
     }
 
     fn get_component_at(&self, point: Point) -> Option<RR<ComponentEntry>> {
-        // TODO Performance: Use some kind of 2d range tree instead
+        // TODO PERFORMANCE Use some kind of 2d range tree instead
         for entry_cell in &self.components {
             let entry = entry_cell.borrow();
             if entry.domain.is_inside(point) {
@@ -197,7 +197,7 @@ impl Component for SimpleFlatMenu {
             self.check_buddy(own_buddy, &mut clicked_entry, false);
         }
 
-        // TODO Maintain a list for just the interested components
+        // TODO PERFORMANCE Maintain a list for just the interested components
         let out_event = MouseClickOutEvent::new(event.get_mouse(), event.get_button());
         for component_cell in &self.components {
             if maybe_clicked_cell.is_none()
@@ -215,7 +215,7 @@ impl Component for SimpleFlatMenu {
         event: MouseClickOutEvent,
         own_buddy: &mut dyn ComponentBuddy,
     ) {
-        // TODO Maintain a list for just the interested components
+        // TODO PERFORMANCE Maintain a list for just the interested components
         for component_cell in &self.components {
             let mut component_entry = component_cell.borrow_mut();
             component_entry.mouse_click_out(event);
@@ -224,8 +224,8 @@ impl Component for SimpleFlatMenu {
     }
 
     fn on_mouse_move(&mut self, event: MouseMoveEvent, buddy: &mut dyn ComponentBuddy) {
-        // TODO Consider only the components intersecting the rectangle around the line from
-        // TODO event.from to event.to (using some kind of 2d range tree)
+        // TODO PERFORMANCE Consider only the components intersecting the rectangle around the line from
+        // event.from to event.to (using some kind of 2d range tree)
         for entry_cell in &self.components {
             let mut entry = entry_cell.borrow_mut();
             entry.mouse_move(event);
@@ -1907,6 +1907,68 @@ mod tests {
         application.render(&test_renderer(region), true);
     }
 
-    // TODO Write a test that checks the viewports and scissors of child components
-    // TODO Also check the scissor merging behavior
+    #[test]
+    fn test_render_viewports_and_scissors() {
+        struct ViewportTestComponent {
+            expected_viewport: Rc<Cell<RenderRegion>>,
+            render_counter: Rc<Cell<u8>>,
+        }
+        impl Component for ViewportTestComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(
+                &mut self,
+                renderer: &Renderer,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool
+            ) -> RenderResult {
+                self.render_counter.set(self.render_counter.get() + 1);
+                assert_eq!(self.expected_viewport.get(), renderer.get_viewport());
+                assert_eq!(self.expected_viewport.get(), renderer.get_scissor());
+                entire_render_result()
+            }
+        }
+
+        let mut renderer = test_renderer(RenderRegion::with_size(0, 0, 100, 100));
+        let mut buddy = root_buddy();
+        let mut menu = SimpleFlatMenu::new(None);
+
+        let render_counter = Rc::new(Cell::new(0));
+
+        // I will assign proper values later
+        let viewport1 = Rc::new(Cell::new(
+            RenderRegion::with_size(1, 2, 3, 4)
+        ));
+        let viewport2 = Rc::new(Cell::new(
+            RenderRegion::with_size(1, 2, 3, 4)
+        ));
+
+        menu.add_component(
+            Box::new(ViewportTestComponent {
+                render_counter: Rc::clone(&render_counter),
+                expected_viewport: Rc::clone(&viewport1),
+            }), ComponentDomain::between(0.0, 0.0, 0.5, 0.5)
+        );
+        menu.add_component(
+            Box::new(ViewportTestComponent {
+                render_counter: Rc::clone(&render_counter),
+                expected_viewport: Rc::clone(&viewport2)
+            }), ComponentDomain::between(0.2, 0.5, 0.9, 1.0)
+        );
+
+        viewport1.set(RenderRegion::between(0, 0, 50, 50));
+        viewport2.set(RenderRegion::between(20, 50, 90, 100));
+        menu.render(&renderer, &mut buddy, true);
+
+        renderer.reset_viewport(RenderRegion::between(100, 200, 300, 400));
+        viewport1.set(RenderRegion::between(100, 200, 200, 300));
+        viewport2.set(RenderRegion::between(140, 300, 280, 400));
+        menu.render(&renderer, &mut buddy, true);
+
+        // Check that the render methods were actually called twice per component
+        assert_eq!(4, render_counter.get());
+    }
+    // TODO Also check the scissor merging behavior (after implementing Renderer.push_scissor)
+    // TODO Also check that components outside the scissor aren't rendered at all (also after
+    // implementing Renderer.push_scissor)
 }
