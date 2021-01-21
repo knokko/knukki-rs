@@ -178,13 +178,11 @@ impl RenderRegion {
         let max_y = self.get_max_y().min(other.get_max_y());
 
         if min_x < max_x && min_y < max_y {
-            Some(Self::between(min_x, min_y, max_x, max_y))
+            Some(Self::between(min_x, min_y, max_x + 1, max_y + 1))
         } else {
             None
         }
     }
-
-    // TODO Write a unit test for intersection (also for the empty intersection)
 
     /// Sets the viewport of the given golem `Context` to this render region.
     #[cfg(feature = "golem_rendering")]
@@ -258,7 +256,22 @@ mod tests {
     }
 
     #[test]
-    fn test_edge_intersection() {
-        // TODO Idea: let the bottom rectangle touch the top rectangle
+    fn test_intersection() {
+        let region1 = RenderRegion::between(0, 0, 20, 20);
+        let region_above = RenderRegion::between(0, 20, 20, 40);
+        assert!(region1.intersection(region_above).is_none());
+
+        let region_corner = RenderRegion::between(15, 16, 30, 35);
+        assert_eq!(
+            Some(RenderRegion::between(15, 16, 20, 20)),
+            region1.intersection(region_corner)
+        );
+
+        let region_inner = RenderRegion::between(5, 6, 7, 8);
+        assert_eq!(Some(region_inner), region1.intersection(region_inner));
+        assert_eq!(Some(region_inner), region_inner.intersection(region1));
+
+        let region_far = RenderRegion::with_size(100, 200, 300, 400);
+        assert!(region1.intersection(region_far).is_none());
     }
 }
