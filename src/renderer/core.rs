@@ -22,32 +22,53 @@ impl Renderer {
         *scissor_stack.last().expect("Scissor stack is never empty")
     }
 
+    // TODO Document this
     /// Note: to ensure glClear is consistent, this will also push a scissor
-    pub fn push_viewport<R>(&self, min_x: f32, min_y: f32, max_x: f32, max_y: f32, use_function: impl FnOnce() -> R) -> R{
+    pub fn push_viewport<R>(
+        &self, min_x: f32, min_y: f32, max_x: f32, max_y: f32,
+        render_function: impl FnOnce() -> R
+    ) -> Option<R> {
         let parent_viewport = self.get_viewport();
-        let child_viewport = parent_viewport.child_region(
+        let maybe_child_viewport = parent_viewport.child_region(
             min_x, min_y, max_x, max_y
         );
 
-        // Push the viewport
-        let mut viewport_stack = self.viewport_stack.borrow_mut();
-        viewport_stack.push(child_viewport);
-        drop(viewport_stack);
+        if let Some(child_viewport) = maybe_child_viewport {
 
-        // TODO Push the scissor
+            let parent_scissor = self.get_scissor();
+            let maybe_child_scissor = parent_scissor.intersection(child_viewport);
 
-        let result = use_function();
+            // Don't bother calling the render function if there would be an empty scissor
+            if let Some(child_scissor) = maybe_child_scissor {
 
-        // Pop the viewport and scissor
-        let mut viewport_stack = self.viewport_stack.borrow_mut();
-        viewport_stack.pop();
-        let mut scissor_stack = self.scissor_stack.borrow_mut();
-        scissor_stack.pop();
+                // Push the viewport
+                let mut viewport_stack = self.viewport_stack.borrow_mut();
+                viewport_stack.push(child_viewport);
+                drop(viewport_stack);
 
-        // Return the result
-        result
+                let mut scissor_stack = self.scissor_stack.borrow_mut();
+                scissor_stack.push(child_scissor);
+                drop(scissor_stack);
+
+                let result = render_function();
+
+                // Pop the viewport and scissor
+                let mut viewport_stack = self.viewport_stack.borrow_mut();
+                viewport_stack.pop();
+                let mut scissor_stack = self.scissor_stack.borrow_mut();
+                scissor_stack.pop();
+
+                // Return the result
+                Some(result)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 
+    // TODO Document this
     pub fn reset_viewport(&mut self, new_viewport: RenderRegion) {
         let mut viewport_stack = self.viewport_stack.borrow_mut();
         let mut scissor_stack = self.scissor_stack.borrow_mut();
@@ -91,8 +112,6 @@ mod tests {
         assert_eq!(region3, renderer.get_scissor());
     }
 
-    // TODO Also test pushing until an empty viewport
-
     #[test]
     fn test_push_viewport() {
         let outer_region = RenderRegion::between(50, 50, 250, 250);
@@ -114,15 +133,20 @@ mod tests {
                 counter += 1;
                 assert_eq!(inner_region, renderer.get_viewport());
                 assert_eq!(inner_region, renderer.get_scissor());
-            });
+
+                // And push onto an empty viewport
+                renderer.push_viewport(0.001, 0.001, 0.002, 0.002, || {
+                    unreachable!();
+                }).unwrap_none();
+            }).unwrap();
 
             assert_eq!(2, counter);
             assert_eq!(middle_region, renderer.get_viewport());
             assert_eq!(middle_region, renderer.get_scissor());
-        });
+        }).unwrap();
         assert_eq!(2, counter);
 
-        assert_eq!(middle_region, renderer.get_viewport());
-        assert_eq!(middle_region, renderer.get_scissor());
+        assert_eq!(outer_region, renderer.get_viewport());
+        assert_eq!(outer_region, renderer.get_scissor());
     }
 }

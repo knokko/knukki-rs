@@ -1,4 +1,5 @@
 #![feature(drain_filter)]
+#![feature(option_unwrap_none)]
 
 mod application;
 mod component;
