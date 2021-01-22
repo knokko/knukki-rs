@@ -30,6 +30,7 @@ pub enum LineIntersection {
 }
 
 impl LineIntersection {
+    #[cfg(test)]
     pub(crate) fn nearly_equal(&self, other: LineIntersection) -> bool {
         return match self {
             Self::FullyInside => other == FullyInside,

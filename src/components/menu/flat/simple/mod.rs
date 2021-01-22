@@ -1784,21 +1784,21 @@ mod tests {
                 assert_eq!(expected_mouses.len(), local_mouses.len());
 
                 // Test that all local mouses are present and have the right position
-                'outer: for mouse in &local_mouses {
+                'local_outer: for mouse in &local_mouses {
                     for entry in &*expected_mouses {
                         if entry.mouse == *mouse {
                             assert!(entry.position.nearly_equal(buddy.get_mouse_position(*mouse).unwrap()));
-                            continue 'outer;
+                            continue 'local_outer;
                         }
                     }
                     panic!("Expected mouse {:?}, but didn't find its entry", mouse);
                 }
 
                 // Test that the other mouses do not have a position
-                'outer: for mouse in buddy.get_all_mouses() {
+                'all_outer: for mouse in buddy.get_all_mouses() {
                     for local_mouse in &local_mouses {
                         if *local_mouse == mouse {
-                            continue 'outer;
+                            continue 'all_outer;
                         }
                     }
                     assert!(buddy.get_mouse_position(mouse).is_none());
