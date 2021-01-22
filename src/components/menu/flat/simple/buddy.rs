@@ -66,9 +66,8 @@ impl SimpleFlatBuddy {
         self.create_next_menu.is_some()
     }
 
-    pub fn create_next_menu(&mut self, current_menu: Box<dyn Component>) -> Box<dyn Component> {
-        let create_next_menu = self.create_next_menu.take().expect("Only call this method after has_next_menu returned true");
-        create_next_menu(current_menu)
+    pub fn create_next_menu(&mut self) -> Box<dyn FnOnce(Box<dyn Component>) -> Box<dyn Component>> {
+        self.create_next_menu.take().expect("Only call this method after has_next_menu returned true")
     }
 }
 

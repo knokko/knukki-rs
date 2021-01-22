@@ -90,6 +90,10 @@ impl SimpleFlatMenu {
                 // Don't clear the render request until we have really rendered it
             }
 
+            if entry.buddy.has_next_menu() {
+                own_buddy.change_menu(entry.buddy.create_next_menu());
+            }
+
             entry.buddy.clear_changes();
         }
     }
@@ -1971,4 +1975,96 @@ mod tests {
     // TODO Also check the scissor merging behavior (after implementing Renderer.push_scissor)
     // TODO Also check that components outside the scissor aren't rendered at all (also after
     // implementing Renderer.push_scissor)
+
+    #[test]
+    fn test_buddy_change_menu() {
+        struct NewMenuComponent {
+            counter: Rc<Cell<u8>>,
+        }
+
+        impl Component for NewMenuComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+                buddy.subscribe_mouse_click();
+                self.counter.set(5);
+            }
+
+            fn render(
+                &mut self,
+                _renderer: &Renderer,
+                _buddy: &mut dyn ComponentBuddy,
+                force: bool
+            ) -> RenderResult {
+                self.counter.set(self.counter.get() * 3);
+                entire_render_result()
+            }
+
+            fn on_mouse_click(&mut self, _event: MouseClickEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.counter.set(self.counter.get() + 1);
+            }
+        }
+
+        struct ChangeMenuComponent {
+            counter: Rc<Cell<u8>>,
+            new_counter: Rc<Cell<u8>>,
+        }
+
+        impl Component for ChangeMenuComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+                buddy.subscribe_mouse_click();
+                self.counter.set(2);
+            }
+
+            fn render(
+                &mut self,
+                _renderer: &Renderer,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool
+            ) -> RenderResult {
+                self.counter.set(self.counter.get() * 3);
+                entire_render_result()
+            }
+
+            fn on_mouse_click(&mut self, _event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
+                self.counter.set(self.counter.get() + 1);
+                let new_counter = Rc::clone(&self.new_counter);
+                buddy.change_menu(Box::new(move |old_menu| Box::new(
+                    NewMenuComponent { counter: new_counter }
+                )));
+            }
+        }
+
+        let counter = Rc::new(Cell::new(0));
+        let new_counter = Rc::new(Cell::new(0));
+
+        let mut menu = SimpleFlatMenu::new(None);
+        menu.add_component(Box::new(ChangeMenuComponent {
+            counter: Rc::clone(&counter), new_counter: Rc::clone(&new_counter)
+        }), ComponentDomain::between(0.3, 0.3, 0.7, 0.7));
+
+        let mut application = Application::new(Box::new(menu));
+
+        let region = RenderRegion::with_size(1, 2, 3, 4);
+        let renderer = test_renderer(region);
+
+        assert_eq!(2, counter.get());
+        application.render(&renderer, false);
+        assert_eq!(6, counter.get());
+        assert_eq!(0, new_counter.get());
+
+        let click_event = MouseClickEvent::new(
+            Mouse::new(3), Point::new(0.4, 0.4), MouseButton::primary()
+        );
+
+        application.fire_mouse_click_event(click_event);
+        assert_eq!(7, counter.get());
+        assert_eq!(5, new_counter.get());
+
+        application.render(&renderer, false);
+        assert_eq!(7, counter.get());
+        assert_eq!(15, new_counter.get());
+
+        application.fire_mouse_click_event(click_event);
+        assert_eq!(7, counter.get());
+        assert_eq!(16, new_counter.get());
+    }
 }
