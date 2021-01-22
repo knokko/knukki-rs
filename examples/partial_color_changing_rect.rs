@@ -33,13 +33,7 @@ impl Component for ColorChangingRectComponent {
         renderer.push_viewport(
             0.2, 0.2, 0.8, 0.8,
             || {
-                renderer.get_context().set_clear_color(
-                    self.red as f32 / 255.0,
-                    self.green as f32 / 255.0,
-                    self.blue as f32 / 255.0,
-                    1.0
-                );
-                renderer.get_context().clear();
+                renderer.clear(Color::rgb(self.red, self.green, self.blue));
             }
         );
 

@@ -35,8 +35,7 @@ impl Component for TestComponent {
         _buddy: &mut dyn ComponentBuddy,
         _force: bool,
     ) -> RenderResult {
-        renderer.get_context().set_clear_color(self.red as f32 / 255.0, self.green as f32 / 255.0, 1.0, 1.0);
-        renderer.get_context().clear();
+        renderer.clear(Color::rgb(self.red, self.green, 255));
         entire_render_result()
     }
 

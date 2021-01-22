@@ -38,18 +38,8 @@ impl Component for ColorChangingRectComponent {
         _buddy: &mut dyn ComponentBuddy,
         _force: bool
     ) -> RenderResult {
-        renderer.get_context().set_clear_color(
-            self.red as f32 / 255.0,
-            self.green as f32 / 255.0,
-            self.blue as f32 / 255.0,
-            1.0
-        );
-        renderer.get_context().clear();
-
-        Ok(RenderResultStruct {
-            filter_mouse_actions: false,
-            drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8))
-        })
+        renderer.clear(Color::rgb(self.red, self.green, self.blue));
+        entire_render_result()
     }
 
     fn on_mouse_move(&mut self, event: MouseMoveEvent, buddy: &mut dyn ComponentBuddy) {
