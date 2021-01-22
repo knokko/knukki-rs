@@ -1260,4 +1260,41 @@ mod tests {
             rect.find_line_intersection(Point::new(5.0, 15.0), Point::new(5.0, 7.0))
         ));
     }
+
+    #[test]
+    fn test_line_intersection_missed_cases() {
+        let rectangle = RectangularDrawnRegion::new(1.0, 10.0, 20.0, 11.0);
+
+        // Bottom(left) to top(right)
+        assert!(li_cross(8.0, 10.0, 10.0, 11.0).nearly_equal(
+            rectangle.find_line_intersection(Point::new(6.0, 9.0), Point::new(12.0, 12.0))
+        ));
+        assert!(li_cross(10.0, 11.0, 8.0, 10.0).nearly_equal(
+            rectangle.find_line_intersection(Point::new(12.0, 12.0), Point::new(6.0, 9.0))
+        ));
+
+        // Bottom to right
+        assert!(li_cross(19.0, 10.0, 20.0, 10.5).nearly_equal(
+            rectangle.find_line_intersection(Point::new(17.0, 9.0), Point::new(21.0, 11.0))
+        ));
+        assert!(li_cross(20.0, 10.5, 19.0, 10.0).nearly_equal(
+            rectangle.find_line_intersection(Point::new(21.0, 11.0), Point::new(17.0, 9.0))
+        ));
+
+        // Bottom(right) to top(left)
+        assert!(li_cross(10.0, 10.0, 8.0, 11.0).nearly_equal(
+            rectangle.find_line_intersection(Point::new(12.0, 9.0), Point::new(6.0, 12.0))
+        ));
+        assert!(li_cross(8.0, 11.0, 10.0, 10.0).nearly_equal(
+            rectangle.find_line_intersection(Point::new(6.0, 12.0), Point::new(12.0, 9.0))
+        ));
+
+        // Top to right
+        assert!(li_cross(19.0, 11.0, 20.0, 10.5).nearly_equal(
+            rectangle.find_line_intersection(Point::new(17.0, 12.0), Point::new(21.0, 10.0))
+        ));
+        assert!(li_cross(20.0, 10.5, 19.0, 11.0).nearly_equal(
+            rectangle.find_line_intersection(Point::new(21.0, 10.0), Point::new(17.0, 12.0))
+        ));
+    }
 }
