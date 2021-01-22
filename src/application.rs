@@ -114,7 +114,9 @@ impl Application {
             renderer.start();
 
             // If we are forced to redraw, we should clean the previous render actions up
-            renderer.clear(Color::rgb(0, 0, 0));
+            if force {
+                renderer.clear(Color::rgb(0, 0, 0));
+            }
 
             // Let the root component render itself
             let result = self
