@@ -11,6 +11,14 @@ impl Renderer {
         }
     }
 
+    pub fn clear(&self, color: Color) {
+        self.context.set_clear_color(
+            color.get_red_float(), color.get_green_float(),
+            color.get_blue_float(), color.get_alpha_float()
+        );
+        self.context.clear();
+    }
+
     pub fn get_context(&self) -> &Context {
         &self.context
     }

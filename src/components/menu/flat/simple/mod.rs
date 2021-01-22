@@ -135,17 +135,9 @@ impl Component for SimpleFlatMenu {
 
         // Now onto the 'actual' drawing
         if force || !self.has_rendered_before {
-            if let Some(bc) = self.background_color {
+            if let Some(background_color) = self.background_color {
                 // TODO And take more care when this is partially transparent...
-                #[cfg(feature = "golem_rendering")]
-                renderer.get_context().set_clear_color(
-                    bc.get_red_float(),
-                    bc.get_green_float(),
-                    bc.get_blue_float(),
-                    bc.get_alpha_float(),
-                );
-                #[cfg(feature = "golem_rendering")]
-                renderer.get_context().clear();
+                renderer.clear(background_color);
             }
         }
         let mut drawn_regions: Vec<Box<dyn DrawnRegion>> = Vec::new();

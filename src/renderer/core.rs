@@ -17,7 +17,10 @@ impl Renderer {
         // There is nothing to be done without a Golem context
     }
 
-    // TODO Clear color method
+    #[cfg(not(feature = "golem_rendering"))]
+    pub fn clear(&self, _color: Color) {
+        // There is nothing to be done without a Golem context
+    }
 
     /// Gets the current viewport region of this `Renderer`. The drawing operations of components
     /// will be scaled and translated to fit inside this region.

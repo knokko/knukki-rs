@@ -19,16 +19,7 @@ impl Component for SimpleFlatColorComponent {
         _buddy: &mut dyn ComponentBuddy,
         _force: bool,
     ) -> RenderResult {
-        #[cfg(feature = "golem_rendering")]
-        {
-            renderer.get_context().set_clear_color(
-                self.color.get_red_float(),
-                self.color.get_green_float(),
-                self.color.get_blue_float(),
-                self.color.get_alpha_float(),
-            );
-            renderer.get_context().clear();
-        }
+        renderer.clear(self.color);
         entire_render_result()
     }
 }

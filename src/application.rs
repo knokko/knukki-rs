@@ -114,11 +114,7 @@ impl Application {
             renderer.start();
 
             // If we are forced to redraw, we should clean the previous render actions up
-            #[cfg(feature = "golem_rendering")]
-            if force {
-                renderer.get_context().set_clear_color(0.0, 0.0, 0.0, 1.0);
-                renderer.get_context().clear();
-            }
+            renderer.clear(Color::rgb(0, 0, 0));
 
             // Let the root component render itself
             let result = self
