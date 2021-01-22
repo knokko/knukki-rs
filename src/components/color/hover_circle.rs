@@ -60,18 +60,8 @@ impl Component for HoverColorCircleComponent {
             use golem::*;
 
             let golem = renderer.get_context();
-            // TODO PERFORMANCE Optimize this by storing the model and shaders rather than recreating them
+            // TODO PERFORMANCE Optimize this by storing the shaders rather than recreating them
             // all the time
-
-            // I will use the fragment shader to ensure the quad looks like a circle
-            #[rustfmt::skip]
-                let quad_vertices = [
-                -1.0, -1.0,    1.0, -1.0,    1.0, 1.0,    -1.0, 1.0,
-            ];
-            #[rustfmt::skip]
-            let quad_indices = [
-                0, 1, 2, 2, 3, 0
-            ];
 
             #[rustfmt::skip]
             let shader_description = ShaderDescription {
@@ -103,26 +93,24 @@ impl Component for HoverColorCircleComponent {
             };
 
             let mut shader = ShaderProgram::new(golem, shader_description)?;
-            let mut vertex_buffer = VertexBuffer::new(golem)?;
-            let mut element_buffer = ElementBuffer::new(golem)?;
-            vertex_buffer.set_data(&quad_vertices);
-            element_buffer.set_data(&quad_indices);
-
             shader.bind();
+
             let color = match is_hovering {
                 true => self.hover_color,
                 false => self.base_color
             };
+
             shader.set_uniform("color", UniformValue::Vector3([
                 color.get_red_float(), color.get_green_float(), color.get_blue_float()
             ]))?;
             shader.set_uniform("radius", UniformValue::Vector2([
                 used_width, used_height
             ]))?;
+
             unsafe {
                 shader.draw(
-                    &vertex_buffer, &element_buffer,
-                    0..quad_indices.len(), GeometryMode::Triangles
+                    renderer.get_quad_vertices(), renderer.get_quad_indices(),
+                    0..renderer.get_num_quad_indices(), GeometryMode::Triangles
                 )?;
             }
         }
