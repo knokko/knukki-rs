@@ -43,3 +43,20 @@ impl MouseButton {
         self.index == 0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::MouseButton;
+
+    #[test]
+    fn test_primary() {
+        assert!(MouseButton::primary().is_primary());
+        assert_eq!(0, MouseButton::primary().get_index());
+    }
+
+    #[test]
+    fn test_new() {
+        assert!(!MouseButton::new(3).is_primary());
+        assert_eq!(3, MouseButton::new(3).get_index());
+    }
+}
