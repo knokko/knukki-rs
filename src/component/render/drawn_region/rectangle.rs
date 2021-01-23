@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 use super::*;
+use std::ptr::swap_nonoverlapping_one;
 
 /// Represents an unrotated rectangular drawn region. This is one of the simplest
 /// implementations of `DrawnRegion`.
@@ -10,6 +11,141 @@ pub struct RectangularDrawnRegion {
     bottom: f32,
     right: f32,
     top: f32,
+}
+
+fn find_vertical_line_intersection(
+    vert_x: f32, vert_min_y: f32, vert_max_y: f32,
+    from: Point, to: Point
+) -> Option<Point> {
+
+    // First check if an intersection is even possible
+    if (from.get_x() < vert_x && to.get_x() < vert_x) || (from.get_x() > vert_x && to.get_x() > vert_x) {
+        return None;
+    }
+    if (from.get_y() < vert_min_y && to.get_y() < vert_min_y) || (from.get_y() > vert_max_y && to.get_y() > vert_max_y) {
+        return None;
+    }
+
+    let dx = to.get_x() - from.get_x();
+    let dy = to.get_y() - from.get_y();
+
+    // Case distinction is used to avoid divisions by 0 in edge cases and to minimize rounding errors
+    return if dx.abs() >= dy.abs() {
+
+        // Express the line as: y = slope * x + adder
+        let slope = dy / dx;
+        let adder = from.get_y() - slope * from.get_x();
+
+        let vert_y = vert_x * slope + adder;
+        if vert_y >= vert_min_y && vert_y <= vert_max_y {
+            Some(Point::new(vert_x, vert_y))
+        } else {
+            None
+        }
+    } else {
+
+        // Express the line as: x = slope * y + adder
+        let slope = dx / dy;
+        let adder = from.get_x() - slope * from.get_y();
+
+        let low_x = slope * vert_min_y + adder;
+        let high_x = slope * vert_max_y + adder;
+
+        let min_x = low_x.min(high_x);
+        let max_x = low_x.max(high_x);
+
+        // Check if the line intersects or lays on top of the vertical line
+        if vert_x >= min_x && vert_x <= max_x {
+
+            // Check if the line intersects the vertical line
+            if dx != 0.0 {
+                // I'm afraid there is no way around it: we have to divide by dx
+                let slope2 = dy / dx;
+                let adder2 = from.get_y() - slope2 * from.get_x();
+
+                let y = vert_x * slope2 + adder2;
+                Some(Point::new(vert_x, y))
+            } else {
+                // Edge case: the line lays (partially) on top of the vertical line
+                if from.get_y() < to.get_y() {
+                    let y = from.get_y().max(vert_min_y);
+                    Some(Point::new(vert_x, y))
+                } else {
+                    let y = from.get_y().min(vert_max_y);
+                    Some(Point::new(vert_x, y))
+                }
+            }
+        } else {
+            None
+        }
+    }
+}
+
+fn find_horizontal_line_intersection(
+    hor_y: f32, hor_min_x: f32, hor_max_x: f32,
+    from: Point, to: Point
+) -> Option<Point> {
+
+    // First check if an intersection is even possible
+    if (from.get_y() < hor_y && to.get_y() < hor_y) || (from.get_y() > hor_y && to.get_y() > hor_y) {
+        return None;
+    }
+    if (from.get_x() < hor_min_x && to.get_x() < hor_min_x) || (from.get_x() > hor_max_x && from.get_x() > hor_max_x) {
+        return None;
+    }
+
+    let dx = to.get_x() - from.get_x();
+    let dy = to.get_y() - from.get_y();
+
+    return if dx.abs() >= dy.abs() {
+        // Express line as: y = x * slope + adder
+        let slope = dy / dx;
+        let adder = from.get_y() - slope * from.get_x();
+
+        let left_y = hor_min_x * slope + adder;
+        let right_y = hor_max_x * slope + adder;
+
+        let min_y = left_y.min(right_y);
+        let max_y = left_y.max(right_y);
+
+        // Check if the line intersects or lays on top of the horizontal line
+        if min_y <= hor_y && max_y >= hor_y {
+
+            // Check if the line intersects the horizontal line
+            if dy != 0.0 {
+
+                // I'm afraid I will have to divide by dy
+                let slope2 = dx / dy;
+                let adder2 = from.get_x() - slope2 * from.get_y();
+
+                let x = hor_y * slope2 + adder2;
+                Some(Point::new(x, hor_y))
+            } else {
+                // Both lines are horizontal
+                if from.get_x() < to.get_x() {
+                    let x = from.get_x().max(hor_min_x);
+                    Some(Point::new(x, hor_y))
+                } else {
+                    let x = from.get_x().min(hor_max_x);
+                    Some(Point::new(x, hor_y))
+                }
+            }
+        } else {
+            // No intersection
+            None
+        }
+    } else {
+        // Express line as: x = y * slope + adder
+        let slope = dx / dy;
+        let adder = from.get_x() - slope * from.get_y();
+
+        let x = hor_y * slope + adder;
+        if x >= hor_min_x && x <= hor_max_x {
+            Some(Point::new(x, hor_y))
+        } else {
+            None
+        }
+    }
 }
 
 impl RectangularDrawnRegion {
