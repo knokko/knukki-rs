@@ -1130,4 +1130,34 @@ mod tests {
             rectangle.find_line_intersection(Point::new(21.0, 10.0), Point::new(17.0, 12.0))
         ));
     }
+
+    #[test]
+    fn test_rectangle_line_intersection_missed_cases2() {
+        let rectangle = RectangularDrawnRegion::new(0.0, 0.0, 10.0, 10.0);
+
+        assert!(li_exit(10.0, 5.0).nearly_equal(rectangle.find_line_intersection(
+            Point::new(9.0, 1.0), Point::new(11.0, 9.0)
+        )));
+
+        assert!(li_cross(0.0, 0.0, 10.0, 10.0).nearly_equal(
+            rectangle.find_line_intersection(
+                Point::new(-1.0, -1.0), Point::new(11.0, 11.0)
+            )
+        ));
+        assert!(li_cross(0.0, 10.0, 10.0, 0.0).nearly_equal(
+            rectangle.find_line_intersection(
+                Point::new(-1.0, 11.0), Point::new(11.0, -1.0)
+            )
+        ));
+        assert!(li_cross(10.0, 10.0, 0.0, 0.0).nearly_equal(
+            rectangle.find_line_intersection(
+                Point::new(11.0, 11.0), Point::new(-1.0, -1.0)
+            )
+        ));
+        assert!(li_cross(10.0, 0.0, 0.0, 10.0).nearly_equal(
+            rectangle.find_line_intersection(
+                Point::new(11.0, -1.0), Point::new(-1.0, 11.0)
+            )
+        ));
+    }
 }
