@@ -1,7 +1,6 @@
 use std::fmt::Debug;
 
 use super::*;
-use std::ptr::swap_nonoverlapping_one;
 
 /// Represents an unrotated rectangular drawn region. This is one of the simplest
 /// implementations of `DrawnRegion`.
@@ -90,7 +89,7 @@ fn find_horizontal_line_intersection(
     if (from.get_y() < hor_y && to.get_y() < hor_y) || (from.get_y() > hor_y && to.get_y() > hor_y) {
         return None;
     }
-    if (from.get_x() < hor_min_x && to.get_x() < hor_min_x) || (from.get_x() > hor_max_x && from.get_x() > hor_max_x) {
+    if (from.get_x() < hor_min_x && to.get_x() < hor_min_x) || (from.get_x() > hor_max_x && to.get_x() > hor_max_x) {
         return None;
     }
 
@@ -98,6 +97,7 @@ fn find_horizontal_line_intersection(
     let dy = to.get_y() - from.get_y();
 
     return if dx.abs() >= dy.abs() {
+
         // Express line as: y = x * slope + adder
         let slope = dy / dx;
         let adder = from.get_y() - slope * from.get_x();
@@ -198,438 +198,135 @@ impl DrawnRegion for RectangularDrawnRegion {
             return LineIntersection::FullyInside;
         }
 
-        // Use case distinction to avoid divisions by 0 (or numbers like 0.0001)
-        // TODO Code coverage showed that I forgot two cases. Write tests for those cases as well!
-        if dx.abs() > dy.abs() {
-            // Express line formula as: y = slope * x + adder
-            let slope = dy / dx;
-            let adder = from.get_y() - slope * from.get_x();
+        let maybe_left_intersection = find_vertical_line_intersection(
+            self.get_left(), self.get_bottom(), self.get_top(),
+            from, to
+        );
+        let maybe_bottom_intersection = find_horizontal_line_intersection(
+            self.get_bottom(), self.get_left(), self.get_right(),
+            from, to
+        );
+        let maybe_right_intersection = find_vertical_line_intersection(
+            self.get_right(), self.get_bottom(), self.get_top(),
+            from, to
+        );
+        let maybe_top_intersection = find_horizontal_line_intersection(
+            self.get_top(), self.get_left(), self.get_right(),
+            from, to
+        );
 
-            let left_y = slope * self.left + adder;
-            let right_y = slope * self.right + adder;
+        let mut intersection_points = Vec::with_capacity(2);
+        if let Some(left_intersection) = maybe_left_intersection {
+            intersection_points.push(left_intersection);
+        }
+        if let Some(bottom_intersection) = maybe_bottom_intersection {
+            intersection_points.push(bottom_intersection);
+        }
+        if let Some(right_intersection) = maybe_right_intersection {
+            intersection_points.push(right_intersection);
+        }
+        if let Some(top_intersection) = maybe_top_intersection {
+            intersection_points.push(top_intersection);
+        }
 
-            // The line goes from a point inside this rectangle to a point outside it
-            if from_inside {
-                // We need to find the intersection of the line with this rectangle
-                return if dx > 0.0 {
-                    if right_y >= self.bottom && right_y <= self.top {
-                        LineIntersection::Exits {
-                            point: Point::new(self.right, right_y),
-                        }
-                    } else if dy > 0.0 {
-                        // Solve: slope * x + adder = self.top
-                        // Solve: slope * x = self.top - adder
-                        // Solution: x = (self.top - adder) / slope
-                        let top_x = (self.top - adder) / slope;
-                        LineIntersection::Exits {
-                            point: Point::new(top_x, self.top),
-                        }
-                    } else {
-                        // Solve: slope * x + adder = self.bottom
-                        let bottom_x = (self.bottom - adder) / slope;
-                        LineIntersection::Exits {
-                            point: Point::new(bottom_x, self.bottom),
-                        }
-                    }
-                } else {
-                    if left_y >= self.bottom && left_y <= self.top {
-                        LineIntersection::Exits {
-                            point: Point::new(self.left, left_y),
-                        }
-                    } else if dy > 0.0 {
-                        let top_x = (self.top - adder) / slope;
-                        LineIntersection::Exits {
-                            point: Point::new(top_x, self.top),
-                        }
-                    } else {
-                        let bottom_x = (self.bottom - adder) / slope;
-                        LineIntersection::Exits {
-                            point: Point::new(bottom_x, self.bottom),
-                        }
-                    }
-                };
-            }
+        return if !from_inside && !to_inside {
+            // In this case, there is either no intersection at all, or the line crosses this rectangle
+            if intersection_points.len() >= 2 {
+                /*
+                 * There is an intersection. Note: there can be more than 2 intersections in edge
+                 * cases where the line goes through a corner of this rectangle (which would count
+                 * as an intersection on both sides). But luckily, such intersection points should
+                 * have (nearly) identical coordinates.
+                 */
+                let mut entrance_point = intersection_points[0];
+                let mut exit_point = intersection_points[0];
+                let mut entrance_distance = entrance_point.distance_to(from);
+                let mut exit_distance = exit_point.distance_to(to);
 
-            // The line goes from a point outside this rectangle to a point inside it
-            if to_inside {
-                return if dx > 0.0 {
-                    if left_y >= self.bottom && left_y <= self.top {
-                        LineIntersection::Enters {
-                            point: Point::new(self.left, left_y),
-                        }
-                    } else if dy > 0.0 {
-                        // Solve: slope * x + adder = self.bottom
-                        // Solve: slope * x = self.bottom - adder
-                        // Solution: x = (self.bottom - adder) / slope
-                        let bottom_x = (self.bottom - adder) / slope;
-                        LineIntersection::Enters {
-                            point: Point::new(bottom_x, self.bottom),
-                        }
-                    } else {
-                        let top_x = (self.top - adder) / slope;
-                        LineIntersection::Enters {
-                            point: Point::new(top_x, self.top),
-                        }
+                // The intersection point closest to *from* will be the entrance point
+                // The intersection point closest to *to* will be the exit point
+                for index in 1..intersection_points.len() {
+                    let point = intersection_points[index];
+                    let distance_from = point.distance_to(from);
+                    let distance_to = point.distance_to(to);
+                    if distance_from < entrance_distance {
+                        entrance_point = point;
+                        entrance_distance = distance_from;
                     }
-                } else {
-                    if right_y >= self.bottom && right_y <= self.top {
-                        LineIntersection::Enters {
-                            point: Point::new(self.right, right_y),
-                        }
-                    } else if dy > 0.0 {
-                        let bottom_x = (self.bottom - adder) / slope;
-                        LineIntersection::Enters {
-                            point: Point::new(bottom_x, self.bottom),
-                        }
-                    } else {
-                        let top_x = (self.top - adder) / slope;
-                        LineIntersection::Enters {
-                            point: Point::new(top_x, self.top),
-                        }
-                    }
-                };
-            }
-
-            // If we reach this part, the line goes from a point outside this rectangle to another
-            // point outside this rectangle. We need to check if it intersects this rectangle
-            // between those points.
-            let min_x = f32::min(from.get_x(), to.get_x());
-            let max_x = f32::max(from.get_x(), to.get_x());
-            let min_y = f32::min(from.get_y(), to.get_y());
-            let max_y = f32::max(from.get_y(), to.get_y());
-            if max_x < self.left || max_y < self.bottom || min_x > self.right || min_y > self.top {
-                return LineIntersection::FullyOutside;
-            }
-
-            return if left_y < self.bottom {
-                if right_y < self.bottom {
-                    // For any `self.left <= x <= self.right`, the y-coordinate on the line is
-                    // below this rectangle
-                    LineIntersection::FullyOutside
-                } else if right_y > self.top {
-                    // The line crosses the top and bottom of this rectangle
-                    let bottom_x = (self.bottom - adder) / slope;
-                    let top_x = (self.top - adder) / slope;
-                    if to.get_y() > from.get_y() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(bottom_x, self.bottom),
-                            exit: Point::new(top_x, self.top),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(bottom_x, self.bottom),
-                            entrance: Point::new(top_x, self.top),
-                        }
-                    }
-                } else {
-                    // The line crosses the bottom and right of this rectangle
-                    let bottom_x = (self.bottom - adder) / slope;
-                    if to.get_y() > from.get_y() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(bottom_x, self.bottom),
-                            exit: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(bottom_x, self.bottom),
-                            entrance: Point::new(self.right, right_y),
-                        }
+                    if distance_to < exit_distance {
+                        exit_point = point;
+                        exit_distance = distance_to;
                     }
                 }
-            } else if left_y > self.top {
-                if right_y > self.top {
-                    // For any `self.left <= x <= self.right`, the y-coordinate on the line is
-                    // above this rectangle
-                    LineIntersection::FullyOutside
-                } else if right_y < self.bottom {
-                    // The line crosses the top and bottom of this rectangle
-                    let bottom_x = (self.bottom - adder) / slope;
-                    let top_x = (self.top - adder) / slope;
-                    if to.get_y() > from.get_y() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(bottom_x, self.bottom),
-                            exit: Point::new(top_x, self.top),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(bottom_x, self.bottom),
-                            entrance: Point::new(top_x, self.top),
-                        }
-                    }
-                } else {
-                    // The line crosses the top and right of this rectangle
-                    let top_x = (self.top - adder) / slope;
-                    if to.get_x() > from.get_x() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(top_x, self.top),
-                            exit: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(top_x, self.top),
-                            entrance: Point::new(self.right, right_y),
-                        }
-                    }
+
+                LineIntersection::Crosses {
+                    entrance: entrance_point,
+                    exit: exit_point
                 }
             } else {
-                if right_y > self.top {
-                    // The line crosses the left and the top of this rectangle
-                    let top_x = (self.top - adder) / slope;
-                    if to.get_y() > from.get_y() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(self.left, left_y),
-                            exit: Point::new(top_x, self.top),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(self.left, left_y),
-                            entrance: Point::new(top_x, self.top),
-                        }
-                    }
-                } else if right_y < self.bottom {
-                    // The line crosses the left and bottom of this rectangle
-                    let bottom_x = (self.bottom - adder) / slope;
-                    if to.get_x() > from.get_x() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(self.left, left_y),
-                            exit: Point::new(bottom_x, self.bottom),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(self.left, left_y),
-                            entrance: Point::new(bottom_x, self.bottom),
-                        }
-                    }
-                } else {
-                    // The line crosses the left and right of this rectangle
-                    if to.get_x() > from.get_x() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(self.left, left_y),
-                            exit: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(self.left, left_y),
-                            entrance: Point::new(self.right, right_y),
-                        }
-                    }
+                /*
+                 * There are 0 or 1 intersection points. 0 intersection points simply means that
+                 * there is no intersection. 1 intersection point is possible when the line is
+                 * very close to the rectangle and a rounding error occurs. We will simply consider
+                 * this case as 'no intersection'.
+                 */
+                LineIntersection::FullyOutside
+            }
+        } else if from_inside {
+            // The line leaves this rectangle
+
+            if intersection_points.is_empty() {
+                // This is an edge case that can occur due to rounding errors. To work around this
+                // problem, I will add all corners as 'intersection points'.
+                intersection_points.push(Point::new(self.get_left(), self.get_bottom()));
+                intersection_points.push(Point::new(self.get_right(), self.get_bottom()));
+                intersection_points.push(Point::new(self.get_right(), self.get_top()));
+                intersection_points.push(Point::new(self.get_left(), self.get_top()));
+            }
+
+            // Pick the intersection point closest to *to*
+            let mut exit_point = intersection_points[0];
+            let mut exit_distance = exit_point.distance_to(to);
+            for index in 1..intersection_points.len() {
+                let point = intersection_points[index];
+                let distance = point.distance_to(to);
+                if distance < exit_distance {
+                    exit_point = point;
+                    exit_distance = distance;
                 }
-            };
+            }
+
+            LineIntersection::Exits {
+                point: exit_point
+            }
         } else {
-            // Express line formula as: x = slopeInverse * y + adder
-            let slope_inv = dx / dy;
-            let adder = from.get_x() - slope_inv * from.get_y();
+            // The line enters this rectangle
 
-            let bottom_x = slope_inv * self.bottom + adder;
-            let top_x = slope_inv * self.top + adder;
-
-            // The line goes from a point inside this rectangle to a point outside it
-            if from_inside {
-                // We need to find the intersection of the line with this rectangle
-                return if dy > 0.0 {
-                    if top_x >= self.left && top_x <= self.right {
-                        LineIntersection::Exits {
-                            point: Point::new(top_x, self.top),
-                        }
-                    } else if dx > 0.0 {
-                        // Solve: slopeInverse * y + adder = self.right
-                        // Solve: slopeInverse * y = self.right - adder
-                        // Solution: y = (self.right - adder) / slopeInverse
-                        let right_y = (self.right - adder) / slope_inv;
-                        LineIntersection::Exits {
-                            point: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        let left_y = (self.left - adder) / slope_inv;
-                        LineIntersection::Exits {
-                            point: Point::new(self.left, left_y),
-                        }
-                    }
-                } else {
-                    if bottom_x >= self.left && bottom_x <= self.right {
-                        LineIntersection::Exits {
-                            point: Point::new(bottom_x, self.bottom),
-                        }
-                    } else if dx > 0.0 {
-                        let right_y = (self.right - adder) / slope_inv;
-                        LineIntersection::Exits {
-                            point: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        let left_y = (self.left - adder) / slope_inv;
-                        LineIntersection::Exits {
-                            point: Point::new(self.left, left_y),
-                        }
-                    }
-                };
+            if intersection_points.is_empty() {
+                // This edge case can occur due to rounding errors. Work around this by adding all
+                // corners as intersection points
+                intersection_points.push(Point::new(self.get_left(), self.get_bottom()));
+                intersection_points.push(Point::new(self.get_right(), self.get_bottom()));
+                intersection_points.push(Point::new(self.get_right(), self.get_top()));
+                intersection_points.push(Point::new(self.get_left(), self.get_top()));
             }
 
-            // The line goes from a point outside this rectangle to a point inside it
-            if to_inside {
-                return if dy < 0.0 {
-                    if top_x >= self.left && top_x <= self.right {
-                        LineIntersection::Enters {
-                            point: Point::new(top_x, self.top),
-                        }
-                    } else if dx > 0.0 {
-                        // Solve: slopeInverse * y + adder = self.right
-                        // Solve: slopeInverse * y = self.right - adder
-                        // Solution: y = (self.right - adder) / slopeInverse
-                        let right_y = (self.right - adder) / slope_inv;
-                        LineIntersection::Enters {
-                            point: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        let left_y = (self.left - adder) / slope_inv;
-                        LineIntersection::Enters {
-                            point: Point::new(self.left, left_y),
-                        }
-                    }
-                } else {
-                    if bottom_x >= self.left && bottom_x <= self.right {
-                        LineIntersection::Enters {
-                            point: Point::new(bottom_x, self.bottom),
-                        }
-                    } else if dx > 0.0 {
-                        let right_y = (self.right - adder) / slope_inv;
-                        LineIntersection::Enters {
-                            point: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        let left_y = (self.left - adder) / slope_inv;
-                        LineIntersection::Enters {
-                            point: Point::new(self.left, left_y),
-                        }
-                    }
-                };
+            // Pick the intersection point closest to from
+            let mut entrance_point = intersection_points[0];
+            let mut entrance_distance = entrance_point.distance_to(from);
+
+            for index in 1..intersection_points.len() {
+                let point = intersection_points[index];
+                let distance = point.distance_to(from);
+                if distance < entrance_distance {
+                    entrance_point = point;
+                    entrance_distance = distance;
+                }
             }
 
-            // If we reach this part, the line goes from a point outside this rectangle to another
-            // point outside this rectangle. We need to check if it intersects this rectangle
-            // between those points.
-            let min_x = f32::min(from.get_x(), to.get_x());
-            let max_x = f32::max(from.get_x(), to.get_x());
-            let min_y = f32::min(from.get_y(), to.get_y());
-            let max_y = f32::max(from.get_y(), to.get_y());
-            if max_x < self.left || max_y < self.bottom || min_x > self.right || min_y > self.top {
-                return LineIntersection::FullyOutside;
+            LineIntersection::Enters {
+                point: entrance_point
             }
-
-            return if bottom_x < self.left {
-                if top_x < self.left {
-                    // For any `self.bottom <= y <= self.top`, the x-coordinate on the line is
-                    // on the left of this rectangle
-                    LineIntersection::FullyOutside
-                } else if top_x > self.right {
-                    // The line crosses the left and right of this rectangle
-                    let left_y = (self.left - adder) / slope_inv;
-                    let right_y = (self.right - adder) / slope_inv;
-                    if to.get_x() > from.get_x() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(self.left, left_y),
-                            exit: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(self.left, left_y),
-                            entrance: Point::new(self.right, right_y),
-                        }
-                    }
-                } else {
-                    // The line crosses the left and top of this rectangle
-                    let left_y = (self.left - adder) / slope_inv;
-                    if to.get_x() > from.get_x() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(self.left, left_y),
-                            exit: Point::new(top_x, self.top),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(self.left, left_y),
-                            entrance: Point::new(top_x, self.top),
-                        }
-                    }
-                }
-            } else if bottom_x > self.right {
-                if top_x > self.right {
-                    // For any `self.bottom <= y <= self.top`, the x-coordinate on the line is
-                    // on the right of this rectangle
-                    LineIntersection::FullyOutside
-                } else if top_x < self.left {
-                    // The line crosses the left and right of this rectangle
-                    let left_y = (self.left - adder) / slope_inv;
-                    let right_y = (self.right - adder) / slope_inv;
-                    if to.get_x() > from.get_x() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(self.left, left_y),
-                            exit: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(self.left, left_y),
-                            entrance: Point::new(self.right, right_y),
-                        }
-                    }
-                } else {
-                    // The line crosses the top and right of this rectangle
-                    let right_y = (self.right - adder) / slope_inv;
-                    if to.get_x() > from.get_x() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(top_x, self.top),
-                            exit: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(top_x, self.top),
-                            entrance: Point::new(self.right, right_y),
-                        }
-                    }
-                }
-            } else {
-                // self.left <= bottom_x <= self.right
-                if top_x > self.right {
-                    // The line crosses the bottom and the right of this rectangle
-                    let right_y = (self.right - adder) / slope_inv;
-                    if to.get_y() > from.get_y() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(bottom_x, self.bottom),
-                            exit: Point::new(self.right, right_y),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(bottom_x, self.bottom),
-                            entrance: Point::new(self.right, right_y),
-                        }
-                    }
-                } else if top_x < self.left {
-                    // The line crosses the left and bottom of this rectangle
-                    let left_y = (self.left - adder) / slope_inv;
-                    if to.get_x() > from.get_x() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(self.left, left_y),
-                            exit: Point::new(bottom_x, self.bottom),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(self.left, left_y),
-                            entrance: Point::new(bottom_x, self.bottom),
-                        }
-                    }
-                } else {
-                    // The line crosses the bottom and top of this rectangle
-                    if to.get_y() > from.get_y() {
-                        LineIntersection::Crosses {
-                            entrance: Point::new(bottom_x, self.bottom),
-                            exit: Point::new(top_x, self.top),
-                        }
-                    } else {
-                        LineIntersection::Crosses {
-                            exit: Point::new(bottom_x, self.bottom),
-                            entrance: Point::new(top_x, self.top),
-                        }
-                    }
-                }
-            };
         }
     }
 }
