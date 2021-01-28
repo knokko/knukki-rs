@@ -1078,13 +1078,13 @@ mod tests {
         }
 
         impl Component for MouseCheckingComponent {
-            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
             fn render(
                 &mut self,
                 _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
-                force: bool
+                _force: bool
             ) -> RenderResult {
                 assert_eq!(self.check.get().expected_position, buddy.get_mouse_position(self.check.get().mouse));
                 entire_render_result()

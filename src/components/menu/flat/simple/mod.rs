@@ -1767,13 +1767,13 @@ mod tests {
         }
 
         impl Component for LocalMouseCheckComponent {
-            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
             fn render(
                 &mut self,
                 _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
-                force: bool
+                _force: bool
             ) -> RenderResult {
                 let local_mouses = buddy.get_local_mouses();
                 let expected_mouses = self.expected_mouses.borrow();
@@ -1815,8 +1815,8 @@ mod tests {
             mouses.clear();
             mouses.append(&mut expected);
         };
-        let set1 = |mut expected: Vec<LocalMouse>| set(&expected_mouses1, expected);
-        let set2 = |mut expected: Vec<LocalMouse>| set(&expected_mouses2, expected);
+        let set1 = |expected: Vec<LocalMouse>| set(&expected_mouses1, expected);
+        let set2 = |expected: Vec<LocalMouse>| set(&expected_mouses2, expected);
 
         let mut menu = SimpleFlatMenu::new(None);
         menu.add_component(
@@ -1910,7 +1910,7 @@ mod tests {
             render_counter: Rc<Cell<u8>>,
         }
         impl Component for ViewportTestComponent {
-            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {}
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
             fn render(
                 &mut self,
@@ -1984,7 +1984,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 _buddy: &mut dyn ComponentBuddy,
-                force: bool
+                _force: bool
             ) -> RenderResult {
                 self.counter.set(self.counter.get() * 3);
                 entire_render_result()
@@ -2019,7 +2019,7 @@ mod tests {
             fn on_mouse_click(&mut self, _event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
                 self.counter.set(self.counter.get() + 1);
                 let new_counter = Rc::clone(&self.new_counter);
-                buddy.change_menu(Box::new(move |old_menu| Box::new(
+                buddy.change_menu(Box::new(move |_old_menu| Box::new(
                     NewMenuComponent { counter: new_counter }
                 )));
             }

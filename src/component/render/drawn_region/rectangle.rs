@@ -187,8 +187,6 @@ impl DrawnRegion for RectangularDrawnRegion {
     }
 
     fn find_line_intersection(&self, from: Point, to: Point) -> LineIntersection {
-        let dx = to.get_x() - from.get_x();
-        let dy = to.get_y() - from.get_y();
 
         let from_inside = self.is_within_bounds(from);
         let to_inside = self.is_within_bounds(to);
