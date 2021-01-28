@@ -1964,9 +1964,88 @@ mod tests {
         // Check that the render methods were actually called twice per component
         assert_eq!(4, render_counter.get());
     }
-    // TODO Also check the scissor merging behavior (after implementing Renderer.push_scissor)
-    // TODO Also check that components outside the scissor aren't rendered at all (also after
-    // implementing Renderer.push_scissor)
+
+    #[test]
+    fn test_render_with_custom_scissor() {
+        struct ScissorTestComponent {
+            expected_viewport: Rc<Cell<RenderRegion>>,
+            expected_scissor: Rc<Cell<RenderRegion>>,
+            render_counter: Rc<Cell<u8>>,
+        }
+        impl Component for ScissorTestComponent {
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(
+                &mut self,
+                renderer: &Renderer,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool
+            ) -> RenderResult {
+                self.render_counter.set(self.render_counter.get() + 1);
+                assert_eq!(self.expected_viewport.get(), renderer.get_viewport());
+                assert_eq!(self.expected_scissor.get(), renderer.get_scissor());
+                entire_render_result()
+            }
+        }
+
+        let counter_left = Rc::new(Cell::new(0));
+        let counter_middle = Rc::new(Cell::new(0));
+        let counter_right = Rc::new(Cell::new(0));
+
+        let viewport_left = Rc::new(Cell::new(
+            RenderRegion::between(10, 10, 20, 20))
+        );
+        let scissor_left = Rc::new(Cell::new(
+            RenderRegion::between(10, 10, 20, 20)
+        ));
+        let viewport_middle = Rc::new(Cell::new(
+            RenderRegion::between(40, 40, 60, 60))
+        );
+        let scissor_middle = Rc::new(Cell::new(
+            RenderRegion::between(40, 40, 60, 60)
+        ));
+        let viewport_right = Rc::new(Cell::new(
+            RenderRegion::between(80, 80, 90, 90))
+        );
+        let scissor_right = Rc::new(Cell::new(
+            RenderRegion::between(80, 80, 90, 90)
+        ));
+
+        let mut menu = SimpleFlatMenu::new(None);
+        menu.add_component(Box::new(ScissorTestComponent {
+            expected_viewport: Rc::clone(&viewport_left),
+            expected_scissor: Rc::clone(&scissor_left),
+            render_counter: Rc::clone(&counter_left),
+        }), ComponentDomain::between(0.1, 0.1, 0.2, 0.2));
+        menu.add_component(Box::new(ScissorTestComponent {
+            expected_viewport: Rc::clone(&viewport_middle),
+            expected_scissor: Rc::clone(&scissor_middle),
+            render_counter: Rc::clone(&counter_middle),
+        }), ComponentDomain::between(0.4, 0.4, 0.6, 0.6));
+        menu.add_component(Box::new(ScissorTestComponent {
+            expected_viewport: Rc::clone(&viewport_right),
+            expected_scissor: Rc::clone(&scissor_right),
+            render_counter: Rc::clone(&counter_right),
+        }), ComponentDomain::between(0.8, 0.8, 0.9, 0.9));
+
+        let renderer = test_renderer(RenderRegion::with_size(0, 0, 100, 100));
+        let mut buddy = root_buddy();
+
+        // First try without scissor
+        menu.render(&renderer, &mut buddy, true).unwrap();
+        assert_eq!(1, counter_left.get());
+        assert_eq!(1, counter_middle.get());
+        assert_eq!(1, counter_right.get());
+
+        // Now with a scissor in the left half
+        scissor_middle.set(RenderRegion::between(40, 40, 50, 60));
+        renderer.push_scissor(0.0, 0.0, 0.5, 1.0, || {
+            menu.render(&renderer, &mut buddy, true).unwrap();
+        });
+        assert_eq!(2, counter_left.get());
+        assert_eq!(2, counter_middle.get());
+        assert_eq!(1, counter_right.get());
+    }
 
     #[test]
     fn test_buddy_change_menu() {
