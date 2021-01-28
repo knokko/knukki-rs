@@ -30,16 +30,12 @@ pub trait Component {
     ///
     /// # The rendering
     /// Whenever this method is called, the component should render itself using
-    /// the given golem `Context`. The given `region` is just for the information
-    /// of the component: it can ignore it because the caller must ensure that the
-    /// viewport is set accordingly.
-    ///
-    /// # Fake rendering
-    /// When the `golem_rendering` feature is not enabled, there will not be
-    /// a *golem* parameter for the actual drawing. The component is then
-    /// supposed to return the same `RenderResult` as if there were a real
-    /// golem context, but without the actual drawing. Doing this accurately
-    /// makes unit testing easier.
+    /// the given `Renderer`. The available operations of this type depend on the crate features
+    /// that are enabled. For instance, some operations are only available when the
+    /// `golem_rendering` feature is enabled. This means that components with some complexity will
+    /// need to have some feature-specific code. There are also operations that are always
+    /// available, even when there is no rendering feature. In such cases, these operations
+    /// typically have no or very little effect.
     ///
     /// # When this method will be called
     /// This method will only be called if the component asked for it via the

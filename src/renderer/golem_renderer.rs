@@ -64,3 +64,12 @@ impl GolemRenderStorage {
         })
     }
 }
+
+struct ShaderCache {
+    
+}
+
+struct CachedShader {
+    last_used: u64,
+    shader: ShaderProgram,
+}

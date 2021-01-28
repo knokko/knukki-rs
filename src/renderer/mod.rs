@@ -20,5 +20,3 @@ pub(crate) fn test_renderer(initial_viewport: RenderRegion) -> Renderer {
         scissor_stack: RefCell::new(vec![initial_viewport]),
     }
 }
-
-// TODO Update the documentation of the render methods of Application and Component

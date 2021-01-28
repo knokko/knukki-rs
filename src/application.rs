@@ -74,23 +74,15 @@ impl Application {
     /// previous pixels, the `force` should be set to true to inform the
     /// application that it should really use this opportunity to render.
     ///
-    /// ### Golem context
-    /// When the `golem_rendering` feature is enabled, this method expects
-    /// a Golem `Context` as first parameter. This is the context where
-    /// the application will render its components. If this feature is not
-    /// enabled, the application will perform a 'dummy render': The
-    /// components will 'pretend' that they are drawing itself and should
-    /// return the same `RenderResult` as they would when given an actual
-    /// golem `Context`. This is of course useless for production environments
-    /// because the application will be invisible, but very useful for unit
-    /// testing: there is no need to create some dirty offscreen window that
-    /// nobody will be able to view anyway.
-    ///
-    /// ### Region
-    /// The *provider* can use the *region* parameter to tell the application
-    /// where it should render itself within the given golem `Context`. This
-    /// should normally cover the entire inner window, but the provider is
-    /// allowed to choose a different region.
+    /// ### Renderer
+    /// The application should call the methods of the given `Renderer` to draw itself (if it wants
+    /// to draw itself or is `force`d to do so). **Before the application renders anything, it
+    /// should call the `start` method of the renderer.** If the application is forced to render,
+    /// it is probably wise to call the `clear` method to discard any previous drawing operations
+    /// (otherwise, these could remain visible if the root component didn't use all its space).
+    /// The methods of the `Renderer` depend on the enabled crate features. In particular, many more
+    /// methods will be available if the `golem_rendering` feature is enabled. The core methods will
+    /// always be available.
     ///
     /// ### Optional
     /// If the `force` is false, rendering is truly optional: the application can
