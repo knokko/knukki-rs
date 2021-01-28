@@ -106,6 +106,66 @@ impl Renderer {
         }
     }
 
+    /// Calls the `render_function`, but ensures that the region `(min_x, min_y, max_x, max_y)`
+    /// will **not** be affected by the render function.
+    ///
+    /// ## Effects on drawing
+    /// If the render function renders something entirely inside the region, it will be drawn
+    /// normally. If the render function renders something entirely outside the region, it will
+    /// have no effect (but might waste some graphics card time). If it renders something that is
+    /// partially inside the region, only the part inside the region will be committed.
+    ///
+    /// ## Optional behavior
+    /// If there would be no drawing region left (for instance when nesting 2 calls with given
+    /// regions that have no overlap at all), the `render_function` will **not** be called, and this
+    /// method will return `None`.
+    ///
+    /// ## Motivation
+    /// The motivation behind this function is to help menu components and the provider with doing
+    /// partial redraws. For instance, the provider could use a scissor when only a small part of
+    /// the window needs to be redrawn. (In particular, I am considering adding custom mouses.
+    /// Using this scissor system, the provider could instruct the application to only
+    /// redraw the area that used to be behind the custom mouse). It could also be helpful to
+    /// layered menu components: when a small component is (re)moved on the front layer, only the
+    /// part on the background layer behind that component needs to be redrawn.
+    ///
+    /// ## Details
+    /// The `new_scissor` will be equal to
+    /// `old_scissor.intersection(viewport.child_region(min_x, min_y, max_x, max_y))`.
+    /// The viewport will **not** be affected by this method.
+    ///
+    /// ## Result
+    /// If the `render_function` is called, its result will be returned (inside a `Some`). If not,
+    /// this method will return `None`.
+    pub fn push_scissor<R>(
+        &self, min_x: f32, min_y: f32, max_x: f32, max_y: f32,
+        render_function: impl FnOnce() -> R
+    ) -> Option<R> {
+        let old_scissor = self.get_scissor();
+        let viewport = self.get_viewport();
+        let maybe_new_scissor = viewport.child_region(
+            min_x, min_y, max_x, max_y
+        );
+        if let Some(new_scissor) = maybe_new_scissor {
+            if let Some(combined_scissor) = old_scissor.intersection(new_scissor) {
+
+                let mut scissor_stack = self.scissor_stack.borrow_mut();
+                scissor_stack.push(combined_scissor);
+                drop(scissor_stack);
+
+                let result = render_function();
+
+                let mut scissor_stack = self.scissor_stack.borrow_mut();
+                scissor_stack.pop();
+                drop(scissor_stack);
+
+                return Some(result);
+            }
+        }
+
+        None
+    }
+
     /// (Re-)sets the viewport and scissor of this `Renderer` to `new_viewport`. This will clear
     /// the entire viewport stack and scissor stack.
     ///
@@ -126,8 +186,6 @@ impl Renderer {
 
         self.apply_viewport_and_scissor();
     }
-
-    // TODO Add a push_scissor method, and write a test for it
 }
 
 #[cfg(test)]
@@ -191,5 +249,73 @@ mod tests {
 
         assert_eq!(outer_region, renderer.get_viewport());
         assert_eq!(outer_region, renderer.get_scissor());
+    }
+
+    #[test]
+    fn test_push_scissor() {
+        let viewport = RenderRegion::with_size(50, 100, 400, 300);
+        let bottom_left = RenderRegion::with_size(50, 100, 200, 150);
+        let partial_middle = RenderRegion::with_size(150, 175, 100, 75);
+
+        let renderer = test_renderer(viewport);
+
+        assert!(renderer.push_scissor(0.0, 0.0, 0.5, 0.5, || {
+            assert_eq!(viewport, renderer.get_viewport());
+            assert_eq!(bottom_left, renderer.get_scissor());
+
+            // Should return None when the scissors have an empty intersection
+            assert!(renderer.push_scissor(0.5, 0.5, 1.0, 1.0, || {
+                unreachable!();
+            }).is_none());
+            assert!(renderer.push_scissor(0.6, 0.6, 0.8, 0.7, || {
+                unreachable!();
+            }).is_none());
+
+            // Pushing the same scissor twice has no extra effect
+            assert!(renderer.push_scissor(0.0, 0.0, 0.5, 0.5, || {
+                assert_eq!(viewport, renderer.get_viewport());
+                assert_eq!(bottom_left, renderer.get_scissor());
+            }).is_some());
+
+            assert!(renderer.push_scissor(0.25, 0.25, 0.75, 0.75, || {
+                assert_eq!(viewport, renderer.get_viewport());
+                assert_eq!(partial_middle, renderer.get_scissor());
+            }).is_some());
+
+            assert_eq!(bottom_left, renderer.get_scissor());
+        }).is_some());
+
+        assert_eq!(viewport, renderer.get_viewport());
+        assert_eq!(viewport, renderer.get_scissor());
+    }
+
+    #[test]
+    fn test_combine_viewport_and_scissor() {
+        let outer_viewport = RenderRegion::with_size(0, 0, 1000, 1000);
+        let inner_viewport = RenderRegion::with_size(250, 250, 500, 500);
+        let left_inner_viewport = RenderRegion::with_size(250, 250, 350, 500);
+        let inner_left_viewport = RenderRegion::with_size(250, 250, 300, 500);
+
+        let renderer = test_renderer(outer_viewport);
+
+        renderer.push_scissor(0.0, 0.0, 0.6, 1.0, || {
+            renderer.push_viewport(0.25, 0.25, 0.75, 0.75, || {
+                assert_eq!(inner_viewport, renderer.get_viewport());
+                assert_eq!(left_inner_viewport, renderer.get_scissor());
+            }).unwrap();
+        }).unwrap();
+
+        renderer.push_viewport(0.25, 0.25, 0.75, 0.75, || {
+            renderer.push_scissor(0.0, 0.0, 0.6, 1.0, || {
+               assert_eq!(inner_viewport, renderer.get_viewport());
+                assert_eq!(inner_left_viewport, renderer.get_scissor());
+            }).unwrap();
+        }).unwrap();
+
+        renderer.push_scissor(0.0, 0.0, 0.6, 1.0, || {
+            renderer.push_viewport(0.8, 0.8, 0.9, 0.9, || {
+                unreachable!();
+            }).unwrap_none();
+        }).unwrap();
     }
 }
