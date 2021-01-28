@@ -12,7 +12,7 @@ fn main() {
             let hover_color = Color::rgb(200, 5 * x, 5 * y);
             menu.add_component(
                 Box::new(HoverColorCircleComponent::new(base_color, hover_color)),
-                ComponentDomain::between(min_x, min_y, max_x, max_y)
+                ComponentDomain::between(min_x, min_y, max_x, max_y),
             );
         }
     }

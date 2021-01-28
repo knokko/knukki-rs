@@ -1,10 +1,10 @@
+mod mouse_store;
 mod root;
 mod subscriptions;
-mod mouse_store;
 
+pub use mouse_store::*;
 pub use root::*;
 pub use subscriptions::*;
-pub use mouse_store::*;
 
 use crate::*;
 

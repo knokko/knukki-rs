@@ -13,7 +13,10 @@ pub struct HoverColorCircleComponent {
 
 impl HoverColorCircleComponent {
     pub fn new(base_color: Color, hover_color: Color) -> Self {
-        Self { base_color, hover_color }
+        Self {
+            base_color,
+            hover_color,
+        }
     }
 }
 
@@ -27,31 +30,28 @@ impl Component for HoverColorCircleComponent {
         &mut self,
         renderer: &Renderer,
         buddy: &mut dyn ComponentBuddy,
-        _force: bool
+        _force: bool,
     ) -> RenderResult {
-
         // The first challenge is to avoid distortion: if the *region* is rectangular rather than
         // square, we will ignore a part of it such that a square part remains, and use that.
         let ar = renderer.get_viewport().get_aspect_ratio();
         let used_width = 1.0 / ar.max(1.0);
         let used_height = 1.0 / (1.0 / ar).max(1.0);
 
-        let drawn_region = OvalDrawnRegion::new(
-            Point::new(0.5, 0.5), used_width * 0.5, used_height * 0.5
-        );
+        let drawn_region =
+            OvalDrawnRegion::new(Point::new(0.5, 0.5), used_width * 0.5, used_height * 0.5);
 
         // Now that we know the exact region in which we render, we can determine whether any mouse
         // is hovering over that region
         let is_hovering = buddy.get_local_mouses().iter().any(|mouse| {
-           match buddy.get_mouse_position(*mouse) {
-               Some(position) => {
-                   drawn_region.is_inside(position)
-               }, None => {
-                   // Weird and shouldn't happen, but not a critical problem
-                   debug_assert!(false);
-                   false
-               }
-           }
+            match buddy.get_mouse_position(*mouse) {
+                Some(position) => drawn_region.is_inside(position),
+                None => {
+                    // Weird and shouldn't happen, but not a critical problem
+                    debug_assert!(false);
+                    false
+                }
+            }
         });
 
         // If the golem rendering feature is enabled, we should also draw the circle
@@ -97,27 +97,32 @@ impl Component for HoverColorCircleComponent {
 
             let color = match is_hovering {
                 true => self.hover_color,
-                false => self.base_color
+                false => self.base_color,
             };
 
-            shader.set_uniform("color", UniformValue::Vector3([
-                color.get_red_float(), color.get_green_float(), color.get_blue_float()
-            ]))?;
-            shader.set_uniform("radius", UniformValue::Vector2([
-                used_width, used_height
-            ]))?;
+            shader.set_uniform(
+                "color",
+                UniformValue::Vector3([
+                    color.get_red_float(),
+                    color.get_green_float(),
+                    color.get_blue_float(),
+                ]),
+            )?;
+            shader.set_uniform("radius", UniformValue::Vector2([used_width, used_height]))?;
 
             unsafe {
                 shader.draw(
-                    renderer.get_quad_vertices(), renderer.get_quad_indices(),
-                    0..renderer.get_num_quad_indices(), GeometryMode::Triangles
+                    renderer.get_quad_vertices(),
+                    renderer.get_quad_indices(),
+                    0..renderer.get_num_quad_indices(),
+                    GeometryMode::Triangles,
                 )?;
             }
         }
 
         Ok(RenderResultStruct {
             drawn_region: Box::new(drawn_region),
-            filter_mouse_actions: true
+            filter_mouse_actions: true,
         })
     }
 
@@ -138,44 +143,43 @@ mod tests {
 
     #[test]
     fn test_render_returned_region() {
-        let mut component = HoverColorCircleComponent::new(
-            Color::rgb(10, 20, 30),
-            Color::rgb(100, 110, 120)
-        );
+        let mut component =
+            HoverColorCircleComponent::new(Color::rgb(10, 20, 30), Color::rgb(100, 110, 120));
         let mut buddy = RootComponentBuddy::new();
         buddy.set_mouse_store(Rc::new(RefCell::new(MouseStore::new())));
 
         let square_region = RenderRegion::with_size(10, 20, 50, 50);
-        let square_result = component.render(
-            &test_renderer(square_region), &mut buddy, true
-        ).unwrap().drawn_region;
-        assert!(Point::new(0.0, 0.0).nearly_equal(
-            Point::new(square_result.get_left(), square_result.get_bottom())
-        ));
-        assert!(Point::new(1.0, 1.0).nearly_equal(
-            Point::new(square_result.get_right(), square_result.get_top())
-        ));
+        let square_result = component
+            .render(&test_renderer(square_region), &mut buddy, true)
+            .unwrap()
+            .drawn_region;
+        assert!(Point::new(0.0, 0.0).nearly_equal(Point::new(
+            square_result.get_left(),
+            square_result.get_bottom()
+        )));
+        assert!(Point::new(1.0, 1.0).nearly_equal(Point::new(
+            square_result.get_right(),
+            square_result.get_top()
+        )));
 
         let wide_region = RenderRegion::with_size(10, 20, 100, 50);
-        let wide_result = component.render(
-            &test_renderer(wide_region), &mut buddy, true
-        ).unwrap().drawn_region;
-        assert!(Point::new(0.25, 0.0).nearly_equal(
-            Point::new(wide_result.get_left(), wide_result.get_bottom())
-        ));
-        assert!(Point::new(0.75, 1.0).nearly_equal(
-            Point::new(wide_result.get_right(), wide_result.get_top())
-        ));
+        let wide_result = component
+            .render(&test_renderer(wide_region), &mut buddy, true)
+            .unwrap()
+            .drawn_region;
+        assert!(Point::new(0.25, 0.0)
+            .nearly_equal(Point::new(wide_result.get_left(), wide_result.get_bottom())));
+        assert!(Point::new(0.75, 1.0)
+            .nearly_equal(Point::new(wide_result.get_right(), wide_result.get_top())));
 
         let high_region = RenderRegion::with_size(10, 20, 50, 100);
-        let high_result = component.render(
-            &test_renderer(high_region), &mut buddy, true
-        ).unwrap().drawn_region;
-        assert!(Point::new(0.0, 0.25).nearly_equal(
-            Point::new(high_result.get_left(), high_result.get_bottom())
-        ));
-        assert!(Point::new(1.0, 0.75).nearly_equal(
-            Point::new(high_result.get_right(), high_result.get_top())
-        ));
+        let high_result = component
+            .render(&test_renderer(high_region), &mut buddy, true)
+            .unwrap()
+            .drawn_region;
+        assert!(Point::new(0.0, 0.25)
+            .nearly_equal(Point::new(high_result.get_left(), high_result.get_bottom())));
+        assert!(Point::new(1.0, 0.75)
+            .nearly_equal(Point::new(high_result.get_right(), high_result.get_top())));
     }
 }

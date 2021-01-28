@@ -66,8 +66,12 @@ impl SimpleFlatBuddy {
         self.create_next_menu.is_some()
     }
 
-    pub fn create_next_menu(&mut self) -> Box<dyn FnOnce(Box<dyn Component>) -> Box<dyn Component>> {
-        self.create_next_menu.take().expect("Only call this method after has_next_menu returned true")
+    pub fn create_next_menu(
+        &mut self,
+    ) -> Box<dyn FnOnce(Box<dyn Component>) -> Box<dyn Component>> {
+        self.create_next_menu
+            .take()
+            .expect("Only call this method after has_next_menu returned true")
     }
 }
 
@@ -175,7 +179,7 @@ impl ComponentBuddy for SimpleFlatBuddy {
             if entry.mouse == mouse {
                 return match self.domain.is_inside(entry.position) {
                     true => Some(self.domain.transform(entry.position)),
-                    false => None
+                    false => None,
                 };
             }
         }
@@ -192,9 +196,12 @@ impl ComponentBuddy for SimpleFlatBuddy {
 
     fn get_local_mouses(&self) -> Vec<Mouse> {
         let mouse_buddy = self.mouse_buddy.borrow();
-        return mouse_buddy.local_mouses.iter().filter(|mouse| {
-            self.domain.is_inside(mouse.position)
-        }).map(|mouse_entry| mouse_entry.mouse).collect();
+        return mouse_buddy
+            .local_mouses
+            .iter()
+            .filter(|mouse| self.domain.is_inside(mouse.position))
+            .map(|mouse_entry| mouse_entry.mouse)
+            .collect();
     }
 
     fn get_all_mouses(&self) -> Vec<Mouse> {
@@ -212,5 +219,5 @@ pub(super) struct MouseBuddy {
 #[derive(Copy, Clone, Debug)]
 pub(super) struct MouseEntry {
     pub mouse: Mouse,
-    pub position: Point
+    pub position: Point,
 }

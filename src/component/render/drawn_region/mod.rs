@@ -2,15 +2,15 @@ use crate::Point;
 
 mod composite;
 mod line_intersection;
+mod oval;
 mod rectangle;
 mod transformed;
-mod oval;
 
 pub use composite::*;
 pub use line_intersection::*;
+pub use oval::*;
 pub use rectangle::*;
 pub use transformed::*;
-pub use oval::*;
 
 /// Represents a part of the domain of a `Component` and is used to indicate in
 /// which part of its domain a component has actually drawn something.

@@ -27,7 +27,6 @@ pub struct Application {
 
 impl Application {
     pub fn new(mut initial_root_component: Box<dyn Component>) -> Self {
-
         let mouse_store = Rc::new(RefCell::new(MouseStore::new()));
 
         let mut root_buddy = RootComponentBuddy::new();
@@ -57,7 +56,8 @@ impl Application {
 
             // A fresh main component requires a fresh buddy
             self.root_buddy = RootComponentBuddy::new();
-            self.root_buddy.set_mouse_store(Rc::clone(&self.mouse_store));
+            self.root_buddy
+                .set_mouse_store(Rc::clone(&self.mouse_store));
 
             self.root_component.on_attach(&mut self.root_buddy);
             self.work_after_events();
@@ -94,11 +94,7 @@ impl Application {
     /// ### Return value
     /// This method returns true if the application chose to render (or it was
     /// forced to do so) and false if the application chose not to render.
-    pub fn render(
-        &mut self,
-        renderer: &Renderer,
-        force: bool,
-    ) -> bool {
+    pub fn render(&mut self, renderer: &Renderer, force: bool) -> bool {
         if force || self.root_buddy.did_request_render() {
             self.root_buddy.clear_render_request();
 
@@ -113,11 +109,7 @@ impl Application {
             // Let the root component render itself
             let result = self
                 .root_component
-                .render(
-                    renderer,
-                    &mut self.root_buddy,
-                    force,
-                )
+                .render(renderer, &mut self.root_buddy, force)
                 .expect("Render shouldn't fail");
             self.root_buddy.set_last_render_result(result);
 
@@ -179,18 +171,21 @@ impl Application {
     }
 
     pub fn fire_mouse_move_event(&mut self, event: MouseMoveEvent) {
-
         // Keep the MouseStore up-to-date
         let mut mouse_store = self.mouse_store.borrow_mut();
         match mouse_store.update_mouse_state(event.get_mouse()) {
             Some(state_to_update) => {
                 state_to_update.position = event.get_to();
-            }, None => {
+            }
+            None => {
                 // This shouldn't happen, but it's not critical enough for a release panic
                 debug_assert!(false);
-                mouse_store.add_mouse(event.get_mouse(), MouseState {
-                    position: event.get_to()
-                });
+                mouse_store.add_mouse(
+                    event.get_mouse(),
+                    MouseState {
+                        position: event.get_to(),
+                    },
+                );
             }
         };
         drop(mouse_store);
@@ -280,12 +275,14 @@ impl Application {
     }
 
     pub fn fire_mouse_enter_event(&mut self, event: MouseEnterEvent) {
-
         // Keep the MouseStore up-to-date
         let mut mouse_store = self.mouse_store.borrow_mut();
-        mouse_store.add_mouse(event.get_mouse(), MouseState {
-            position: event.get_entrance_point()
-        });
+        mouse_store.add_mouse(
+            event.get_mouse(),
+            MouseState {
+                position: event.get_entrance_point(),
+            },
+        );
         drop(mouse_store);
 
         // Propagate the MouseEnterEvent
@@ -307,7 +304,6 @@ impl Application {
     }
 
     pub fn fire_mouse_leave_event(&mut self, event: MouseLeaveEvent) {
-
         // Keep the MouseStore up-to-date
         let mut mouse_store = self.mouse_store.borrow_mut();
         mouse_store.remove_mouse(event.get_mouse());
@@ -751,9 +747,8 @@ mod tests {
         };
 
         let mut application = Application::new(Box::new(component));
-        application.fire_mouse_enter_event(MouseEnterEvent::new(
-            Mouse::new(0), Point::new(0.0, 0.4)
-        ));
+        application
+            .fire_mouse_enter_event(MouseEnterEvent::new(Mouse::new(0), Point::new(0.0, 0.4)));
         let the_event =
             MouseMoveEvent::new(Mouse::new(0), Point::new(0.0, 0.4), Point::new(1.0, 0.4));
         let render_region = RenderRegion::with_size(0, 0, 30, 70);
@@ -816,35 +811,30 @@ mod tests {
         application.render(&test_renderer(RenderRegion::between(1, 2, 3, 4)), false);
 
         // Let the mouse enter the application
-        application.fire_mouse_enter_event(MouseEnterEvent::new(
-            Mouse::new(0), Point::new(0.0, 1.0)
-        ));
+        application
+            .fire_mouse_enter_event(MouseEnterEvent::new(Mouse::new(0), Point::new(0.0, 1.0)));
 
         // Move the mouse entirely outside
-        let outside_event = MouseMoveEvent::new(
-            Mouse::new(0), Point::new(0.0, 1.0), Point::new(0.0, 0.0)
-        );
+        let outside_event =
+            MouseMoveEvent::new(Mouse::new(0), Point::new(0.0, 1.0), Point::new(0.0, 0.0));
         application.fire_mouse_move_event(outside_event);
         check_counts(0, 0, 0);
 
         // Move the mouse from outside to inside the component
-        let enter_event = MouseMoveEvent::new(
-            Mouse::new(0), Point::new(0.0, 0.0), Point::new(0.4, 0.2)
-        );
+        let enter_event =
+            MouseMoveEvent::new(Mouse::new(0), Point::new(0.0, 0.0), Point::new(0.4, 0.2));
         application.fire_mouse_move_event(enter_event);
         check_counts(1, 1, 0);
 
         // Move the mouse entirely inside the component
-        let inside_event = MouseMoveEvent::new(
-            Mouse::new(0), Point::new(0.4, 0.2), Point::new(0.6, 0.3)
-        );
+        let inside_event =
+            MouseMoveEvent::new(Mouse::new(0), Point::new(0.4, 0.2), Point::new(0.6, 0.3));
         application.fire_mouse_move_event(inside_event);
         check_counts(2, 1, 0);
 
         // Move the mouse from inside to outside the component
-        let leave_event = MouseMoveEvent::new(
-            Mouse::new(0), Point::new(0.6, 0.3), Point::new(1.0, 0.5)
-        );
+        let leave_event =
+            MouseMoveEvent::new(Mouse::new(0), Point::new(0.6, 0.3), Point::new(1.0, 0.5));
         application.fire_mouse_move_event(leave_event);
         check_counts(3, 1, 1);
 
@@ -859,10 +849,14 @@ mod tests {
         assert!(move_events[2].get_to().nearly_equal(Point::new(0.8, 0.4)));
 
         let enter_events = mouse_enter_log.borrow();
-        assert!(enter_events[0].get_entrance_point().nearly_equal(Point::new(0.2, 0.1)));
+        assert!(enter_events[0]
+            .get_entrance_point()
+            .nearly_equal(Point::new(0.2, 0.1)));
 
         let leave_events = mouse_leave_log.borrow();
-        assert!(leave_events[0].get_exit_point().nearly_equal(Point::new(0.8, 0.4)));
+        assert!(leave_events[0]
+            .get_exit_point()
+            .nearly_equal(Point::new(0.8, 0.4)));
     }
 
     #[test]
@@ -885,7 +879,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 let new_subscriptions = self.desired_subscriptions.borrow();
                 if new_subscriptions.mouse_click {
@@ -922,19 +916,16 @@ mod tests {
             }
         }
 
-        let desired_subscriptions = Rc::new(RefCell::new(
-            EventFlags {
-                mouse_click: false,
-                mouse_enter: false,
-                mouse_leave: false
+        let desired_subscriptions = Rc::new(RefCell::new(EventFlags {
+            mouse_click: false,
+            mouse_enter: false,
+            mouse_leave: false,
         }));
-        let received_events = Rc::new(RefCell::new(
-            EventFlags {
-                mouse_click: false,
-                mouse_enter: false,
-                mouse_leave: false,
-            }
-        ));
+        let received_events = Rc::new(RefCell::new(EventFlags {
+            mouse_click: false,
+            mouse_enter: false,
+            mouse_leave: false,
+        }));
 
         let component = SubscribeComponent {
             desired_subscriptions: Rc::clone(&desired_subscriptions),
@@ -990,7 +981,7 @@ mod tests {
     #[test]
     fn test_buddy_get_mouses() {
         struct GetMouseComponent {
-            expected: Rc<RefCell<Vec<Mouse>>>
+            expected: Rc<RefCell<Vec<Mouse>>>,
         }
 
         impl Component for GetMouseComponent {
@@ -1000,7 +991,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 let expected = self.expected.borrow();
                 assert_eq!(expected.as_ref() as &Vec<Mouse>, &buddy.get_local_mouses());
@@ -1011,21 +1002,19 @@ mod tests {
 
         let expected_mouses = Rc::new(RefCell::new(Vec::new()));
 
-        let mut application = Application::new(
-            Box::new(GetMouseComponent { expected: Rc::clone(&expected_mouses) })
-        );
+        let mut application = Application::new(Box::new(GetMouseComponent {
+            expected: Rc::clone(&expected_mouses),
+        }));
 
         let region = RenderRegion::with_size(1, 2, 3, 4);
 
         // The mouses should be empty initially
         application.render(&test_renderer(region), true);
 
-        let enter_event = |mouse_id: u16| MouseEnterEvent::new(
-            Mouse::new(mouse_id), Point::new(0.2, 0.3)
-        );
-        let leave_event = |mouse_id: u16| MouseLeaveEvent::new(
-            Mouse::new(mouse_id), Point::new(0.2, 0.3)
-        );
+        let enter_event =
+            |mouse_id: u16| MouseEnterEvent::new(Mouse::new(mouse_id), Point::new(0.2, 0.3));
+        let leave_event =
+            |mouse_id: u16| MouseLeaveEvent::new(Mouse::new(mouse_id), Point::new(0.2, 0.3));
         let mouse_vec = |ids: &[u16]| ids.iter().map(|id| Mouse::new(*id)).collect();
 
         // Add the first mouse
@@ -1066,11 +1055,17 @@ mod tests {
         }
 
         fn check(mouse: Mouse, expected_x: f32, expected_y: f32) -> MouseCheck {
-            MouseCheck { mouse, expected_position: Some(Point::new(expected_x, expected_y)) }
+            MouseCheck {
+                mouse,
+                expected_position: Some(Point::new(expected_x, expected_y)),
+            }
         }
 
         fn check_none(mouse: Mouse) -> MouseCheck {
-            MouseCheck { mouse, expected_position: None }
+            MouseCheck {
+                mouse,
+                expected_position: None,
+            }
         }
 
         struct MouseCheckingComponent {
@@ -1084,9 +1079,12 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
-                assert_eq!(self.check.get().expected_position, buddy.get_mouse_position(self.check.get().mouse));
+                assert_eq!(
+                    self.check.get().expected_position,
+                    buddy.get_mouse_position(self.check.get().mouse)
+                );
                 entire_render_result()
             }
         }
@@ -1094,46 +1092,42 @@ mod tests {
         let mouse1 = Mouse::new(1);
         let mouse2 = Mouse::new(0);
 
-        let next_check = Rc::new(Cell::new(
-            check_none(mouse1)
-        ));
+        let next_check = Rc::new(Cell::new(check_none(mouse1)));
 
         let region = RenderRegion::with_size(1, 2, 3, 4);
-        let mut application = Application::new(Box::new(
-            MouseCheckingComponent { check: Rc::clone(&next_check) }
-        ));
+        let mut application = Application::new(Box::new(MouseCheckingComponent {
+            check: Rc::clone(&next_check),
+        }));
         application.render(&test_renderer(region), true);
-        application.fire_mouse_enter_event(MouseEnterEvent::new(
-            mouse1, Point::new(0.3, 0.4)
-        ));
+        application.fire_mouse_enter_event(MouseEnterEvent::new(mouse1, Point::new(0.3, 0.4)));
         next_check.set(check(mouse1, 0.3, 0.4));
         application.render(&test_renderer(region), true);
         next_check.set(check_none(mouse2));
         application.render(&test_renderer(region), true);
         application.fire_mouse_move_event(MouseMoveEvent::new(
-            mouse1, Point::new(0.3, 0.4), Point::new(0.6, 0.5)
+            mouse1,
+            Point::new(0.3, 0.4),
+            Point::new(0.6, 0.5),
         ));
         next_check.set(check(mouse1, 0.6, 0.5));
         application.render(&test_renderer(region), true);
 
-        application.fire_mouse_enter_event(MouseEnterEvent::new(
-            mouse2, Point::new(0.1, 0.2)
-        ));
+        application.fire_mouse_enter_event(MouseEnterEvent::new(mouse2, Point::new(0.1, 0.2)));
         next_check.set(check(mouse2, 0.1, 0.2));
         application.render(&test_renderer(region), true);
         next_check.set(check(mouse1, 0.6, 0.5));
         application.render(&test_renderer(region), true);
 
         application.fire_mouse_move_event(MouseMoveEvent::new(
-            mouse2, Point::new(0.1, 0.2), Point::new(0.7, 0.1)
+            mouse2,
+            Point::new(0.1, 0.2),
+            Point::new(0.7, 0.1),
         ));
         application.render(&test_renderer(region), true);
         next_check.set(check(mouse2, 0.7, 0.1));
         application.render(&test_renderer(region), true);
 
-        application.fire_mouse_leave_event(MouseLeaveEvent::new(
-            mouse1, Point::new(0.6, 0.5)
-        ));
+        application.fire_mouse_leave_event(MouseLeaveEvent::new(mouse1, Point::new(0.6, 0.5)));
         next_check.set(check_none(mouse1));
         application.render(&test_renderer(region), true);
         next_check.set(check(mouse2, 0.7, 0.1));
@@ -1156,7 +1150,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 _buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 entire_render_result()
             }
@@ -1164,11 +1158,11 @@ mod tests {
             fn on_mouse_click(&mut self, _event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
                 self.click_counter.set(self.click_counter.get() + 1);
                 let changed_counter = Rc::clone(&self.changed_counter);
-                buddy.change_menu(Box::new(
-                    move |_old_menu: Box<dyn Component>| Box::new(ChangedComponent {
-                        counter: changed_counter
+                buddy.change_menu(Box::new(move |_old_menu: Box<dyn Component>| {
+                    Box::new(ChangedComponent {
+                        counter: changed_counter,
                     })
-                ));
+                }));
             }
 
             fn on_detach(&mut self) {
@@ -1186,7 +1180,12 @@ mod tests {
                 self.counter.set(10);
             }
 
-            fn render(&mut self, _renderer: &Renderer, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _renderer: &Renderer,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool,
+            ) -> RenderResult {
                 self.counter.set(self.counter.get() * 5);
                 entire_render_result()
             }
@@ -1201,12 +1200,11 @@ mod tests {
 
         let mut application = Application::new(Box::new(ChangingComponent {
             click_counter: Rc::clone(&counter1),
-            changed_counter: Rc::clone(&counter2)
+            changed_counter: Rc::clone(&counter2),
         }));
 
-        let click_event = MouseClickEvent::new(
-            Mouse::new(0), Point::new(0.2, 0.6), MouseButton::primary()
-        );
+        let click_event =
+            MouseClickEvent::new(Mouse::new(0), Point::new(0.2, 0.6), MouseButton::primary());
         let renderer = test_renderer(RenderRegion::with_size(1, 2, 3, 4));
 
         application.render(&renderer, false);

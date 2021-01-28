@@ -1,13 +1,15 @@
 use crate::RenderRegion;
 use std::cell::RefCell;
 
+mod core;
 #[cfg(feature = "golem_rendering")]
 mod golem_renderer;
-mod core;
 
 pub struct Renderer {
-    #[cfg(feature = "golem_rendering")] context: golem::Context,
-    #[cfg(feature = "golem_rendering")] storage: golem_renderer::GolemRenderStorage,
+    #[cfg(feature = "golem_rendering")]
+    context: golem::Context,
+    #[cfg(feature = "golem_rendering")]
+    storage: golem_renderer::GolemRenderStorage,
     viewport_stack: RefCell<Vec<RenderRegion>>,
     scissor_stack: RefCell<Vec<RenderRegion>>,
 }

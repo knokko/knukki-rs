@@ -145,7 +145,6 @@ impl RenderRegion {
         relative_max_x: f32,
         relative_max_y: f32,
     ) -> Option<Self> {
-
         let min_x = self.get_min_x() + (self.get_width() as f32 * relative_min_x).round() as u32;
         let min_y = self.get_min_y() + (self.get_height() as f32 * relative_min_y).round() as u32;
 
@@ -209,7 +208,7 @@ impl RenderRegion {
             self.get_min_x(),
             self.get_min_y(),
             self.get_width(),
-            self.get_height()
+            self.get_height(),
         );
     }
 }
@@ -263,8 +262,14 @@ mod tests {
         assert_eq!(Some(parent), parent.child_region(0.0, 0.0, 1.0, 1.0));
 
         let mini_region = RenderRegion::with_size(100, 200, 1, 1);
-        assert_eq!(Some(mini_region), mini_region.child_region(0.45, 0.45, 0.55, 0.55));
-        assert_eq!(Some(mini_region), mini_region.child_region(0.0, 0.0, 1.0, 1.0));
+        assert_eq!(
+            Some(mini_region),
+            mini_region.child_region(0.45, 0.45, 0.55, 0.55)
+        );
+        assert_eq!(
+            Some(mini_region),
+            mini_region.child_region(0.0, 0.0, 1.0, 1.0)
+        );
         assert!(mini_region.child_region(0.1, 0.1, 0.4, 0.4).is_none());
     }
 
@@ -288,6 +293,9 @@ mod tests {
         assert!(region1.intersection(region_far).is_none());
 
         let region_mini = RenderRegion::with_size(19, 19, 5, 5);
-        assert_eq!(Some(RenderRegion::with_size(19, 19, 1, 1)), region1.intersection(region_mini));
+        assert_eq!(
+            Some(RenderRegion::with_size(19, 19, 1, 1)),
+            region1.intersection(region_mini)
+        );
     }
 }

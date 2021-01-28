@@ -1,6 +1,6 @@
 use crate::*;
+use std::cell::{Ref, RefCell};
 use std::rc::Rc;
-use std::cell::{RefCell, Ref};
 
 pub struct RootComponentBuddy {
     subscriptions: ComponentSubscriptions,
@@ -39,7 +39,10 @@ impl RootComponentBuddy {
     }
 
     fn get_mouse_store(&self) -> Ref<MouseStore> {
-        self.mouse_store.as_ref().expect("The application should use set_mouse_store").borrow()
+        self.mouse_store
+            .as_ref()
+            .expect("The application should use set_mouse_store")
+            .borrow()
     }
 
     pub fn did_request_render(&self) -> bool {
@@ -63,7 +66,10 @@ impl RootComponentBuddy {
     }
 
     pub fn create_next_menu(&mut self, current_menu: Box<dyn Component>) -> Box<dyn Component> {
-        let create_next_menu = self.create_next_menu.take().expect("Only call this method after has_next_menu returned true");
+        let create_next_menu = self
+            .create_next_menu
+            .take()
+            .expect("Only call this method after has_next_menu returned true");
         create_next_menu(current_menu)
     }
 }
@@ -135,7 +141,9 @@ impl ComponentBuddy for RootComponentBuddy {
     fn get_mouse_position(&self, mouse: Mouse) -> Option<Point> {
         let mouse_store = self.get_mouse_store();
         // No transformation needed because we are the root
-        mouse_store.get_mouse_state(mouse).map(|state| state.position)
+        mouse_store
+            .get_mouse_state(mouse)
+            .map(|state| state.position)
     }
 
     fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> bool {

@@ -176,16 +176,12 @@ mod tests {
 
         assert_eq!(
             LineIntersection::FullyOutside,
-            transformed_region.find_line_intersection(
-                Point::new(-2.0, 1.1), Point::new(0.0, 1.1)
-            )
+            transformed_region.find_line_intersection(Point::new(-2.0, 1.1), Point::new(0.0, 1.1))
         );
 
         assert_eq!(
             LineIntersection::FullyInside,
-            transformed_region.find_line_intersection(
-                Point::new(0.8, 1.1), Point::new(1.0, 1.1)
-            )
+            transformed_region.find_line_intersection(Point::new(0.8, 1.1), Point::new(1.0, 1.1))
         );
     }
 
@@ -208,12 +204,15 @@ mod tests {
         assert_eq!(transformed_region.get_right(), cloned_region.get_right());
         assert_eq!(transformed_region.get_top(), cloned_region.get_top());
 
-        for ix in 0 .. 30 {
-            for iy in 0 .. 30 {
+        for ix in 0..30 {
+            for iy in 0..30 {
                 let x = ix as f32 * 0.1 - 1.5;
                 let y = iy as f32 * 0.1 - 1.5;
                 let point = Point::new(x, y);
-                assert_eq!(transformed_region.is_inside(point), cloned_region.is_inside(point));
+                assert_eq!(
+                    transformed_region.is_inside(point),
+                    cloned_region.is_inside(point)
+                );
             }
         }
     }

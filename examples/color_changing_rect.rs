@@ -4,17 +4,16 @@ fn main() {
     let component = ColorChangingRectComponent {
         red: 200,
         green: 100,
-        blue: 0
+        blue: 0,
     };
     let application = Application::new(Box::new(component));
     start(application, "Color changing rect");
 }
 
 struct ColorChangingRectComponent {
-
     red: u8,
     green: u8,
-    blue: u8
+    blue: u8,
 }
 
 impl Component for ColorChangingRectComponent {
@@ -28,7 +27,7 @@ impl Component for ColorChangingRectComponent {
         &mut self,
         renderer: &Renderer,
         _buddy: &mut dyn ComponentBuddy,
-        _force: bool
+        _force: bool,
     ) -> RenderResult {
         renderer.clear(Color::rgb(self.red, self.green, self.blue));
         entire_render_result()

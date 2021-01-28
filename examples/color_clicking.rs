@@ -24,7 +24,7 @@ impl Component for TestComponent {
         &mut self,
         renderer: &Renderer,
         _buddy: &mut dyn ComponentBuddy,
-        _force: bool
+        _force: bool,
     ) -> RenderResult {
         renderer.clear(Color::rgb(self.red, self.green, 100));
         entire_render_result()

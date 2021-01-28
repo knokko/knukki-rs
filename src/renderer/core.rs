@@ -1,7 +1,6 @@
 use crate::*;
 
 impl Renderer {
-
     /// Starts this `Renderer`. The `Application` is supposed to call this method each time before
     /// it starts rendering its components.
     ///
@@ -26,7 +25,9 @@ impl Renderer {
     /// will be scaled and translated to fit inside this region.
     pub fn get_viewport(&self) -> RenderRegion {
         let viewport_stack = self.viewport_stack.borrow();
-        *viewport_stack.last().expect("Viewport stack is never empty")
+        *viewport_stack
+            .last()
+            .expect("Viewport stack is never empty")
     }
 
     /// Gets the current scissor region of this `Renderer`. Components won't be able to draw
@@ -58,22 +59,22 @@ impl Renderer {
     /// The `new_viewport` will be equal to `old_viewport.child_region(min_x, min_y, max_x, max_y)`
     /// and the `new_scissor` will be equal to `old_scissor.intersection(new_viewport)`.
     pub fn push_viewport<R>(
-        &self, min_x: f32, min_y: f32, max_x: f32, max_y: f32,
-        render_function: impl FnOnce() -> R
+        &self,
+        min_x: f32,
+        min_y: f32,
+        max_x: f32,
+        max_y: f32,
+        render_function: impl FnOnce() -> R,
     ) -> Option<R> {
         let parent_viewport = self.get_viewport();
-        let maybe_child_viewport = parent_viewport.child_region(
-            min_x, min_y, max_x, max_y
-        );
+        let maybe_child_viewport = parent_viewport.child_region(min_x, min_y, max_x, max_y);
 
         if let Some(child_viewport) = maybe_child_viewport {
-
             let parent_scissor = self.get_scissor();
             let maybe_child_scissor = parent_scissor.intersection(child_viewport);
 
             // Don't bother calling the render function if there would be an empty scissor
             if let Some(child_scissor) = maybe_child_scissor {
-
                 // Push the viewport
                 let mut viewport_stack = self.viewport_stack.borrow_mut();
                 viewport_stack.push(child_viewport);
@@ -138,17 +139,18 @@ impl Renderer {
     /// If the `render_function` is called, its result will be returned (inside a `Some`). If not,
     /// this method will return `None`.
     pub fn push_scissor<R>(
-        &self, min_x: f32, min_y: f32, max_x: f32, max_y: f32,
-        render_function: impl FnOnce() -> R
+        &self,
+        min_x: f32,
+        min_y: f32,
+        max_x: f32,
+        max_y: f32,
+        render_function: impl FnOnce() -> R,
     ) -> Option<R> {
         let old_scissor = self.get_scissor();
         let viewport = self.get_viewport();
-        let maybe_new_scissor = viewport.child_region(
-            min_x, min_y, max_x, max_y
-        );
+        let maybe_new_scissor = viewport.child_region(min_x, min_y, max_x, max_y);
         if let Some(new_scissor) = maybe_new_scissor {
             if let Some(combined_scissor) = old_scissor.intersection(new_scissor) {
-
                 let mut scissor_stack = self.scissor_stack.borrow_mut();
                 scissor_stack.push(combined_scissor);
                 drop(scissor_stack);
@@ -224,27 +226,33 @@ mod tests {
         assert_eq!(outer_region, renderer.get_scissor());
 
         let mut counter = 0;
-        renderer.push_viewport(0.25, 0.0, 0.75, 1.0, || {
-            counter += 1;
-            assert_eq!(middle_region, renderer.get_viewport());
-            assert_eq!(middle_region, renderer.get_scissor());
-
-            renderer.push_viewport(0.25, 0.125, 0.75, 0.875, || {
-                assert_eq!(1, counter);
+        renderer
+            .push_viewport(0.25, 0.0, 0.75, 1.0, || {
                 counter += 1;
-                assert_eq!(inner_region, renderer.get_viewport());
-                assert_eq!(inner_region, renderer.get_scissor());
+                assert_eq!(middle_region, renderer.get_viewport());
+                assert_eq!(middle_region, renderer.get_scissor());
 
-                // And push onto an empty viewport
-                renderer.push_viewport(0.001, 0.001, 0.002, 0.002, || {
-                    unreachable!();
-                }).unwrap_none();
-            }).unwrap();
+                renderer
+                    .push_viewport(0.25, 0.125, 0.75, 0.875, || {
+                        assert_eq!(1, counter);
+                        counter += 1;
+                        assert_eq!(inner_region, renderer.get_viewport());
+                        assert_eq!(inner_region, renderer.get_scissor());
 
-            assert_eq!(2, counter);
-            assert_eq!(middle_region, renderer.get_viewport());
-            assert_eq!(middle_region, renderer.get_scissor());
-        }).unwrap();
+                        // And push onto an empty viewport
+                        renderer
+                            .push_viewport(0.001, 0.001, 0.002, 0.002, || {
+                                unreachable!();
+                            })
+                            .unwrap_none();
+                    })
+                    .unwrap();
+
+                assert_eq!(2, counter);
+                assert_eq!(middle_region, renderer.get_viewport());
+                assert_eq!(middle_region, renderer.get_scissor());
+            })
+            .unwrap();
         assert_eq!(2, counter);
 
         assert_eq!(outer_region, renderer.get_viewport());
@@ -259,31 +267,41 @@ mod tests {
 
         let renderer = test_renderer(viewport);
 
-        assert!(renderer.push_scissor(0.0, 0.0, 0.5, 0.5, || {
-            assert_eq!(viewport, renderer.get_viewport());
-            assert_eq!(bottom_left, renderer.get_scissor());
-
-            // Should return None when the scissors have an empty intersection
-            assert!(renderer.push_scissor(0.5, 0.5, 1.0, 1.0, || {
-                unreachable!();
-            }).is_none());
-            assert!(renderer.push_scissor(0.6, 0.6, 0.8, 0.7, || {
-                unreachable!();
-            }).is_none());
-
-            // Pushing the same scissor twice has no extra effect
-            assert!(renderer.push_scissor(0.0, 0.0, 0.5, 0.5, || {
+        assert!(renderer
+            .push_scissor(0.0, 0.0, 0.5, 0.5, || {
                 assert_eq!(viewport, renderer.get_viewport());
                 assert_eq!(bottom_left, renderer.get_scissor());
-            }).is_some());
 
-            assert!(renderer.push_scissor(0.25, 0.25, 0.75, 0.75, || {
-                assert_eq!(viewport, renderer.get_viewport());
-                assert_eq!(partial_middle, renderer.get_scissor());
-            }).is_some());
+                // Should return None when the scissors have an empty intersection
+                assert!(renderer
+                    .push_scissor(0.5, 0.5, 1.0, 1.0, || {
+                        unreachable!();
+                    })
+                    .is_none());
+                assert!(renderer
+                    .push_scissor(0.6, 0.6, 0.8, 0.7, || {
+                        unreachable!();
+                    })
+                    .is_none());
 
-            assert_eq!(bottom_left, renderer.get_scissor());
-        }).is_some());
+                // Pushing the same scissor twice has no extra effect
+                assert!(renderer
+                    .push_scissor(0.0, 0.0, 0.5, 0.5, || {
+                        assert_eq!(viewport, renderer.get_viewport());
+                        assert_eq!(bottom_left, renderer.get_scissor());
+                    })
+                    .is_some());
+
+                assert!(renderer
+                    .push_scissor(0.25, 0.25, 0.75, 0.75, || {
+                        assert_eq!(viewport, renderer.get_viewport());
+                        assert_eq!(partial_middle, renderer.get_scissor());
+                    })
+                    .is_some());
+
+                assert_eq!(bottom_left, renderer.get_scissor());
+            })
+            .is_some());
 
         assert_eq!(viewport, renderer.get_viewport());
         assert_eq!(viewport, renderer.get_scissor());
@@ -298,24 +316,36 @@ mod tests {
 
         let renderer = test_renderer(outer_viewport);
 
-        renderer.push_scissor(0.0, 0.0, 0.6, 1.0, || {
-            renderer.push_viewport(0.25, 0.25, 0.75, 0.75, || {
-                assert_eq!(inner_viewport, renderer.get_viewport());
-                assert_eq!(left_inner_viewport, renderer.get_scissor());
-            }).unwrap();
-        }).unwrap();
+        renderer
+            .push_scissor(0.0, 0.0, 0.6, 1.0, || {
+                renderer
+                    .push_viewport(0.25, 0.25, 0.75, 0.75, || {
+                        assert_eq!(inner_viewport, renderer.get_viewport());
+                        assert_eq!(left_inner_viewport, renderer.get_scissor());
+                    })
+                    .unwrap();
+            })
+            .unwrap();
 
-        renderer.push_viewport(0.25, 0.25, 0.75, 0.75, || {
-            renderer.push_scissor(0.0, 0.0, 0.6, 1.0, || {
-               assert_eq!(inner_viewport, renderer.get_viewport());
-                assert_eq!(inner_left_viewport, renderer.get_scissor());
-            }).unwrap();
-        }).unwrap();
+        renderer
+            .push_viewport(0.25, 0.25, 0.75, 0.75, || {
+                renderer
+                    .push_scissor(0.0, 0.0, 0.6, 1.0, || {
+                        assert_eq!(inner_viewport, renderer.get_viewport());
+                        assert_eq!(inner_left_viewport, renderer.get_scissor());
+                    })
+                    .unwrap();
+            })
+            .unwrap();
 
-        renderer.push_scissor(0.0, 0.0, 0.6, 1.0, || {
-            renderer.push_viewport(0.8, 0.8, 0.9, 0.9, || {
-                unreachable!();
-            }).unwrap_none();
-        }).unwrap();
+        renderer
+            .push_scissor(0.0, 0.0, 0.6, 1.0, || {
+                renderer
+                    .push_viewport(0.8, 0.8, 0.9, 0.9, || {
+                        unreachable!();
+                    })
+                    .unwrap_none();
+            })
+            .unwrap();
     }
 }

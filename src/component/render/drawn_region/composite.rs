@@ -318,9 +318,9 @@ mod tests {
         let region = CompositeDrawnRegion::new(vec![
             Box::new(RectangularDrawnRegion::new(0.1, 0.2, 0.3, 0.4)),
             Box::new(OvalDrawnRegion::new(Point::new(0.5, 0.6), 0.7, 0.8)),
-            Box::new(CompositeDrawnRegion::new(vec![
-                Box::new(RectangularDrawnRegion::new(1.1, 2.2, 3.3, 4.4))
-            ]))
+            Box::new(CompositeDrawnRegion::new(vec![Box::new(
+                RectangularDrawnRegion::new(1.1, 2.2, 3.3, 4.4),
+            )])),
         ]);
 
         let cloned = region.clone();
@@ -329,8 +329,8 @@ mod tests {
         assert_eq!(region.get_right(), cloned.get_right());
         assert_eq!(region.get_top(), cloned.get_top());
 
-        for ix in 0 .. 10 {
-            for iy in 0 .. 10 {
+        for ix in 0..10 {
+            for iy in 0..10 {
                 let x = ix as f32 * 0.2 - 0.5;
                 let y = iy as f32 * 0.2 - 0.5;
                 let point = Point::new(x, y);

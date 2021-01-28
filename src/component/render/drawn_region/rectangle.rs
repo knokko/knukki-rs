@@ -13,15 +13,21 @@ pub struct RectangularDrawnRegion {
 }
 
 fn find_vertical_line_intersection(
-    vert_x: f32, vert_min_y: f32, vert_max_y: f32,
-    from: Point, to: Point
+    vert_x: f32,
+    vert_min_y: f32,
+    vert_max_y: f32,
+    from: Point,
+    to: Point,
 ) -> Option<Point> {
-
     // First check if an intersection is even possible
-    if (from.get_x() < vert_x && to.get_x() < vert_x) || (from.get_x() > vert_x && to.get_x() > vert_x) {
+    if (from.get_x() < vert_x && to.get_x() < vert_x)
+        || (from.get_x() > vert_x && to.get_x() > vert_x)
+    {
         return None;
     }
-    if (from.get_y() < vert_min_y && to.get_y() < vert_min_y) || (from.get_y() > vert_max_y && to.get_y() > vert_max_y) {
+    if (from.get_y() < vert_min_y && to.get_y() < vert_min_y)
+        || (from.get_y() > vert_max_y && to.get_y() > vert_max_y)
+    {
         return None;
     }
 
@@ -30,7 +36,6 @@ fn find_vertical_line_intersection(
 
     // Case distinction is used to avoid divisions by 0 in edge cases and to minimize rounding errors
     return if dx.abs() >= dy.abs() {
-
         // Express the line as: y = slope * x + adder
         let slope = dy / dx;
         let adder = from.get_y() - slope * from.get_x();
@@ -42,7 +47,6 @@ fn find_vertical_line_intersection(
             None
         }
     } else {
-
         // Express the line as: x = slope * y + adder
         let slope = dx / dy;
         let adder = from.get_x() - slope * from.get_y();
@@ -55,7 +59,6 @@ fn find_vertical_line_intersection(
 
         // Check if the line intersects or lays on top of the vertical line
         if vert_x >= min_x && vert_x <= max_x {
-
             // Check if the line intersects the vertical line
             if dx != 0.0 {
                 // I'm afraid there is no way around it: we have to divide by dx
@@ -77,19 +80,24 @@ fn find_vertical_line_intersection(
         } else {
             None
         }
-    }
+    };
 }
 
 fn find_horizontal_line_intersection(
-    hor_y: f32, hor_min_x: f32, hor_max_x: f32,
-    from: Point, to: Point
+    hor_y: f32,
+    hor_min_x: f32,
+    hor_max_x: f32,
+    from: Point,
+    to: Point,
 ) -> Option<Point> {
-
     // First check if an intersection is even possible
-    if (from.get_y() < hor_y && to.get_y() < hor_y) || (from.get_y() > hor_y && to.get_y() > hor_y) {
+    if (from.get_y() < hor_y && to.get_y() < hor_y) || (from.get_y() > hor_y && to.get_y() > hor_y)
+    {
         return None;
     }
-    if (from.get_x() < hor_min_x && to.get_x() < hor_min_x) || (from.get_x() > hor_max_x && to.get_x() > hor_max_x) {
+    if (from.get_x() < hor_min_x && to.get_x() < hor_min_x)
+        || (from.get_x() > hor_max_x && to.get_x() > hor_max_x)
+    {
         return None;
     }
 
@@ -97,7 +105,6 @@ fn find_horizontal_line_intersection(
     let dy = to.get_y() - from.get_y();
 
     return if dx.abs() >= dy.abs() {
-
         // Express line as: y = x * slope + adder
         let slope = dy / dx;
         let adder = from.get_y() - slope * from.get_x();
@@ -110,10 +117,8 @@ fn find_horizontal_line_intersection(
 
         // Check if the line intersects or lays on top of the horizontal line
         if min_y <= hor_y && max_y >= hor_y {
-
             // Check if the line intersects the horizontal line
             if dy != 0.0 {
-
                 // I'm afraid I will have to divide by dy
                 let slope2 = dx / dy;
                 let adder2 = from.get_x() - slope2 * from.get_y();
@@ -145,7 +150,7 @@ fn find_horizontal_line_intersection(
         } else {
             None
         }
-    }
+    };
 }
 
 impl RectangularDrawnRegion {
@@ -187,7 +192,6 @@ impl DrawnRegion for RectangularDrawnRegion {
     }
 
     fn find_line_intersection(&self, from: Point, to: Point) -> LineIntersection {
-
         let from_inside = self.is_within_bounds(from);
         let to_inside = self.is_within_bounds(to);
 
@@ -197,20 +201,32 @@ impl DrawnRegion for RectangularDrawnRegion {
         }
 
         let maybe_left_intersection = find_vertical_line_intersection(
-            self.get_left(), self.get_bottom(), self.get_top(),
-            from, to
+            self.get_left(),
+            self.get_bottom(),
+            self.get_top(),
+            from,
+            to,
         );
         let maybe_bottom_intersection = find_horizontal_line_intersection(
-            self.get_bottom(), self.get_left(), self.get_right(),
-            from, to
+            self.get_bottom(),
+            self.get_left(),
+            self.get_right(),
+            from,
+            to,
         );
         let maybe_right_intersection = find_vertical_line_intersection(
-            self.get_right(), self.get_bottom(), self.get_top(),
-            from, to
+            self.get_right(),
+            self.get_bottom(),
+            self.get_top(),
+            from,
+            to,
         );
         let maybe_top_intersection = find_horizontal_line_intersection(
-            self.get_top(), self.get_left(), self.get_right(),
-            from, to
+            self.get_top(),
+            self.get_left(),
+            self.get_right(),
+            from,
+            to,
         );
 
         let mut intersection_points = Vec::with_capacity(2);
@@ -259,7 +275,7 @@ impl DrawnRegion for RectangularDrawnRegion {
 
                 LineIntersection::Crosses {
                     entrance: entrance_point,
-                    exit: exit_point
+                    exit: exit_point,
                 }
             } else {
                 /*
@@ -294,9 +310,7 @@ impl DrawnRegion for RectangularDrawnRegion {
                 }
             }
 
-            LineIntersection::Exits {
-                point: exit_point
-            }
+            LineIntersection::Exits { point: exit_point }
         } else {
             // The line enters this rectangle
 
@@ -323,9 +337,9 @@ impl DrawnRegion for RectangularDrawnRegion {
             }
 
             LineIntersection::Enters {
-                point: entrance_point
+                point: entrance_point,
             }
-        }
+        };
     }
 }
 
@@ -1133,29 +1147,21 @@ mod tests {
     fn test_rectangle_line_intersection_missed_cases2() {
         let rectangle = RectangularDrawnRegion::new(0.0, 0.0, 10.0, 10.0);
 
-        assert!(li_exit(10.0, 5.0).nearly_equal(rectangle.find_line_intersection(
-            Point::new(9.0, 1.0), Point::new(11.0, 9.0)
-        )));
+        assert!(li_exit(10.0, 5.0).nearly_equal(
+            rectangle.find_line_intersection(Point::new(9.0, 1.0), Point::new(11.0, 9.0))
+        ));
 
         assert!(li_cross(0.0, 0.0, 10.0, 10.0).nearly_equal(
-            rectangle.find_line_intersection(
-                Point::new(-1.0, -1.0), Point::new(11.0, 11.0)
-            )
+            rectangle.find_line_intersection(Point::new(-1.0, -1.0), Point::new(11.0, 11.0))
         ));
         assert!(li_cross(0.0, 10.0, 10.0, 0.0).nearly_equal(
-            rectangle.find_line_intersection(
-                Point::new(-1.0, 11.0), Point::new(11.0, -1.0)
-            )
+            rectangle.find_line_intersection(Point::new(-1.0, 11.0), Point::new(11.0, -1.0))
         ));
         assert!(li_cross(10.0, 10.0, 0.0, 0.0).nearly_equal(
-            rectangle.find_line_intersection(
-                Point::new(11.0, 11.0), Point::new(-1.0, -1.0)
-            )
+            rectangle.find_line_intersection(Point::new(11.0, 11.0), Point::new(-1.0, -1.0))
         ));
         assert!(li_cross(10.0, 0.0, 0.0, 10.0).nearly_equal(
-            rectangle.find_line_intersection(
-                Point::new(11.0, -1.0), Point::new(-1.0, 11.0)
-            )
+            rectangle.find_line_intersection(Point::new(11.0, -1.0), Point::new(-1.0, 11.0))
         ));
     }
 }

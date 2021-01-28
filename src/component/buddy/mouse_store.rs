@@ -5,13 +5,15 @@ use crate::*;
 /// between different implementations.
 pub struct MouseStore {
     // I won't use a (Hash)Map because the number of mouses is expected to be very small
-    entries: Vec<MouseEntry>
+    entries: Vec<MouseEntry>,
 }
 
 impl MouseStore {
     /// Constructs a new empty `MouseStore`
     pub fn new() -> Self {
-        Self { entries: Vec::new() }
+        Self {
+            entries: Vec::new(),
+        }
     }
 
     /// Gets the state of the given `Mouse`, if this store has information about it. If not, this
@@ -55,7 +57,10 @@ impl MouseStore {
     pub fn add_mouse(&mut self, mouse: Mouse, initial_state: MouseState) {
         // Make sure we don't get multiple entries with the same mouse
         self.remove_mouse(mouse);
-        self.entries.push(MouseEntry { mouse, state: initial_state });
+        self.entries.push(MouseEntry {
+            mouse,
+            state: initial_state,
+        });
     }
 
     /// Creates and returns a `Vec` containing all `Mouse`s that have been added to this store, but
@@ -90,7 +95,7 @@ mod tests {
         let mouse2 = Mouse::new(7);
         let mouse3 = Mouse::new(33);
         let test_state = MouseState {
-            position: Point::new(0.4, 0.1)
+            position: Point::new(0.4, 0.1),
         };
 
         assert!(store.get_mouse_state(mouse1).is_none());
@@ -144,9 +149,15 @@ mod tests {
         let mouse1 = Mouse::new(0);
         let mouse2 = Mouse::new(200);
 
-        let mut state1 = MouseState { position: Point::new(0.0, 0.2) };
-        let mut state2 = MouseState { position: Point::new(0.3, 0.1) };
-        let mut state3 = MouseState { position: Point::new(0.6, 0.7) };
+        let mut state1 = MouseState {
+            position: Point::new(0.0, 0.2),
+        };
+        let mut state2 = MouseState {
+            position: Point::new(0.3, 0.1),
+        };
+        let mut state3 = MouseState {
+            position: Point::new(0.6, 0.7),
+        };
 
         let mut store = MouseStore::new();
 
@@ -173,7 +184,10 @@ mod tests {
         assert_eq!(vec![mouse1, mouse2], store.get_mouses());
 
         // This should update the state of mouse2
-        assert_eq!(state1.position, store.get_mouse_state(mouse2).unwrap().position);
+        assert_eq!(
+            state1.position,
+            store.get_mouse_state(mouse2).unwrap().position
+        );
         // But not the state of mouse1
         assert_eq!(Some(&state2), store.get_mouse_state(mouse1));
 
@@ -183,8 +197,14 @@ mod tests {
         assert!(store.update_mouse_state(mouse1).is_none());
 
         // But we should keep the state of mouse2
-        assert_eq!(state1.position, store.get_mouse_state(mouse2).unwrap().position);
-        assert_eq!(state1.position, store.update_mouse_state(mouse2).unwrap().position);
+        assert_eq!(
+            state1.position,
+            store.get_mouse_state(mouse2).unwrap().position
+        );
+        assert_eq!(
+            state1.position,
+            store.update_mouse_state(mouse2).unwrap().position
+        );
         assert_eq!(vec![mouse2], store.get_mouses());
     }
 }

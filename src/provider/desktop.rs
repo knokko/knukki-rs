@@ -1,18 +1,23 @@
-use crate::{Application, RenderRegion, MouseMoveEvent, MouseLeaveEvent, MouseEnterEvent, Renderer};
+use crate::{
+    Application, MouseEnterEvent, MouseLeaveEvent, MouseMoveEvent, RenderRegion, Renderer,
+};
 
 use golem::*;
 
 use glutin::{
-    dpi::PhysicalPosition, dpi::PhysicalSize,
+    dpi::PhysicalPosition,
+    dpi::PhysicalSize,
     event::{ElementState, Event, MouseButton, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder, ContextWrapper, PossiblyCurrent, window::Window
+    window::Window,
+    window::WindowBuilder,
+    ContextWrapper, PossiblyCurrent,
 };
 
+use golem::Dimension::D2;
 use std::thread::sleep;
 use std::time::Duration;
 use std::time::Instant;
-use golem::Dimension::D2;
 
 pub fn start(mut app: Application, title: &str) {
     let event_loop = EventLoop::new();
@@ -38,10 +43,12 @@ pub fn start(mut app: Application, title: &str) {
     let mut renderer = Renderer::new(
         // The initial viewport doesn't matter in this situation because it will be overwritten
         // before rendering anyway
-        golem, RenderRegion::with_size(0, 0, 1, 1)
+        golem,
+        RenderRegion::with_size(0, 0, 1, 1),
     );
 
-    let mut copy_pack = create_copy_pack(renderer.get_context()).expect("Should be able to create copy pack");
+    let mut copy_pack =
+        create_copy_pack(renderer.get_context()).expect("Should be able to create copy pack");
 
     let mut start_time = Instant::now();
 
@@ -116,9 +123,11 @@ pub fn start(mut app: Application, title: &str) {
                         // app icon in the taskbar or opening the window, even when the cursor is
                         // not inside the window. Let's just ignore these events.
                         let window_size = windowed_context.window().inner_size();
-                        if position.x < 0 || position.y < 0 ||
-                            (position.x as u32) >= window_size.width ||
-                            (position.y as u32) >= window_size.height {
+                        if position.x < 0
+                            || position.y < 0
+                            || (position.x as u32) >= window_size.width
+                            || (position.y as u32) >= window_size.height
+                        {
                             return;
                         }
                         // If there is a previous mouse position, fire a move event
@@ -126,15 +135,18 @@ pub fn start(mut app: Application, title: &str) {
                             // Winit seems to fire a double cursor move event when the cursor enters
                             // the window. I don't know if this happens more often, but let's be
                             // careful and not propagate move events between equal positions.
-                            if previous_position.x != position.x || previous_position.y != position.y {
+                            if previous_position.x != position.x
+                                || previous_position.y != position.y
+                            {
                                 let old_x = previous_position.x as f32 / window_size.width as f32;
-                                let old_y = 1.0 - previous_position.y as f32 / window_size.height as f32;
+                                let old_y =
+                                    1.0 - previous_position.y as f32 / window_size.height as f32;
                                 let new_x = position.x as f32 / window_size.width as f32;
                                 let new_y = 1.0 - position.y as f32 / window_size.height as f32;
                                 let event = MouseMoveEvent::new(
                                     crate::Mouse::new(0),
                                     crate::Point::new(old_x, old_y),
-                                    crate::Point::new(new_x, new_y)
+                                    crate::Point::new(new_x, new_y),
                                 );
                                 app.fire_mouse_move_event(event);
                             }
@@ -143,7 +155,8 @@ pub fn start(mut app: Application, title: &str) {
                                 let x = position.x as f32 / window_size.width as f32;
                                 let y = 1.0 - position.y as f32 / window_size.height as f32;
                                 let event = MouseEnterEvent::new(
-                                    crate::Mouse::new(0), crate::Point::new(x, y)
+                                    crate::Mouse::new(0),
+                                    crate::Point::new(x, y),
                                 );
                                 app.fire_mouse_enter_event(event);
                                 should_fire_mouse_enter_event = false;
@@ -153,15 +166,17 @@ pub fn start(mut app: Application, title: &str) {
                     }
                     WindowEvent::CursorEntered { .. } => {
                         should_fire_mouse_enter_event = true;
-                    },
+                    }
                     WindowEvent::CursorLeft { .. } => {
                         // If we know where the cursor was, we should fire a MouseLeaveEvent
                         if let Some(previous_position) = mouse_position {
                             let window_size = windowed_context.window().inner_size();
                             let old_x = previous_position.x as f32 / window_size.width as f32;
-                            let old_y = 1.0 - previous_position.y as f32 / window_size.height as f32;
+                            let old_y =
+                                1.0 - previous_position.y as f32 / window_size.height as f32;
                             let event = MouseLeaveEvent::new(
-                                crate::Mouse::new(0), crate::Point::new(old_x, old_y)
+                                crate::Mouse::new(0),
+                                crate::Point::new(old_x, old_y),
                             );
                             app.fire_mouse_leave_event(event);
                         }
@@ -189,9 +204,15 @@ pub fn start(mut app: Application, title: &str) {
                 start_time = Instant::now();
 
                 draw_application(
-                    &mut app, &mut renderer, &mut copy_pack, &mut render_surface,
-                    size, force, &windowed_context
-                ).expect("Should be able to draw app");
+                    &mut app,
+                    &mut renderer,
+                    &mut copy_pack,
+                    &mut render_surface,
+                    size,
+                    force,
+                    &windowed_context,
+                )
+                .expect("Should be able to draw app");
             }
             Event::RedrawRequested(_) => {
                 // This provider will never request a winit redraw, so when this
@@ -202,19 +223,28 @@ pub fn start(mut app: Application, title: &str) {
                 let size = windowed_context.window().inner_size();
 
                 draw_application(
-                    &mut app, &mut renderer, &mut copy_pack, &mut render_surface,
-                    size, force, &windowed_context
-                ).expect("Should be able to force draw app");
+                    &mut app,
+                    &mut renderer,
+                    &mut copy_pack,
+                    &mut render_surface,
+                    size,
+                    force,
+                    &windowed_context,
+                )
+                .expect("Should be able to force draw app");
             }
             _ => (),
         }
     });
 
     fn draw_application(
-        app: &mut Application, renderer: &mut Renderer,
+        app: &mut Application,
+        renderer: &mut Renderer,
         copy_pack: &mut (ShaderProgram, VertexBuffer, ElementBuffer),
         render_surface: &mut Option<Surface>,
-        size: PhysicalSize<u32>, force: bool, windowed_context: &ContextWrapper<PossiblyCurrent, Window>
+        size: PhysicalSize<u32>,
+        force: bool,
+        windowed_context: &ContextWrapper<PossiblyCurrent, Window>,
     ) -> Result<(), GolemError> {
         let region = RenderRegion::with_size(0, 0, size.width, size.height);
 
@@ -222,9 +252,13 @@ pub fn start(mut app: Application, title: &str) {
 
         // Make sure there is an up-to-date render texture to draw the application on
         if render_surface.is_none() {
-            let mut render_texture = Texture::new(renderer.get_context()).expect("Should be able to create texture");
+            let mut render_texture =
+                Texture::new(renderer.get_context()).expect("Should be able to create texture");
             render_texture.set_image(None, size.width, size.height, ColorFormat::RGBA);
-            *render_surface = Some(Surface::new(renderer.get_context(), render_texture).expect("Should be able to create surface"));
+            *render_surface = Some(
+                Surface::new(renderer.get_context(), render_texture)
+                    .expect("Should be able to create surface"),
+            );
             created_surface = true;
             render_surface.as_ref().unwrap().bind();
         }
@@ -233,10 +267,11 @@ pub fn start(mut app: Application, title: &str) {
         let render_surface = render_surface.as_ref().unwrap();
         renderer.reset_viewport(region);
         if app.render(&renderer, force || created_surface) {
-
             // Draw the render texture onto the presenting texture
             Surface::unbind(renderer.get_context());
-            renderer.get_context().set_viewport(0, 0, size.width, size.height);
+            renderer
+                .get_context()
+                .set_viewport(0, 0, size.width, size.height);
             renderer.get_context().disable_scissor();
 
             let shader = &mut copy_pack.0;
@@ -263,7 +298,9 @@ pub fn start(mut app: Application, title: &str) {
         Ok(())
     }
 
-    fn create_copy_pack(golem: &Context) -> Result<(ShaderProgram, VertexBuffer, ElementBuffer), GolemError> {
+    fn create_copy_pack(
+        golem: &Context,
+    ) -> Result<(ShaderProgram, VertexBuffer, ElementBuffer), GolemError> {
         let mut vb = VertexBuffer::new(&golem)?;
         let mut eb = ElementBuffer::new(&golem)?;
 
@@ -278,13 +315,9 @@ pub fn start(mut app: Application, title: &str) {
         let mut shader = ShaderProgram::new(
             &golem,
             ShaderDescription {
-                vertex_input: &[
-                    Attribute::new("position", AttributeType::Vector(D2)),
-                ],
+                vertex_input: &[Attribute::new("position", AttributeType::Vector(D2))],
                 fragment_input: &[Attribute::new("passPosition", AttributeType::Vector(D2))],
-                uniforms: &[
-                    Uniform::new("image", UniformType::Sampler2D),
-                ],
+                uniforms: &[Uniform::new("image", UniformType::Sampler2D)],
                 vertex_shader: r#" void main() {
             gl_Position = vec4(position.x, position.y, 0.0, 1.0);
             passPosition = position;

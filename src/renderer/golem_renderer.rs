@@ -14,8 +14,10 @@ impl Renderer {
 
     pub fn clear(&self, color: Color) {
         self.context.set_clear_color(
-            color.get_red_float(), color.get_green_float(),
-            color.get_blue_float(), color.get_alpha_float()
+            color.get_red_float(),
+            color.get_green_float(),
+            color.get_blue_float(),
+            color.get_alpha_float(),
         );
         self.context.clear();
     }
@@ -50,7 +52,6 @@ pub(super) struct GolemRenderStorage {
 
 impl GolemRenderStorage {
     fn new(context: &Context) -> Result<Self, GolemError> {
-
         let mut quad_vertices = VertexBuffer::new(context)?;
         #[rustfmt::skip]
         quad_vertices.set_data(&[-1.0, -1.0,    1.0, -1.0,    1.0, 1.0,    -1.0, 1.0]);
@@ -60,14 +61,12 @@ impl GolemRenderStorage {
 
         Ok(Self {
             quad_vertices,
-            quad_indices
+            quad_indices,
         })
     }
 }
 
-struct ShaderCache {
-    
-}
+struct ShaderCache {}
 
 struct CachedShader {
     last_used: u64,

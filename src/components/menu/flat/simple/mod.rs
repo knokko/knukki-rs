@@ -65,10 +65,9 @@ impl SimpleFlatMenu {
         for mouse in local_mouses {
             let should_have_position = own_buddy.get_mouse_position(mouse);
             if let Some(position) = should_have_position {
-                mouse_buddy.local_mouses.push(MouseEntry {
-                    mouse,
-                    position
-                });
+                mouse_buddy
+                    .local_mouses
+                    .push(MouseEntry { mouse, position });
             } else {
                 // This is weird behavior that should be investigated, but not worth a production
                 // crash
@@ -145,10 +144,7 @@ impl Component for SimpleFlatMenu {
             let mut entry = entry_cell.borrow_mut();
             let component_domain = entry.domain;
 
-            if let Some(entry_result) = entry.render(
-                renderer,
-                force,
-            ) {
+            if let Some(entry_result) = entry.render(renderer, force) {
                 match entry_result {
                     Ok(good_entry_result) => {
                         let transformed_region = TransformedDrawnRegion::new(
@@ -308,11 +304,15 @@ impl ComponentEntry {
         if self.buddy.get_subscriptions().mouse_enter {
             if let Some(render_result) = self.buddy.get_last_render_result() {
                 let transformed_entrance_point = self.domain.transform(event.get_entrance_point());
-                if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(transformed_entrance_point) {
-                    let transformed_event = MouseEnterEvent::new(
-                        event.get_mouse(), transformed_entrance_point
-                    );
-                    self.component.on_mouse_enter(transformed_event, &mut self.buddy);
+                if !render_result.filter_mouse_actions
+                    || render_result
+                        .drawn_region
+                        .is_inside(transformed_entrance_point)
+                {
+                    let transformed_event =
+                        MouseEnterEvent::new(event.get_mouse(), transformed_entrance_point);
+                    self.component
+                        .on_mouse_enter(transformed_event, &mut self.buddy);
                 }
             }
         }
@@ -322,11 +322,13 @@ impl ComponentEntry {
         if self.buddy.get_subscriptions().mouse_leave {
             if let Some(render_result) = self.buddy.get_last_render_result() {
                 let transformed_exit_point = self.domain.transform(event.get_exit_point());
-                if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(transformed_exit_point) {
-                    let transformed_event = MouseLeaveEvent::new(
-                        event.get_mouse(), transformed_exit_point
-                    );
-                    self.component.on_mouse_leave(transformed_event, &mut self.buddy);
+                if !render_result.filter_mouse_actions
+                    || render_result.drawn_region.is_inside(transformed_exit_point)
+                {
+                    let transformed_event =
+                        MouseLeaveEvent::new(event.get_mouse(), transformed_exit_point);
+                    self.component
+                        .on_mouse_leave(transformed_event, &mut self.buddy);
                 }
             }
         }
@@ -340,78 +342,71 @@ impl ComponentEntry {
             if let Some(render_result) = self.buddy.get_last_render_result() {
                 let transformed_from = self.domain.transform(event.get_from());
                 let transformed_to = self.domain.transform(event.get_to());
-                let backup_region = RectangularDrawnRegion::new(
-                    0.0, 0.0, 1.0, 1.0
-                );
+                let backup_region = RectangularDrawnRegion::new(0.0, 0.0, 1.0, 1.0);
                 let reference_region = match render_result.filter_mouse_actions {
                     true => render_result.drawn_region.as_ref(),
-                    false => &backup_region
+                    false => &backup_region,
                 };
-                let intersection = reference_region.find_line_intersection(transformed_from, transformed_to);
+                let intersection =
+                    reference_region.find_line_intersection(transformed_from, transformed_to);
                 match intersection {
                     LineIntersection::FullyOutside => {
                         // I don't need to do anything
-                    }, LineIntersection::FullyInside => {
+                    }
+                    LineIntersection::FullyInside => {
                         // Just pass a MouseMoveEvent
                         if sub_move {
                             let move_event = MouseMoveEvent::new(
-                                event.get_mouse(), transformed_from, transformed_to
+                                event.get_mouse(),
+                                transformed_from,
+                                transformed_to,
                             );
                             self.component.on_mouse_move(move_event, &mut self.buddy);
                         }
-                    }, LineIntersection::Enters { point } => {
+                    }
+                    LineIntersection::Enters { point } => {
                         // Pass a MouseEnterEvent and a MouseMoveEvent
                         if sub_enter {
-                            let enter_event = MouseEnterEvent::new(
-                                event.get_mouse(), point
-                            );
+                            let enter_event = MouseEnterEvent::new(event.get_mouse(), point);
                             self.component.on_mouse_enter(enter_event, &mut self.buddy);
                         }
 
                         // Note: the component might have subscribed during its on_mouse_enter
                         if self.buddy.get_subscriptions().mouse_move {
-                            let move_event = MouseMoveEvent::new(
-                                event.get_mouse(), point, transformed_to
-                            );
+                            let move_event =
+                                MouseMoveEvent::new(event.get_mouse(), point, transformed_to);
                             self.component.on_mouse_move(move_event, &mut self.buddy);
                         }
-                    }, LineIntersection::Exits { point } => {
+                    }
+                    LineIntersection::Exits { point } => {
                         // Pass a MouseMoveEvent and a MouseLeaveEvent
                         if sub_move {
-                            let move_event = MouseMoveEvent::new(
-                                event.get_mouse(), transformed_from, point
-                            );
+                            let move_event =
+                                MouseMoveEvent::new(event.get_mouse(), transformed_from, point);
                             self.component.on_mouse_move(move_event, &mut self.buddy);
                         }
 
                         // Note: the component might have subscribed during its on_mouse_move
                         if self.buddy.get_subscriptions().mouse_leave {
-                            let leave_event = MouseLeaveEvent::new(
-                                event.get_mouse(), point
-                            );
+                            let leave_event = MouseLeaveEvent::new(event.get_mouse(), point);
                             self.component.on_mouse_leave(leave_event, &mut self.buddy);
                         }
-                    }, LineIntersection::Crosses { entrance, exit } => {
+                    }
+                    LineIntersection::Crosses { entrance, exit } => {
                         // Pass a MouseEnterEvent, MouseMoveEvent, and MouseLeaveEvent
                         if sub_enter {
-                            let enter_event = MouseEnterEvent::new(
-                                event.get_mouse(), entrance
-                            );
+                            let enter_event = MouseEnterEvent::new(event.get_mouse(), entrance);
                             self.component.on_mouse_enter(enter_event, &mut self.buddy);
                         }
 
                         // Note: the component might have subscribed during its on_mouse_enter
                         if self.buddy.get_subscriptions().mouse_move {
-                            let move_event = MouseMoveEvent::new(
-                                event.get_mouse(), entrance, exit
-                            );
+                            let move_event = MouseMoveEvent::new(event.get_mouse(), entrance, exit);
                             self.component.on_mouse_move(move_event, &mut self.buddy);
                         }
 
                         if self.buddy.get_subscriptions().mouse_leave {
-                            let leave_event = MouseLeaveEvent::new(
-                                event.get_mouse(), exit
-                            );
+                            let leave_event = MouseLeaveEvent::new(event.get_mouse(), exit);
                             self.component.on_mouse_leave(leave_event, &mut self.buddy);
                         }
                     }
@@ -420,24 +415,16 @@ impl ComponentEntry {
         }
     }
 
-    fn render(
-        &mut self,
-        renderer: &Renderer,
-        force: bool,
-    ) -> Option<RenderResult> {
+    fn render(&mut self, renderer: &Renderer, force: bool) -> Option<RenderResult> {
         if force || self.buddy.did_request_render() {
             self.buddy.clear_render_request();
 
             let maybe_render_result = renderer.push_viewport(
-                self.domain.get_min_x(), self.domain.get_min_y(),
-                self.domain.get_max_x(), self.domain.get_max_y(),
-                || {
-                    self.component.render(
-                        renderer,
-                        &mut self.buddy,
-                        force,
-                    )
-                }
+                self.domain.get_min_x(),
+                self.domain.get_min_y(),
+                self.domain.get_max_x(),
+                self.domain.get_max_y(),
+                || self.component.render(renderer, &mut self.buddy, force),
             );
 
             if let Some(render_result) = maybe_render_result {
@@ -532,14 +519,22 @@ mod tests {
         );
 
         // It should attach the second component as soon as possible
-        menu.render(&test_renderer(RenderRegion::between(0, 0, 10, 10)), &mut buddy, false)
-            .unwrap();
+        menu.render(
+            &test_renderer(RenderRegion::between(0, 0, 10, 10)),
+            &mut buddy,
+            false,
+        )
+        .unwrap();
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
 
         // But they should be attached only once
-        menu.render(&test_renderer(RenderRegion::between(0, 0, 10, 10)), &mut buddy, false)
-            .unwrap();
+        menu.render(
+            &test_renderer(RenderRegion::between(0, 0, 10, 10)),
+            &mut buddy,
+            false,
+        )
+        .unwrap();
         assert_eq!(1, counter1.get());
         assert_eq!(1, counter2.get());
 
@@ -714,7 +709,8 @@ mod tests {
         // All components should be rendered during their first render call
         assert!(buddy.did_request_render());
         buddy.clear_render_request();
-        menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        menu.render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         assert_eq!(1, click_counter.get());
 
         // But the menu shouldn't request another one until we click the component
@@ -726,7 +722,8 @@ mod tests {
         menu.on_mouse_click(hit_click, &mut buddy);
         assert!(buddy.did_request_render());
         buddy.clear_render_request();
-        menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        menu.render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         assert!(!buddy.did_request_render());
         assert_eq!(2, click_counter.get());
 
@@ -742,7 +739,8 @@ mod tests {
         // Force rendering should cause the render method to be called
         // And thus increment the click counter
         buddy.clear_render_request();
-        menu.render(&test_renderer(render_region), &mut buddy, true).unwrap();
+        menu.render(&test_renderer(render_region), &mut buddy, true)
+            .unwrap();
         assert!(!buddy.did_request_render());
         assert_eq!(3, click_counter.get());
 
@@ -756,7 +754,8 @@ mod tests {
 
         // Only the busy component should render
         buddy.clear_render_request();
-        menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        menu.render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         // And it should have requested a redraw right away
         assert!(buddy.did_request_render());
         assert_eq!(3, click_counter.get());
@@ -764,7 +763,8 @@ mod tests {
 
         // Again, only the busy component should render
         buddy.clear_render_request();
-        menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        menu.render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         // And it should have requested a redraw again
         assert!(buddy.did_request_render());
         assert_eq!(3, click_counter.get());
@@ -772,7 +772,8 @@ mod tests {
 
         // When we force a render, both components should be redrawn
         buddy.clear_render_request();
-        menu.render(&test_renderer(render_region), &mut buddy, true).unwrap();
+        menu.render(&test_renderer(render_region), &mut buddy, true)
+            .unwrap();
         // Like usual, it should request a next render
         assert!(buddy.did_request_render());
         assert_eq!(4, click_counter.get());
@@ -780,14 +781,16 @@ mod tests {
 
         // But when we render without force again, only the busy one should be drawn
         buddy.clear_render_request();
-        menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        menu.render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         assert!(buddy.did_request_render());
         assert_eq!(4, click_counter.get());
         assert_eq!(4, busy_counter.get());
 
         // Unless we click it...
         menu.on_mouse_click(hit_click, &mut buddy);
-        menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        menu.render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         assert!(buddy.did_request_render());
         assert_eq!(5, click_counter.get());
         assert_eq!(5, busy_counter.get());
@@ -851,7 +854,9 @@ mod tests {
         let render_region = RenderRegion::between(0, 0, 100, 40);
         let mut buddy = root_buddy();
 
-        let result = menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        let result = menu
+            .render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         // This menu should never request filtering mouse actions
         assert!(!result.filter_mouse_actions);
         // It should have rendered both components, and maybe the area outside
@@ -867,7 +872,9 @@ mod tests {
         }
 
         menu.on_mouse_click(click1, &mut buddy);
-        let result = menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        let result = menu
+            .render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         // This time, it should only have drawn the first component
         {
             let region = &result.drawn_region;
@@ -877,7 +884,9 @@ mod tests {
         }
 
         menu.on_mouse_click(click2, &mut buddy);
-        let result = menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        let result = menu
+            .render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         // This time, it should only have drawn the second component
         {
             let region = &result.drawn_region;
@@ -889,7 +898,9 @@ mod tests {
         }
 
         // When we force, it should draw both components again, and maybe even background
-        let result = menu.render(&test_renderer(render_region), &mut buddy, true).unwrap();
+        let result = menu
+            .render(&test_renderer(render_region), &mut buddy, true)
+            .unwrap();
         {
             let region = &result.drawn_region;
             assert_eq!(draw_background, region.is_inside(Point::new(1.0, 0.0)));
@@ -903,7 +914,9 @@ mod tests {
 
         // And when we do a normal render thereafter, it should only draw component 1
         menu.on_mouse_click(click1, &mut buddy);
-        let result = menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        let result = menu
+            .render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
         // This time, it should only have drawn the first component
         {
             let region = &result.drawn_region;
@@ -997,8 +1010,12 @@ mod tests {
         check_counters(0, 0, 0, 0);
 
         // So let's render
-        menu.render(&test_renderer(RenderRegion::between(0, 0, 120, 10)), &mut buddy, false)
-            .unwrap();
+        menu.render(
+            &test_renderer(RenderRegion::between(0, 0, 120, 10)),
+            &mut buddy,
+            false,
+        )
+        .unwrap();
 
         // Clicking outside the menu should increment both out counters
         menu.on_mouse_click_out(click_out, &mut buddy);
@@ -1107,7 +1124,8 @@ mod tests {
         let do_render = || {
             let mut menu = menu_cell.borrow_mut();
             let mut buddy = buddy_cell.borrow_mut();
-            menu.render(&test_renderer(region), &mut *buddy, true).unwrap();
+            menu.render(&test_renderer(region), &mut *buddy, true)
+                .unwrap();
         };
 
         let fire_click = || {
@@ -1184,7 +1202,6 @@ mod tests {
     }
 
     struct MouseMotionComponent {
-
         should_filter_mouse_actions: Rc<Cell<bool>>,
         mouse_move_log: Rc<RefCell<Vec<MouseMoveEvent>>>,
         mouse_enter_log: Rc<RefCell<Vec<MouseEnterEvent>>>,
@@ -1202,11 +1219,11 @@ mod tests {
             &mut self,
             _renderer: &Renderer,
             _buddy: &mut dyn ComponentBuddy,
-            _force: bool
+            _force: bool,
         ) -> RenderResult {
             Ok(RenderResultStruct {
                 filter_mouse_actions: self.should_filter_mouse_actions.get(),
-                drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8))
+                drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8)),
             })
         }
 
@@ -1237,13 +1254,13 @@ mod tests {
             should_filter_mouse_actions: Rc::new(Cell::new(true)),
             mouse_move_log: Rc::new(RefCell::new(Vec::new())),
             mouse_enter_log: Rc::clone(&enter_log1),
-            mouse_leave_log: Rc::clone(&leave_log1)
+            mouse_leave_log: Rc::clone(&leave_log1),
         };
         let component2 = MouseMotionComponent {
             should_filter_mouse_actions: Rc::new(Cell::new(true)),
             mouse_move_log: Rc::new(RefCell::new(Vec::new())),
             mouse_enter_log: Rc::clone(&enter_log2),
-            mouse_leave_log: Rc::clone(&leave_log2)
+            mouse_leave_log: Rc::clone(&leave_log2),
         };
 
         let mut buddy = root_buddy();
@@ -1251,31 +1268,19 @@ mod tests {
         menu.on_attach(&mut buddy);
         menu.add_component(
             Box::new(component1),
-            ComponentDomain::between(0.1, 0.1, 0.4, 0.9)
+            ComponentDomain::between(0.1, 0.1, 0.4, 0.9),
         );
         menu.add_component(
             Box::new(component2),
-            ComponentDomain::between(0.6, 0.1, 0.9, 0.9)
+            ComponentDomain::between(0.6, 0.1, 0.9, 0.9),
         );
 
-        let miss_enter_event = MouseEnterEvent::new(
-            Mouse::new(0), Point::new(0.5, 0.5)
-        );
-        let miss_leave_event = MouseLeaveEvent::new(
-            Mouse::new(0), Point::new(0.5, 0.5)
-        );
-        let edge_enter_event = MouseEnterEvent::new(
-            Mouse::new(0), Point::new(0.65, 0.5)
-        );
-        let edge_leave_event = MouseLeaveEvent::new(
-            Mouse::new(0), Point::new(0.65, 0.5)
-        );
-        let hit_enter_event = MouseEnterEvent::new(
-            Mouse::new(0), Point::new(0.75, 0.5)
-        );
-        let hit_leave_event = MouseLeaveEvent::new(
-            Mouse::new(0), Point::new(0.75, 0.5)
-        );
+        let miss_enter_event = MouseEnterEvent::new(Mouse::new(0), Point::new(0.5, 0.5));
+        let miss_leave_event = MouseLeaveEvent::new(Mouse::new(0), Point::new(0.5, 0.5));
+        let edge_enter_event = MouseEnterEvent::new(Mouse::new(0), Point::new(0.65, 0.5));
+        let edge_leave_event = MouseLeaveEvent::new(Mouse::new(0), Point::new(0.65, 0.5));
+        let hit_enter_event = MouseEnterEvent::new(Mouse::new(0), Point::new(0.75, 0.5));
+        let hit_leave_event = MouseLeaveEvent::new(Mouse::new(0), Point::new(0.75, 0.5));
         let render_region = RenderRegion::between(1, 2, 3, 4);
 
         // Nothing should happen before the first render
@@ -1283,7 +1288,8 @@ mod tests {
         menu.on_mouse_leave(hit_leave_event, &mut buddy);
 
         // So let's render
-        menu.render(&test_renderer(render_region), &mut buddy, false).unwrap();
+        menu.render(&test_renderer(render_region), &mut buddy, false)
+            .unwrap();
 
         // Due to the mouse filtering, the edge event shouldn't trigger any reaction either
         menu.on_mouse_enter(edge_enter_event, &mut buddy);
@@ -1304,11 +1310,15 @@ mod tests {
 
         let enter_log2 = enter_log2.borrow();
         assert_eq!(1, enter_log2.len());
-        assert!(enter_log2[0].get_entrance_point().nearly_equal(Point::new(0.5, 0.5)));
+        assert!(enter_log2[0]
+            .get_entrance_point()
+            .nearly_equal(Point::new(0.5, 0.5)));
 
         let leave_log2 = leave_log2.borrow();
         assert_eq!(1, leave_log2.len());
-        assert!(leave_log2[0].get_exit_point().nearly_equal(Point::new(0.5, 0.5)));
+        assert!(leave_log2[0]
+            .get_exit_point()
+            .nearly_equal(Point::new(0.5, 0.5)));
     }
 
     #[test]
@@ -1340,49 +1350,66 @@ mod tests {
         menu.on_attach(&mut buddy);
 
         // The outer bottom-left component
-        menu.add_component(Box::new(MouseMotionComponent {
-            should_filter_mouse_actions: Rc::new(Cell::new(true)),
-            mouse_move_log: Rc::clone(&move_logs[0]),
-            mouse_enter_log: Rc::clone(&enter_logs[0]),
-            mouse_leave_log: Rc::clone(&leave_logs[0]),
-        }), ComponentDomain::between(0.0, 0.0, 0.25, 0.25));
+        menu.add_component(
+            Box::new(MouseMotionComponent {
+                should_filter_mouse_actions: Rc::new(Cell::new(true)),
+                mouse_move_log: Rc::clone(&move_logs[0]),
+                mouse_enter_log: Rc::clone(&enter_logs[0]),
+                mouse_leave_log: Rc::clone(&leave_logs[0]),
+            }),
+            ComponentDomain::between(0.0, 0.0, 0.25, 0.25),
+        );
 
         // The inner bottom-left component
-        menu.add_component(Box::new(MouseMotionComponent {
-            should_filter_mouse_actions: Rc::new(Cell::new(false)),
-            mouse_move_log: Rc::clone(&move_logs[1]),
-            mouse_enter_log: Rc::clone(&enter_logs[1]),
-            mouse_leave_log: Rc::clone(&leave_logs[1]),
-        }), ComponentDomain::between(0.25, 0.25, 0.5, 0.5));
+        menu.add_component(
+            Box::new(MouseMotionComponent {
+                should_filter_mouse_actions: Rc::new(Cell::new(false)),
+                mouse_move_log: Rc::clone(&move_logs[1]),
+                mouse_enter_log: Rc::clone(&enter_logs[1]),
+                mouse_leave_log: Rc::clone(&leave_logs[1]),
+            }),
+            ComponentDomain::between(0.25, 0.25, 0.5, 0.5),
+        );
 
         // The inner top-right component
-        menu.add_component(Box::new(MouseMotionComponent {
-            should_filter_mouse_actions: Rc::new(Cell::new(true)),
-            mouse_move_log: Rc::clone(&move_logs[2]),
-            mouse_enter_log: Rc::clone(&enter_logs[2]),
-            mouse_leave_log: Rc::clone(&leave_logs[2]),
-        }), ComponentDomain::between(0.5, 0.5, 0.75, 0.75));
+        menu.add_component(
+            Box::new(MouseMotionComponent {
+                should_filter_mouse_actions: Rc::new(Cell::new(true)),
+                mouse_move_log: Rc::clone(&move_logs[2]),
+                mouse_enter_log: Rc::clone(&enter_logs[2]),
+                mouse_leave_log: Rc::clone(&leave_logs[2]),
+            }),
+            ComponentDomain::between(0.5, 0.5, 0.75, 0.75),
+        );
 
         // The outer top-right component
-        menu.add_component(Box::new(MouseMotionComponent {
-            should_filter_mouse_actions: Rc::new(Cell::new(true)),
-            mouse_move_log: Rc::clone(&move_logs[4]),
-            mouse_enter_log: Rc::clone(&enter_logs[4]),
-            mouse_leave_log: Rc::clone(&leave_logs[4]),
-        }), ComponentDomain::between(0.75, 0.75, 1.0, 1.0));
+        menu.add_component(
+            Box::new(MouseMotionComponent {
+                should_filter_mouse_actions: Rc::new(Cell::new(true)),
+                mouse_move_log: Rc::clone(&move_logs[4]),
+                mouse_enter_log: Rc::clone(&enter_logs[4]),
+                mouse_leave_log: Rc::clone(&leave_logs[4]),
+            }),
+            ComponentDomain::between(0.75, 0.75, 1.0, 1.0),
+        );
 
         // This component should be missed entirely
-        menu.add_component(Box::new(MouseMotionComponent {
-            should_filter_mouse_actions: Rc::new(Cell::new(false)),
-            mouse_move_log: Rc::clone(&move_logs[3]),
-            mouse_enter_log: Rc::clone(&enter_logs[3]),
-            mouse_leave_log: Rc::clone(&leave_logs[3]),
-        }), ComponentDomain::between(0.5, 0.0, 0.75, 0.25));
+        menu.add_component(
+            Box::new(MouseMotionComponent {
+                should_filter_mouse_actions: Rc::new(Cell::new(false)),
+                mouse_move_log: Rc::clone(&move_logs[3]),
+                mouse_enter_log: Rc::clone(&enter_logs[3]),
+                mouse_leave_log: Rc::clone(&leave_logs[3]),
+            }),
+            ComponentDomain::between(0.5, 0.0, 0.75, 0.25),
+        );
 
         menu.render(
             &test_renderer(RenderRegion::between(0, 0, 20, 30)),
-            &mut buddy, false
-        ).unwrap();
+            &mut buddy,
+            false,
+        )
+        .unwrap();
 
         let mouse = Mouse::new(3);
         let entrance_x = 0.25 * 0.25;
@@ -1393,9 +1420,7 @@ mod tests {
         let exit = Point::new(exit_x, exit_y);
 
         let enter_event = MouseEnterEvent::new(mouse, entrance);
-        let move_event = MouseMoveEvent::new(
-            mouse, entrance, exit
-        );
+        let move_event = MouseMoveEvent::new(mouse, entrance, exit);
         let leave_event = MouseLeaveEvent::new(mouse, exit);
         menu.on_mouse_enter(enter_event, &mut buddy);
         menu.on_mouse_move(move_event, &mut buddy);
@@ -1404,11 +1429,12 @@ mod tests {
         // Time to check the results...
 
         // But first some helper functions
-        let eq_mouse_move = |enter_x: f32, enter_y: f32, exit_x: f32, exit_y: f32, event: &MouseMoveEvent| {
-            assert_eq!(mouse, event.get_mouse());
-            assert!(Point::new(enter_x, enter_y).nearly_equal(event.get_from()));
-            assert!(Point::new(exit_x, exit_y).nearly_equal(event.get_to()));
-        };
+        let eq_mouse_move =
+            |enter_x: f32, enter_y: f32, exit_x: f32, exit_y: f32, event: &MouseMoveEvent| {
+                assert_eq!(mouse, event.get_mouse());
+                assert!(Point::new(enter_x, enter_y).nearly_equal(event.get_from()));
+                assert!(Point::new(exit_x, exit_y).nearly_equal(event.get_to()));
+            };
         let eq_mouse_enter = |enter_x: f32, enter_y: f32, event: &MouseEnterEvent| {
             assert_eq!(mouse, event.get_mouse());
             assert!(Point::new(enter_x, enter_y).nearly_equal(event.get_entrance_point()));
@@ -1463,7 +1489,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 if self.subscribe_mouse_move.get() {
                     buddy.subscribe_mouse_move();
@@ -1523,7 +1549,7 @@ mod tests {
         menu.on_attach(&mut buddy);
         menu.add_component(
             Box::new(component),
-            ComponentDomain::between(0.0, 0.0, 0.5, 0.5)
+            ComponentDomain::between(0.0, 0.0, 0.5, 0.5),
         );
 
         let mut try_combination = |mouse_move: bool, mouse_enter: bool, mouse_leave: bool| {
@@ -1532,39 +1558,27 @@ mod tests {
             sub_mouse_leave.set(mouse_leave);
             menu.render(
                 &test_renderer(RenderRegion::between(0, 1, 4, 7)),
-                &mut buddy, true
-            ).unwrap();
+                &mut buddy,
+                true,
+            )
+            .unwrap();
             let mouse = Mouse::new(2);
-            let original_enter_event1 = MouseEnterEvent::new(
-                mouse, Point::new(0.1, 0.6)
-            );
-            let original_enter_event2 = MouseMoveEvent::new(
-                mouse, Point::new(0.1, 0.6), Point::new(0.1, 0.25)
-            );
-            let original_move_event = MouseMoveEvent::new(
-                mouse, Point::new(0.1, 0.25), Point::new(0.4, 0.25)
-            );
-            let original_leave_event1 = MouseMoveEvent::new(
-                mouse, Point::new(0.4, 0.25), Point::new(0.4, 0.6)
-            );
-            let original_leave_event2 = MouseLeaveEvent::new(
-                mouse, Point::new(0.4, 0.6)
-            );
-            let transformed_enter_event1 = MouseEnterEvent::new(
-                mouse, Point::new(0.2, 1.0)
-            );
-            let transformed_enter_event2 = MouseMoveEvent::new(
-                mouse, Point::new(0.2, 1.0), Point::new(0.2, 0.5)
-            );
-            let transformed_move_event = MouseMoveEvent::new(
-                mouse, Point::new(0.2, 0.5), Point::new(0.8, 0.5)
-            );
-            let transformed_leave_event1 = MouseMoveEvent::new(
-                mouse, Point::new(0.8, 0.5), Point::new(0.8, 1.0)
-            );
-            let transformed_leave_event2 = MouseLeaveEvent::new(
-                mouse, Point::new(0.8, 1.0)
-            );
+            let original_enter_event1 = MouseEnterEvent::new(mouse, Point::new(0.1, 0.6));
+            let original_enter_event2 =
+                MouseMoveEvent::new(mouse, Point::new(0.1, 0.6), Point::new(0.1, 0.25));
+            let original_move_event =
+                MouseMoveEvent::new(mouse, Point::new(0.1, 0.25), Point::new(0.4, 0.25));
+            let original_leave_event1 =
+                MouseMoveEvent::new(mouse, Point::new(0.4, 0.25), Point::new(0.4, 0.6));
+            let original_leave_event2 = MouseLeaveEvent::new(mouse, Point::new(0.4, 0.6));
+            let transformed_enter_event1 = MouseEnterEvent::new(mouse, Point::new(0.2, 1.0));
+            let transformed_enter_event2 =
+                MouseMoveEvent::new(mouse, Point::new(0.2, 1.0), Point::new(0.2, 0.5));
+            let transformed_move_event =
+                MouseMoveEvent::new(mouse, Point::new(0.2, 0.5), Point::new(0.8, 0.5));
+            let transformed_leave_event1 =
+                MouseMoveEvent::new(mouse, Point::new(0.8, 0.5), Point::new(0.8, 1.0));
+            let transformed_leave_event2 = MouseLeaveEvent::new(mouse, Point::new(0.8, 1.0));
 
             menu.on_mouse_enter(original_enter_event1, &mut buddy);
             menu.on_mouse_move(original_enter_event2, &mut buddy);
@@ -1594,7 +1608,9 @@ mod tests {
             if mouse_enter {
                 let enter_event_eq = |expected: &MouseEnterEvent, actual: &MouseEnterEvent| {
                     assert_eq!(expected.get_mouse(), actual.get_mouse());
-                    assert!(expected.get_entrance_point().nearly_equal(actual.get_entrance_point()));
+                    assert!(expected
+                        .get_entrance_point()
+                        .nearly_equal(actual.get_entrance_point()));
                 };
 
                 assert_eq!(1, enter_log.len());
@@ -1606,7 +1622,9 @@ mod tests {
             if mouse_leave {
                 let leave_event_eq = |expected: &MouseLeaveEvent, actual: &MouseLeaveEvent| {
                     assert_eq!(expected.get_mouse(), actual.get_mouse());
-                    assert!(expected.get_exit_point().nearly_equal(actual.get_exit_point()));
+                    assert!(expected
+                        .get_exit_point()
+                        .nearly_equal(actual.get_exit_point()));
                 };
 
                 assert_eq!(1, leave_log.len());
@@ -1620,7 +1638,7 @@ mod tests {
             leave_log.clear();
         };
 
-        for _counter in 0 .. 2 {
+        for _counter in 0..2 {
             try_combination(false, false, false);
             try_combination(false, false, true);
             try_combination(false, true, false);
@@ -1649,7 +1667,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 _buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 entire_render_result()
             }
@@ -1660,7 +1678,7 @@ mod tests {
         menu.on_attach(&mut buddy);
         menu.add_component(
             Box::new(CuriousComponent {}),
-            ComponentDomain::between(0.3, 0.6, 1.0, 0.9)
+            ComponentDomain::between(0.3, 0.6, 1.0, 0.9),
         );
 
         // The menu should have subscribed to all events
@@ -1671,7 +1689,7 @@ mod tests {
         assert!(subs.mouse_enter);
         assert!(subs.mouse_leave);
     }
-    
+
     #[test]
     fn test_buddy_get_all_mouses() {
         struct GetMouseComponent {
@@ -1686,7 +1704,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 let expected = self.expected.borrow();
                 assert_eq!(expected.as_ref() as &Vec<Mouse>, &buddy.get_all_mouses());
@@ -1702,26 +1720,22 @@ mod tests {
         menu.add_component(
             Box::new(GetMouseComponent {
                 expected: Rc::clone(&expected_mouses),
-                call_counter: Rc::clone(&call_counter)
+                call_counter: Rc::clone(&call_counter),
             }),
-            ComponentDomain::between(0.1, 0.2, 0.3, 0.4)
+            ComponentDomain::between(0.1, 0.2, 0.3, 0.4),
         );
 
-        let mut application = Application::new(
-            Box::new(menu)
-        );
+        let mut application = Application::new(Box::new(menu));
 
         let region = RenderRegion::with_size(1, 2, 3, 4);
 
         // The mouses should be empty initially
         application.render(&test_renderer(region), true);
 
-        let enter_event = |mouse_id: u16| MouseEnterEvent::new(
-            Mouse::new(mouse_id), Point::new(0.2, 0.3)
-        );
-        let leave_event = |mouse_id: u16| MouseLeaveEvent::new(
-            Mouse::new(mouse_id), Point::new(0.2, 0.3)
-        );
+        let enter_event =
+            |mouse_id: u16| MouseEnterEvent::new(Mouse::new(mouse_id), Point::new(0.2, 0.3));
+        let leave_event =
+            |mouse_id: u16| MouseLeaveEvent::new(Mouse::new(mouse_id), Point::new(0.2, 0.3));
         let mouse_vec = |ids: &[u16]| ids.iter().map(|id| Mouse::new(*id)).collect();
 
         // Add the first mouse
@@ -1759,11 +1773,11 @@ mod tests {
     fn test_buddy_get_local_mouses_and_positions() {
         struct LocalMouse {
             mouse: Mouse,
-            position: Point
+            position: Point,
         }
 
         struct LocalMouseCheckComponent {
-            expected_mouses: Rc<RefCell<Vec<LocalMouse>>>
+            expected_mouses: Rc<RefCell<Vec<LocalMouse>>>,
         }
 
         impl Component for LocalMouseCheckComponent {
@@ -1773,7 +1787,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 let local_mouses = buddy.get_local_mouses();
                 let expected_mouses = self.expected_mouses.borrow();
@@ -1783,7 +1797,9 @@ mod tests {
                 'local_outer: for mouse in &local_mouses {
                     for entry in &*expected_mouses {
                         if entry.mouse == *mouse {
-                            assert!(entry.position.nearly_equal(buddy.get_mouse_position(*mouse).unwrap()));
+                            assert!(entry
+                                .position
+                                .nearly_equal(buddy.get_mouse_position(*mouse).unwrap()));
                             continue 'local_outer;
                         }
                     }
@@ -1821,13 +1837,15 @@ mod tests {
         let mut menu = SimpleFlatMenu::new(None);
         menu.add_component(
             Box::new(LocalMouseCheckComponent {
-                expected_mouses: Rc::clone(&expected_mouses1)
-            }), ComponentDomain::between(0.2, 0.0, 0.5, 0.7)
+                expected_mouses: Rc::clone(&expected_mouses1),
+            }),
+            ComponentDomain::between(0.2, 0.0, 0.5, 0.7),
         );
         menu.add_component(
             Box::new(LocalMouseCheckComponent {
-                expected_mouses: Rc::clone(&expected_mouses2)
-            }), ComponentDomain::between(0.5, 0.5, 1.0, 1.0)
+                expected_mouses: Rc::clone(&expected_mouses2),
+            }),
+            ComponentDomain::between(0.5, 0.5, 1.0, 1.0),
         );
 
         let mut application = Application::new(Box::new(menu));
@@ -1836,24 +1854,32 @@ mod tests {
 
         // Start with 1 mouse, and spawn it in the middle of the first component
         let mouse1 = Mouse::new(6);
-        application.fire_mouse_enter_event(MouseEnterEvent::new(
-            mouse1, Point::new(0.35, 0.35)
-        ));
-        set1(vec![LocalMouse { mouse: mouse1, position: Point::new(0.5, 0.5)}]);
+        application.fire_mouse_enter_event(MouseEnterEvent::new(mouse1, Point::new(0.35, 0.35)));
+        set1(vec![LocalMouse {
+            mouse: mouse1,
+            position: Point::new(0.5, 0.5),
+        }]);
         set2(vec![]);
         application.render(&test_renderer(region), true);
 
         // Move the mouse to the other component
         application.fire_mouse_move_event(MouseMoveEvent::new(
-            mouse1, Point::new(0.35, 0.35), Point::new(0.6, 0.9)
+            mouse1,
+            Point::new(0.35, 0.35),
+            Point::new(0.6, 0.9),
         ));
         set1(vec![]);
-        set2(vec![LocalMouse { mouse: mouse1, position: Point::new(0.2, 0.8) }]);
+        set2(vec![LocalMouse {
+            mouse: mouse1,
+            position: Point::new(0.2, 0.8),
+        }]);
         application.render(&test_renderer(region), true);
 
         // Move the mouse away from both components
         application.fire_mouse_move_event(MouseMoveEvent::new(
-            mouse1, Point::new(0.6, 0.9), Point::new(0.1, 0.1)
+            mouse1,
+            Point::new(0.6, 0.9),
+            Point::new(0.1, 0.1),
         ));
         set1(vec![]);
         set2(vec![]);
@@ -1861,45 +1887,65 @@ mod tests {
 
         // Introduce the second mouse
         let mouse2 = Mouse::new(120);
-        application.fire_mouse_enter_event(MouseEnterEvent::new(
-            mouse2, Point::new(0.1, 0.1)
-        ));
+        application.fire_mouse_enter_event(MouseEnterEvent::new(mouse2, Point::new(0.1, 0.1)));
         // Neither of the mouses is inside any of the components
         application.render(&test_renderer(region), true);
 
         // Move the second mouse to the second component
         application.fire_mouse_move_event(MouseMoveEvent::new(
-            mouse2, Point::new(0.1, 0.1), Point::new(0.7, 0.8)
+            mouse2,
+            Point::new(0.1, 0.1),
+            Point::new(0.7, 0.8),
         ));
         set1(vec![]);
-        set2(vec![LocalMouse { mouse: mouse2, position: Point::new(0.4, 0.6) }]);
+        set2(vec![LocalMouse {
+            mouse: mouse2,
+            position: Point::new(0.4, 0.6),
+        }]);
         application.render(&test_renderer(region), true);
 
         // Move the first mouse to the first component
         application.fire_mouse_move_event(MouseMoveEvent::new(
-            mouse1, Point::new(0.1, 0.1), Point::new(0.35, 0.35)
+            mouse1,
+            Point::new(0.1, 0.1),
+            Point::new(0.35, 0.35),
         ));
-        set1(vec![LocalMouse { mouse: mouse1, position: Point::new(0.5, 0.5) }]);
-        set2(vec![LocalMouse { mouse: mouse2, position: Point::new(0.4, 0.6) }]);
+        set1(vec![LocalMouse {
+            mouse: mouse1,
+            position: Point::new(0.5, 0.5),
+        }]);
+        set2(vec![LocalMouse {
+            mouse: mouse2,
+            position: Point::new(0.4, 0.6),
+        }]);
         application.render(&test_renderer(region), true);
 
         // Move the first mouse to the second component
         application.fire_mouse_move_event(MouseMoveEvent::new(
-            mouse1, Point::new(0.35, 0.35), Point::new(0.8, 0.7)
+            mouse1,
+            Point::new(0.35, 0.35),
+            Point::new(0.8, 0.7),
         ));
         set1(vec![]);
         set2(vec![
-            LocalMouse { mouse: mouse1, position: Point::new(0.6, 0.4) },
-            LocalMouse { mouse: mouse2, position: Point::new(0.4, 0.6) },
+            LocalMouse {
+                mouse: mouse1,
+                position: Point::new(0.6, 0.4),
+            },
+            LocalMouse {
+                mouse: mouse2,
+                position: Point::new(0.4, 0.6),
+            },
         ]);
         application.render(&test_renderer(region), true);
 
         // Remove the second mouse
-        application.fire_mouse_leave_event(MouseLeaveEvent::new(
-            mouse2, Point::new(0.7, 0.8)
-        ));
+        application.fire_mouse_leave_event(MouseLeaveEvent::new(mouse2, Point::new(0.7, 0.8)));
         set1(vec![]);
-        set2(vec![LocalMouse { mouse: mouse1, position: Point::new(0.6, 0.4) }]);
+        set2(vec![LocalMouse {
+            mouse: mouse1,
+            position: Point::new(0.6, 0.4),
+        }]);
         application.render(&test_renderer(region), true);
     }
 
@@ -1916,7 +1962,7 @@ mod tests {
                 &mut self,
                 renderer: &Renderer,
                 _buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 self.render_counter.set(self.render_counter.get() + 1);
                 assert_eq!(self.expected_viewport.get(), renderer.get_viewport());
@@ -1932,24 +1978,22 @@ mod tests {
         let render_counter = Rc::new(Cell::new(0));
 
         // I will assign proper values later
-        let viewport1 = Rc::new(Cell::new(
-            RenderRegion::with_size(1, 2, 3, 4)
-        ));
-        let viewport2 = Rc::new(Cell::new(
-            RenderRegion::with_size(1, 2, 3, 4)
-        ));
+        let viewport1 = Rc::new(Cell::new(RenderRegion::with_size(1, 2, 3, 4)));
+        let viewport2 = Rc::new(Cell::new(RenderRegion::with_size(1, 2, 3, 4)));
 
         menu.add_component(
             Box::new(ViewportTestComponent {
                 render_counter: Rc::clone(&render_counter),
                 expected_viewport: Rc::clone(&viewport1),
-            }), ComponentDomain::between(0.0, 0.0, 0.5, 0.5)
+            }),
+            ComponentDomain::between(0.0, 0.0, 0.5, 0.5),
         );
         menu.add_component(
             Box::new(ViewportTestComponent {
                 render_counter: Rc::clone(&render_counter),
-                expected_viewport: Rc::clone(&viewport2)
-            }), ComponentDomain::between(0.2, 0.5, 0.9, 1.0)
+                expected_viewport: Rc::clone(&viewport2),
+            }),
+            ComponentDomain::between(0.2, 0.5, 0.9, 1.0),
         );
 
         viewport1.set(RenderRegion::between(0, 0, 50, 50));
@@ -1979,7 +2023,7 @@ mod tests {
                 &mut self,
                 renderer: &Renderer,
                 _buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 self.render_counter.set(self.render_counter.get() + 1);
                 assert_eq!(self.expected_viewport.get(), renderer.get_viewport());
@@ -1992,41 +2036,38 @@ mod tests {
         let counter_middle = Rc::new(Cell::new(0));
         let counter_right = Rc::new(Cell::new(0));
 
-        let viewport_left = Rc::new(Cell::new(
-            RenderRegion::between(10, 10, 20, 20))
-        );
-        let scissor_left = Rc::new(Cell::new(
-            RenderRegion::between(10, 10, 20, 20)
-        ));
-        let viewport_middle = Rc::new(Cell::new(
-            RenderRegion::between(40, 40, 60, 60))
-        );
-        let scissor_middle = Rc::new(Cell::new(
-            RenderRegion::between(40, 40, 60, 60)
-        ));
-        let viewport_right = Rc::new(Cell::new(
-            RenderRegion::between(80, 80, 90, 90))
-        );
-        let scissor_right = Rc::new(Cell::new(
-            RenderRegion::between(80, 80, 90, 90)
-        ));
+        let viewport_left = Rc::new(Cell::new(RenderRegion::between(10, 10, 20, 20)));
+        let scissor_left = Rc::new(Cell::new(RenderRegion::between(10, 10, 20, 20)));
+        let viewport_middle = Rc::new(Cell::new(RenderRegion::between(40, 40, 60, 60)));
+        let scissor_middle = Rc::new(Cell::new(RenderRegion::between(40, 40, 60, 60)));
+        let viewport_right = Rc::new(Cell::new(RenderRegion::between(80, 80, 90, 90)));
+        let scissor_right = Rc::new(Cell::new(RenderRegion::between(80, 80, 90, 90)));
 
         let mut menu = SimpleFlatMenu::new(None);
-        menu.add_component(Box::new(ScissorTestComponent {
-            expected_viewport: Rc::clone(&viewport_left),
-            expected_scissor: Rc::clone(&scissor_left),
-            render_counter: Rc::clone(&counter_left),
-        }), ComponentDomain::between(0.1, 0.1, 0.2, 0.2));
-        menu.add_component(Box::new(ScissorTestComponent {
-            expected_viewport: Rc::clone(&viewport_middle),
-            expected_scissor: Rc::clone(&scissor_middle),
-            render_counter: Rc::clone(&counter_middle),
-        }), ComponentDomain::between(0.4, 0.4, 0.6, 0.6));
-        menu.add_component(Box::new(ScissorTestComponent {
-            expected_viewport: Rc::clone(&viewport_right),
-            expected_scissor: Rc::clone(&scissor_right),
-            render_counter: Rc::clone(&counter_right),
-        }), ComponentDomain::between(0.8, 0.8, 0.9, 0.9));
+        menu.add_component(
+            Box::new(ScissorTestComponent {
+                expected_viewport: Rc::clone(&viewport_left),
+                expected_scissor: Rc::clone(&scissor_left),
+                render_counter: Rc::clone(&counter_left),
+            }),
+            ComponentDomain::between(0.1, 0.1, 0.2, 0.2),
+        );
+        menu.add_component(
+            Box::new(ScissorTestComponent {
+                expected_viewport: Rc::clone(&viewport_middle),
+                expected_scissor: Rc::clone(&scissor_middle),
+                render_counter: Rc::clone(&counter_middle),
+            }),
+            ComponentDomain::between(0.4, 0.4, 0.6, 0.6),
+        );
+        menu.add_component(
+            Box::new(ScissorTestComponent {
+                expected_viewport: Rc::clone(&viewport_right),
+                expected_scissor: Rc::clone(&scissor_right),
+                render_counter: Rc::clone(&counter_right),
+            }),
+            ComponentDomain::between(0.8, 0.8, 0.9, 0.9),
+        );
 
         let renderer = test_renderer(RenderRegion::with_size(0, 0, 100, 100));
         let mut buddy = root_buddy();
@@ -2063,7 +2104,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 _buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 self.counter.set(self.counter.get() * 3);
                 entire_render_result()
@@ -2089,7 +2130,7 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 _buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 self.counter.set(self.counter.get() * 3);
                 entire_render_result()
@@ -2098,9 +2139,11 @@ mod tests {
             fn on_mouse_click(&mut self, _event: MouseClickEvent, buddy: &mut dyn ComponentBuddy) {
                 self.counter.set(self.counter.get() + 1);
                 let new_counter = Rc::clone(&self.new_counter);
-                buddy.change_menu(Box::new(move |_old_menu| Box::new(
-                    NewMenuComponent { counter: new_counter }
-                )));
+                buddy.change_menu(Box::new(move |_old_menu| {
+                    Box::new(NewMenuComponent {
+                        counter: new_counter,
+                    })
+                }));
             }
         }
 
@@ -2108,9 +2151,13 @@ mod tests {
         let new_counter = Rc::new(Cell::new(0));
 
         let mut menu = SimpleFlatMenu::new(None);
-        menu.add_component(Box::new(ChangeMenuComponent {
-            counter: Rc::clone(&counter), new_counter: Rc::clone(&new_counter)
-        }), ComponentDomain::between(0.3, 0.3, 0.7, 0.7));
+        menu.add_component(
+            Box::new(ChangeMenuComponent {
+                counter: Rc::clone(&counter),
+                new_counter: Rc::clone(&new_counter),
+            }),
+            ComponentDomain::between(0.3, 0.3, 0.7, 0.7),
+        );
 
         let mut application = Application::new(Box::new(menu));
 
@@ -2122,9 +2169,8 @@ mod tests {
         assert_eq!(6, counter.get());
         assert_eq!(0, new_counter.get());
 
-        let click_event = MouseClickEvent::new(
-            Mouse::new(3), Point::new(0.4, 0.4), MouseButton::primary()
-        );
+        let click_event =
+            MouseClickEvent::new(Mouse::new(3), Point::new(0.4, 0.4), MouseButton::primary());
 
         application.fire_mouse_click_event(click_event);
         assert_eq!(7, counter.get());

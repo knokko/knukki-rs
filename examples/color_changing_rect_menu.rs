@@ -3,23 +3,34 @@ use knukki::*;
 fn main() {
     let mut menu = SimpleFlatMenu::new(Some(Color::rgb(50, 150, 100)));
     menu.add_component(
-        Box::new(ColorChangingRectComponent { red: 200, green: 100, blue: 0 }),
-        ComponentDomain::between(0.1, 0.1, 0.8, 0.4)
+        Box::new(ColorChangingRectComponent {
+            red: 200,
+            green: 100,
+            blue: 0,
+        }),
+        ComponentDomain::between(0.1, 0.1, 0.8, 0.4),
     );
     menu.add_component(
-        Box::new(ColorChangingRectComponent { red: 50, green: 200, blue: 150 }),
-        ComponentDomain::between(0.5, 0.5, 0.9, 0.9)
+        Box::new(ColorChangingRectComponent {
+            red: 50,
+            green: 200,
+            blue: 150,
+        }),
+        ComponentDomain::between(0.5, 0.5, 0.9, 0.9),
     );
     menu.add_component(
-        Box::new(ColorChangingRectComponent { red: 200, green: 0, blue: 150 }),
-        ComponentDomain::between(0.05, 0.7, 0.4, 0.95)
+        Box::new(ColorChangingRectComponent {
+            red: 200,
+            green: 0,
+            blue: 150,
+        }),
+        ComponentDomain::between(0.05, 0.7, 0.4, 0.95),
     );
     let application = Application::new(Box::new(menu));
     start(application, "Color changing rect menu");
 }
 
 struct ColorChangingRectComponent {
-
     red: u8,
     green: u8,
     blue: u8,
@@ -36,7 +47,7 @@ impl Component for ColorChangingRectComponent {
         &mut self,
         renderer: &Renderer,
         _buddy: &mut dyn ComponentBuddy,
-        _force: bool
+        _force: bool,
     ) -> RenderResult {
         renderer.clear(Color::rgb(self.red, self.green, self.blue));
         entire_render_result()

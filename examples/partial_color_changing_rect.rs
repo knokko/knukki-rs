@@ -4,17 +4,16 @@ fn main() {
     let component = ColorChangingRectComponent {
         red: 200,
         green: 100,
-        blue: 0
+        blue: 0,
     };
     let application = Application::new(Box::new(component));
     start(application, "Partial color changing rect");
 }
 
 struct ColorChangingRectComponent {
-
     red: u8,
     green: u8,
-    blue: u8
+    blue: u8,
 }
 
 impl Component for ColorChangingRectComponent {
@@ -28,18 +27,15 @@ impl Component for ColorChangingRectComponent {
         &mut self,
         renderer: &Renderer,
         _buddy: &mut dyn ComponentBuddy,
-        _force: bool
+        _force: bool,
     ) -> RenderResult {
-        renderer.push_viewport(
-            0.2, 0.2, 0.8, 0.8,
-            || {
-                renderer.clear(Color::rgb(self.red, self.green, self.blue));
-            }
-        );
+        renderer.push_viewport(0.2, 0.2, 0.8, 0.8, || {
+            renderer.clear(Color::rgb(self.red, self.green, self.blue));
+        });
 
         Ok(RenderResultStruct {
             filter_mouse_actions: true,
-            drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8))
+            drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8)),
         })
     }
 
