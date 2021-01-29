@@ -16,6 +16,7 @@ impl Renderer {
         // There is nothing to be done without a Golem context
     }
 
+    /// Sets the color of all pixels within the current viewport and scissor to the given `Color`.
     #[cfg(not(feature = "golem_rendering"))]
     pub fn clear(&self, _color: Color) {
         // There is nothing to be done without a Golem context

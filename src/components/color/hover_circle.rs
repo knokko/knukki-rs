@@ -99,7 +99,7 @@ impl Component for HoverColorCircleComponent {
             };
 
             let shader_id = ShaderId::from_strs("knukki", "Simple.HoverColorCircle");
-            renderer.use_shader(&shader_id, create_shader, |shader| {
+            renderer.use_cached_shader(&shader_id, create_shader, |shader| {
                 shader.set_uniform(
                     "color",
                     UniformValue::Vector3([
