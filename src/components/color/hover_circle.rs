@@ -98,37 +98,26 @@ impl Component for HoverColorCircleComponent {
                 false => self.base_color,
             };
 
-            use golem::*;
-
-            let golem = renderer.get_context();
             let shader_id = ShaderId::from_strs("knukki", "Simple.HoverColorCircle");
+            renderer.use_shader(&shader_id, create_shader, |shader| {
+                shader.set_uniform(
+                    "color",
+                    UniformValue::Vector3([
+                        color.get_red_float(),
+                        color.get_green_float(),
+                        color.get_blue_float(),
+                    ]),
+                )?;
+                shader.set_uniform("radius", UniformValue::Vector2([used_width, used_height]))?;
 
-            renderer.use_shader_cache(|cache| {
-               cache.use_shader(
-                   &shader_id,
-                   || create_shader(golem),
-                   |shader| {
-
-                       shader.set_uniform(
-                           "color",
-                           UniformValue::Vector3([
-                               color.get_red_float(),
-                               color.get_green_float(),
-                               color.get_blue_float(),
-                           ]),
-                       )?;
-                       shader.set_uniform("radius", UniformValue::Vector2([used_width, used_height]))?;
-
-                       unsafe {
-                           shader.draw(
-                               renderer.get_quad_vertices(),
-                               renderer.get_quad_indices(),
-                               0..renderer.get_num_quad_indices(),
-                               GeometryMode::Triangles,
-                           )
-                       }
-                   }
-               )
+                unsafe {
+                    shader.draw(
+                        renderer.get_quad_vertices(),
+                        renderer.get_quad_indices(),
+                        0..renderer.get_num_quad_indices(),
+                        GeometryMode::Triangles,
+                    )
+                }
             })?;
         }
 

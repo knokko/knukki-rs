@@ -44,9 +44,13 @@ impl Renderer {
         6
     }
 
-    pub fn use_shader_cache<R>(&self, use_closure: impl FnOnce(&mut ShaderCache) -> R) -> R {
+    pub fn use_shader(
+        &self, id: &ShaderId,
+        create_shader: impl FnOnce(&golem::Context) -> Result<ShaderProgram, GolemError>,
+        use_shader: impl FnOnce(&mut ShaderProgram) -> Result<(), GolemError>
+    ) -> Result<(), GolemError> {
         let mut cache = self.storage.shader_cache.borrow_mut();
-        use_closure(&mut cache)
+        cache.use_shader(id, || create_shader(&self.context), use_shader)
     }
 }
 
@@ -78,14 +82,14 @@ impl GolemRenderStorage {
     }
 }
 
-pub struct ShaderCache {
+struct ShaderCache {
     map: HashMap<ShaderId, CachedShader>,
     max_cached_shaders: usize,
     current_time: u64,
 }
 
 impl ShaderCache {
-    pub fn new(max_cached_shaders: usize) -> Self {
+    fn new(max_cached_shaders: usize) -> Self {
         assert!(max_cached_shaders > 0);
         Self {
             map: HashMap::new(),
