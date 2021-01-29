@@ -4,6 +4,8 @@ use std::cell::RefCell;
 mod core;
 #[cfg(feature = "golem_rendering")]
 mod golem_renderer;
+#[cfg(feature = "golem_rendering")]
+pub use golem_renderer::ShaderId;
 
 pub struct Renderer {
     #[cfg(feature = "golem_rendering")]

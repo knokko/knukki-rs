@@ -1,4 +1,6 @@
 use crate::*;
+#[cfg(feature = "golem_rendering")]
+use golem::*;
 
 /// A component that will draw a simple circle at its position. It has a `base_color` and a
 /// `hover_color`. It will fill the circle with the `hover_color` while a `Mouse` is hovering over
@@ -18,6 +20,40 @@ impl HoverColorCircleComponent {
             hover_color,
         }
     }
+}
+
+#[cfg(feature = "golem_rendering")]
+#[rustfmt::skip]
+fn create_shader(golem: &Context) -> Result<ShaderProgram, GolemError> {
+    let description = ShaderDescription {
+        vertex_input: &[
+            Attribute::new("position", AttributeType::Vector(Dimension::D2))
+        ],
+        fragment_input: &[
+            Attribute::new("passPosition", AttributeType::Vector(Dimension::D2))
+        ],
+        uniforms: &[
+            Uniform::new("color", UniformType::Vector(NumberType::Float, Dimension::D3)),
+            Uniform::new("radius", UniformType::Vector(NumberType::Float, Dimension::D2)),
+        ],
+        vertex_shader: "
+            void main() {
+                gl_Position = vec4(position, 0.0, 1.0);
+                passPosition = position;
+            }",
+        fragment_shader: "
+            void main() {
+                float dx = passPosition.x / radius.x;
+                float dy = passPosition.y / radius.y;
+                if (dx * dx + dy * dy <= 1.0) {
+                    gl_FragColor = vec4(color, 1.0);
+                } else {
+                    discard;
+                }
+            }",
+    };
+
+    ShaderProgram::new(golem, description)
 }
 
 impl Component for HoverColorCircleComponent {
@@ -57,67 +93,43 @@ impl Component for HoverColorCircleComponent {
         // If the golem rendering feature is enabled, we should also draw the circle
         #[cfg(feature = "golem_rendering")]
         {
-            use golem::*;
-
-            let golem = renderer.get_context();
-            // TODO PERFORMANCE Optimize this by storing the shaders rather than recreating them
-            // all the time
-
-            #[rustfmt::skip]
-            let shader_description = ShaderDescription {
-                vertex_input: &[
-                    Attribute::new("position", AttributeType::Vector(Dimension::D2))
-                ],
-                fragment_input: &[
-                    Attribute::new("passPosition", AttributeType::Vector(Dimension::D2))
-                ],
-                uniforms: &[
-                    Uniform::new("color", UniformType::Vector(NumberType::Float, Dimension::D3)),
-                    Uniform::new("radius", UniformType::Vector(NumberType::Float, Dimension::D2)),
-                ],
-                vertex_shader: "
-            void main() {
-                gl_Position = vec4(position, 0.0, 1.0);
-                passPosition = position;
-            }",
-                fragment_shader: "
-            void main() {
-                float dx = passPosition.x / radius.x;
-                float dy = passPosition.y / radius.y;
-                if (dx * dx + dy * dy <= 1.0) {
-                    gl_FragColor = vec4(color, 1.0);
-                } else {
-                    discard;
-                }
-            }",
-            };
-
-            let mut shader = ShaderProgram::new(golem, shader_description)?;
-            shader.bind();
-
             let color = match is_hovering {
                 true => self.hover_color,
                 false => self.base_color,
             };
 
-            shader.set_uniform(
-                "color",
-                UniformValue::Vector3([
-                    color.get_red_float(),
-                    color.get_green_float(),
-                    color.get_blue_float(),
-                ]),
-            )?;
-            shader.set_uniform("radius", UniformValue::Vector2([used_width, used_height]))?;
+            use golem::*;
 
-            unsafe {
-                shader.draw(
-                    renderer.get_quad_vertices(),
-                    renderer.get_quad_indices(),
-                    0..renderer.get_num_quad_indices(),
-                    GeometryMode::Triangles,
-                )?;
-            }
+            let golem = renderer.get_context();
+            let shader_id = ShaderId::from_strs("knukki", "Simple.HoverColorCircle");
+
+            renderer.use_shader_cache(|cache| {
+               cache.use_shader(
+                   &shader_id,
+                   || create_shader(golem),
+                   |shader| {
+
+                       shader.set_uniform(
+                           "color",
+                           UniformValue::Vector3([
+                               color.get_red_float(),
+                               color.get_green_float(),
+                               color.get_blue_float(),
+                           ]),
+                       )?;
+                       shader.set_uniform("radius", UniformValue::Vector2([used_width, used_height]))?;
+
+                       unsafe {
+                           shader.draw(
+                               renderer.get_quad_vertices(),
+                               renderer.get_quad_indices(),
+                               0..renderer.get_num_quad_indices(),
+                               GeometryMode::Triangles,
+                           )
+                       }
+                   }
+               )
+            })?;
         }
 
         Ok(RenderResultStruct {

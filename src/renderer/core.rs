@@ -348,4 +348,6 @@ mod tests {
             })
             .unwrap();
     }
+
+    // TODO Write an example that uses the push_scissor method. Note: probably requires WrapperComponent first
 }
