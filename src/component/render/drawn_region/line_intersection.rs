@@ -1,4 +1,3 @@
-use crate::LineIntersection::{FullyInside, FullyOutside};
 use crate::Point;
 
 /// This enum is the result of `DrawnRegion.findLineIntersection`. It indicates how a line(segment)
@@ -33,8 +32,8 @@ impl LineIntersection {
     #[cfg(test)]
     pub(crate) fn nearly_equal(&self, other: LineIntersection) -> bool {
         return match self {
-            Self::FullyInside => other == FullyInside,
-            Self::FullyOutside => other == FullyOutside,
+            Self::FullyInside => other == *self,
+            Self::FullyOutside => other == *self,
             Self::Enters { point } => {
                 if let Self::Enters { point: other_point } = other {
                     point.nearly_equal(other_point)
