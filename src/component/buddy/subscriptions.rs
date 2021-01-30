@@ -2,6 +2,8 @@ pub struct ComponentSubscriptions {
     // Mouse event subscriptions
     pub mouse_click: bool,
     pub mouse_click_out: bool,
+    pub mouse_press: bool,
+    pub mouse_release: bool,
     pub mouse_move: bool,
     pub mouse_leave: bool,
     pub mouse_enter: bool,
@@ -15,6 +17,8 @@ impl ComponentSubscriptions {
         Self {
             mouse_click: false,
             mouse_click_out: false,
+            mouse_press: false,
+            mouse_release: false,
             mouse_move: false,
             mouse_leave: false,
             mouse_enter: false,

@@ -84,6 +84,18 @@ pub trait ComponentBuddy {
     /// Cancels the components subscription for the `MouseClickOutEvent`
     fn unsubscribe_mouse_click_out(&mut self);
 
+    /// Subscribes the component for the `MousePressEvent`
+    fn subscribe_mouse_press(&mut self);
+
+    /// Cancels the components subscription for the `MousePressEvent`
+    fn unsubscribe_mouse_press(&mut self);
+
+    /// Subscribes the component for the `MouseReleaseEvent`.
+    fn subscribe_mouse_release(&mut self);
+
+    /// Cancels the components subscription for the `MouseReleaseEvent`
+    fn unsubscribe_mouse_release(&mut self);
+
     /// Subscribes the component for the `MouseMoveEvent`
     fn subscribe_mouse_move(&mut self);
 

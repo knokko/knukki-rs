@@ -110,6 +110,71 @@ impl MouseClickOutEvent {
     }
 }
 
+/// This event is for the `on_mouse_press` method of `Component`. It indicates that the user has
+/// pressed a mouse button **on** the component.
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub struct MousePressEvent {
+    mouse: Mouse,
+    point: Point,
+    button: MouseButton,
+}
+
+impl MousePressEvent {
+    /// Constructs a new `MousePressEvent` with the given `Mouse`, `Point`, and `MouseButton`.
+    pub fn new(mouse: Mouse, point: Point, button: MouseButton) -> Self {
+        Self { mouse, point, button }
+    }
+
+    /// Gets the `Mouse` that was pressed.
+    pub fn get_mouse(&self) -> Mouse {
+        self.mouse
+    }
+
+    /// Gets the `Point` where the mouse was pressed.
+    pub fn get_point(&self) -> Point {
+        self.point
+    }
+
+    /// Gets the `MouseButton` that was pressed.
+    pub fn get_button(&self) -> MouseButton {
+        self.button
+    }
+}
+
+/// This event is for the `on_mouse_release` method of `Component`. It indicates that the user has
+/// released a mouse button **on** the component.
+///
+/// Note: when the user releases the mouse quickly after pressing it, a `MouseClickEvent` will be
+/// fired after this event is fired.
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub struct MouseReleaseEvent {
+    mouse: Mouse,
+    point: Point,
+    button: MouseButton,
+}
+
+impl MouseReleaseEvent {
+    /// Constructs a new `MouseReleaseEvent` with the given `Mouse`, `Point`, and `MouseButton`.
+    pub fn new(mouse: Mouse, point: Point, button: MouseButton) -> Self {
+        Self { mouse, point, button }
+    }
+
+    /// Gets the `Mouse` that was released.
+    pub fn get_mouse(&self) -> Mouse {
+        self.mouse
+    }
+
+    /// Gets the `Point` where the mouse was released.
+    pub fn get_point(&self) -> Point {
+        self.point
+    }
+
+    /// Gets the `MouseButton` that was released.
+    pub fn get_button(&self) -> MouseButton {
+        self.button
+    }
+}
+
 /// This method is for the `on_mouse_move` method of `Component`. It indicates
 /// that the user moved the mouse *within* the component: both the position
 /// the mouse came from and the position the mouse went to are in the component.
@@ -154,10 +219,14 @@ impl MouseMoveEvent {
         self.to
     }
 
+    /// Gets the distance the mouse travelled in the x-direction. This method simply returns
+    /// `to.get_x() - from.get_x()`.
     pub fn get_delta_x(&self) -> f32 {
         self.to.get_x() - self.from.get_x()
     }
 
+    /// Gets the distance the mouse travelled in the y-direction. This method simply returns
+    /// `to.get_y() - from.get_y()`.
     pub fn get_delta_y(&self) -> f32 {
         self.to.get_y() - self.from.get_y()
     }

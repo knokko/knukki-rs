@@ -158,6 +158,28 @@ impl Application {
         }
     }
 
+    pub fn fire_mouse_press_event(&mut self, event: MousePressEvent) {
+        if self.root_buddy.get_subscriptions().mouse_press {
+            if let Some(render_result) = self.root_buddy.get_last_render_result() {
+                if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(event.get_point()) {
+                    self.root_component.on_mouse_press(event, &mut self.root_buddy);
+                    self.work_after_events();
+                }
+            }
+        }
+    }
+
+    pub fn fire_mouse_release_event(&mut self, event: MouseReleaseEvent) {
+        if self.root_buddy.get_subscriptions().mouse_release {
+            if let Some(render_result) = self.root_buddy.get_last_render_result() {
+                if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(event.get_point()) {
+                    self.root_component.on_mouse_release(event, &mut self.root_buddy);
+                    self.work_after_events();
+                }
+            }
+        }
+    }
+
     fn sub_mouse_enter(&self) -> bool {
         self.root_buddy.get_subscriptions().mouse_enter
     }
@@ -475,12 +497,16 @@ mod tests {
         struct CustomCountingComponent {
             counter: Rc<Cell<u8>>,
             out_counter: Rc<Cell<u8>>,
+            press_counter: Rc<Cell<u8>>,
+            release_counter: Rc<Cell<u8>>,
         }
 
         impl Component for CustomCountingComponent {
             fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
                 buddy.subscribe_mouse_click();
                 buddy.subscribe_mouse_click_out();
+                buddy.subscribe_mouse_press();
+                buddy.subscribe_mouse_release();
             }
 
             fn render(
@@ -506,36 +532,69 @@ mod tests {
             ) {
                 self.out_counter.set(self.out_counter.get() + 1);
             }
+
+            fn on_mouse_press(&mut self, _event: MousePressEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.press_counter.set(self.press_counter.get() + 1);
+            }
+
+            fn on_mouse_release(&mut self, _event: MouseReleaseEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.release_counter.set(self.release_counter.get() + 1);
+            }
         }
+
         let counter = Rc::new(Cell::new(0));
         let out_counter = Rc::new(Cell::new(0));
+        let press_counter = Rc::new(Cell::new(0));
+        let release_counter = Rc::new(Cell::new(0));
+
         let component = CustomCountingComponent {
             counter: Rc::clone(&counter),
             out_counter: Rc::clone(&out_counter),
+            press_counter: Rc::clone(&press_counter),
+            release_counter: Rc::clone(&release_counter),
         };
         let mut application = Application::new(Box::new(component));
 
         let miss_click =
             MouseClickEvent::new(Mouse::new(0), Point::new(0.3, 0.3), MouseButton::primary());
+        let miss_press =
+            MousePressEvent::new(Mouse::new(0), Point::new(0.3, 0.3), MouseButton::primary());
+        let miss_release =
+            MouseReleaseEvent::new(Mouse::new(0), Point::new(0.3, 0.3), MouseButton::primary());
+
         let hit_click =
             MouseClickEvent::new(Mouse::new(0), Point::new(0.5, 0.5), MouseButton::primary());
+        let hit_press =
+            MousePressEvent::new(Mouse::new(0), Point::new(0.5, 0.5), MouseButton::primary());
+        let hit_release =
+            MouseReleaseEvent::new(Mouse::new(0), Point::new(0.5, 0.5), MouseButton::primary());
+
+        let check_counters = |click: u8, click_out: u8, press: u8, release: u8| {
+            assert_eq!(click, counter.get());
+            assert_eq!(click_out, out_counter.get());
+            assert_eq!(press, press_counter.get());
+            assert_eq!(release, release_counter.get());
+        };
 
         // Clicks don't have effect until the component has been drawn
+        application.fire_mouse_press_event(hit_press);
+        application.fire_mouse_release_event(hit_release);
         application.fire_mouse_click_event(hit_click);
-        assert_eq!(0, counter.get());
-        assert_eq!(0, out_counter.get());
+        check_counters(0, 0, 0, 0);
 
         application.render(&test_renderer(RenderRegion::between(0, 0, 1, 1)), false);
 
         // Miss clicks should increment only the out counter
+        application.fire_mouse_press_event(miss_press);
+        application.fire_mouse_release_event(miss_release);
         application.fire_mouse_click_event(miss_click);
-        assert_eq!(0, counter.get());
-        assert_eq!(1, out_counter.get());
+        check_counters(0, 1, 0, 0);
 
         // Hit clicks only increment the real counter
+        application.fire_mouse_press_event(hit_press);
+        application.fire_mouse_release_event(hit_release);
         application.fire_mouse_click_event(hit_click);
-        assert_eq!(1, counter.get());
-        assert_eq!(1, out_counter.get());
+        check_counters(1, 1, 1, 1);
     }
 
     struct ConditionalMouseFilterComponent {
@@ -863,6 +922,8 @@ mod tests {
     fn test_subscribe_and_unsubscribe() {
         struct EventFlags {
             mouse_click: bool,
+            mouse_press: bool,
+            mouse_release: bool,
             mouse_enter: bool,
             mouse_leave: bool,
         }
@@ -887,6 +948,16 @@ mod tests {
                 } else {
                     buddy.unsubscribe_mouse_click();
                 }
+                if new_subscriptions.mouse_press {
+                    buddy.subscribe_mouse_press();
+                } else {
+                    buddy.unsubscribe_mouse_press();
+                }
+                if new_subscriptions.mouse_release {
+                    buddy.subscribe_mouse_release();
+                } else {
+                    buddy.unsubscribe_mouse_release();
+                }
                 if new_subscriptions.mouse_enter {
                     buddy.subscribe_mouse_enter();
                 } else {
@@ -905,6 +976,16 @@ mod tests {
                 flags.mouse_click = true;
             }
 
+            fn on_mouse_press(&mut self, _event: MousePressEvent, _buddy: &mut dyn ComponentBuddy) {
+                let mut flags = self.received_events.borrow_mut();
+                flags.mouse_press = true;
+            }
+
+            fn on_mouse_release(&mut self, _event: MouseReleaseEvent, _buddy: &mut dyn ComponentBuddy) {
+                let mut flags = self.received_events.borrow_mut();
+                flags.mouse_release = true;
+            }
+
             fn on_mouse_enter(&mut self, _event: MouseEnterEvent, _buddy: &mut dyn ComponentBuddy) {
                 let mut flags = self.received_events.borrow_mut();
                 flags.mouse_enter = true;
@@ -918,11 +999,15 @@ mod tests {
 
         let desired_subscriptions = Rc::new(RefCell::new(EventFlags {
             mouse_click: false,
+            mouse_press: false,
+            mouse_release: false,
             mouse_enter: false,
             mouse_leave: false,
         }));
         let received_events = Rc::new(RefCell::new(EventFlags {
             mouse_click: false,
+            mouse_press: false,
+            mouse_release: false,
             mouse_enter: false,
             mouse_leave: false,
         }));
@@ -933,15 +1018,21 @@ mod tests {
         };
 
         let mut application = Application::new(Box::new(component));
-        let mut try_events = |mouse_click: bool, mouse_enter: bool, mouse_leave: bool| {
+        let mut try_events = |
+            mouse_click: bool, mouse_press: bool, mouse_release: bool, mouse_enter: bool, mouse_leave: bool
+        | {
             let mut subscribe = desired_subscriptions.borrow_mut();
             subscribe.mouse_click = mouse_click;
+            subscribe.mouse_press = mouse_press;
+            subscribe.mouse_release = mouse_release;
             subscribe.mouse_enter = mouse_enter;
             subscribe.mouse_leave = mouse_leave;
             drop(subscribe);
 
             let mut clear_received_flags = received_events.borrow_mut();
             clear_received_flags.mouse_click = false;
+            clear_received_flags.mouse_press = false;
+            clear_received_flags.mouse_release = false;
             clear_received_flags.mouse_enter = false;
             clear_received_flags.mouse_leave = false;
             drop(clear_received_flags);
@@ -951,30 +1042,37 @@ mod tests {
 
             let point = Point::new(0.5, 0.5);
             let mouse = Mouse::new(0);
+            let button = MouseButton::primary();
             let enter_event = MouseEnterEvent::new(mouse, point);
-            let click_event = MouseClickEvent::new(mouse, point, MouseButton::primary());
+            let press_event = MousePressEvent::new(mouse, point, button);
+            let release_event = MouseReleaseEvent::new(mouse, point, button);
+            let click_event = MouseClickEvent::new(mouse, point, button);
             let leave_event = MouseLeaveEvent::new(mouse, point);
 
             application.fire_mouse_enter_event(enter_event);
+            application.fire_mouse_press_event(press_event);
+            application.fire_mouse_release_event(release_event);
             application.fire_mouse_click_event(click_event);
             application.fire_mouse_leave_event(leave_event);
 
             let check_received_flags = received_events.borrow_mut();
             assert_eq!(mouse_click, check_received_flags.mouse_click);
+            assert_eq!(mouse_press, check_received_flags.mouse_press);
+            assert_eq!(mouse_release, check_received_flags.mouse_release);
             assert_eq!(mouse_enter, check_received_flags.mouse_enter);
             assert_eq!(mouse_leave, check_received_flags.mouse_leave);
         };
 
         // Try every combination of subscriptions, and do it twice to test even more
         for _counter in 0..2 {
-            try_events(false, false, false);
-            try_events(false, false, true);
-            try_events(false, true, false);
-            try_events(false, true, true);
-            try_events(true, false, false);
-            try_events(true, false, true);
-            try_events(true, true, false);
-            try_events(true, true, true);
+            for binary_int in 0..32 {
+                let b1 = binary_int & 1 != 0;
+                let b2 = binary_int & 2 != 0;
+                let b3 = binary_int & 4 != 0;
+                let b4 = binary_int & 8 != 0;
+                let b5 = binary_int & 16 != 0;
+                try_events(b1, b2, b3, b4, b5);
+            }
         }
     }
 

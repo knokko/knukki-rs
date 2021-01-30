@@ -123,6 +123,34 @@ impl ComponentBuddy for SimpleFlatBuddy {
         }
     }
 
+    fn subscribe_mouse_press(&mut self) {
+        if !self.subscriptions.mouse_press {
+            self.subscriptions.mouse_press = true;
+            self.has_changes = true;
+        }
+    }
+
+    fn unsubscribe_mouse_press(&mut self) {
+        if self.subscriptions.mouse_press {
+            self.subscriptions.mouse_press = false;
+            self.has_changes = true;
+        }
+    }
+
+    fn subscribe_mouse_release(&mut self) {
+        if !self.subscriptions.mouse_release {
+            self.subscriptions.mouse_release = true;
+            self.has_changes = true;
+        }
+    }
+
+    fn unsubscribe_mouse_release(&mut self) {
+        if self.subscriptions.mouse_release {
+            self.subscriptions.mouse_release = false;
+            self.has_changes = true;
+        }
+    }
+
     fn subscribe_mouse_move(&mut self) {
         if !self.subscriptions.mouse_move {
             self.subscriptions.mouse_move = true;

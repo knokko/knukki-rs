@@ -115,6 +115,8 @@ impl Component for SimpleFlatMenu {
         self.update_internal(buddy, false);
         buddy.subscribe_mouse_click();
         buddy.subscribe_mouse_click_out();
+        buddy.subscribe_mouse_press();
+        buddy.subscribe_mouse_release();
         buddy.subscribe_mouse_move();
         buddy.subscribe_mouse_enter();
         buddy.subscribe_mouse_leave();
@@ -215,6 +217,34 @@ impl Component for SimpleFlatMenu {
         }
     }
 
+    fn on_mouse_press(&mut self, event: MousePressEvent, own_buddy: &mut dyn ComponentBuddy) {
+        // This should be done before every important action
+        self.update_internal(own_buddy, false);
+
+        // Lets now handle the actual press event
+        let maybe_clicked_cell = self.get_component_at(event.get_point());
+
+        if let Some(clicked_cell) = &maybe_clicked_cell {
+            let mut clicked_entry = clicked_cell.borrow_mut();
+            clicked_entry.mouse_press(event);
+            self.check_buddy(own_buddy, &mut clicked_entry, false);
+        }
+    }
+
+    fn on_mouse_release(&mut self, event: MouseReleaseEvent, own_buddy: &mut dyn ComponentBuddy) {
+        // This should be done before every important action
+        self.update_internal(own_buddy, false);
+
+        // Lets now handle the actual press event
+        let maybe_clicked_cell = self.get_component_at(event.get_point());
+
+        if let Some(clicked_cell) = &maybe_clicked_cell {
+            let mut clicked_entry = clicked_cell.borrow_mut();
+            clicked_entry.mouse_release(event);
+            self.check_buddy(own_buddy, &mut clicked_entry, false);
+        }
+    }
+
     fn on_mouse_move(&mut self, event: MouseMoveEvent, buddy: &mut dyn ComponentBuddy) {
         // TODO PERFORMANCE Consider only the components intersecting the rectangle around the line from
         // event.from to event.to (using some kind of 2d range tree)
@@ -296,6 +326,46 @@ impl ComponentEntry {
         if self.buddy.get_subscriptions().mouse_click_out {
             if self.buddy.get_last_render_result().is_some() {
                 self.component.on_mouse_click_out(event, &mut self.buddy);
+            }
+        }
+    }
+
+    fn mouse_press(&mut self, outer_event: MousePressEvent) {
+        if self.buddy.get_subscriptions().mouse_press {
+            let transformed_point = self.domain.transform(outer_event.get_point());
+            if let Some(render_result) = self.buddy.get_last_render_result() {
+                if !render_result.filter_mouse_actions
+                    || render_result.drawn_region.is_inside(transformed_point)
+                {
+                    let transformed_event = MousePressEvent::new(
+                        outer_event.get_mouse(),
+                        transformed_point,
+                        outer_event.get_button(),
+                    );
+
+                    self.component
+                        .on_mouse_press(transformed_event, &mut self.buddy);
+                }
+            }
+        }
+    }
+
+    fn mouse_release(&mut self, outer_event: MouseReleaseEvent) {
+        if self.buddy.get_subscriptions().mouse_release {
+            let transformed_point = self.domain.transform(outer_event.get_point());
+            if let Some(render_result) = self.buddy.get_last_render_result() {
+                if !render_result.filter_mouse_actions
+                    || render_result.drawn_region.is_inside(transformed_point)
+                {
+                    let transformed_event = MouseReleaseEvent::new(
+                        outer_event.get_mouse(),
+                        transformed_point,
+                        outer_event.get_button(),
+                    );
+
+                    self.component
+                        .on_mouse_release(transformed_event, &mut self.buddy);
+                }
             }
         }
     }
@@ -1050,6 +1120,8 @@ mod tests {
             should_unsubscribe: Rc<Cell<bool>>,
             click_counter: Rc<Cell<u8>>,
             click_out_counter: Rc<Cell<u8>>,
+            press_counter: Rc<Cell<u8>>,
+            release_counter: Rc<Cell<u8>>,
         }
 
         impl Component for SubscribingComponent {
@@ -1064,10 +1136,14 @@ mod tests {
                 if self.should_subscribe.get() {
                     buddy.subscribe_mouse_click();
                     buddy.subscribe_mouse_click_out();
+                    buddy.subscribe_mouse_press();
+                    buddy.subscribe_mouse_release();
                 }
                 if self.should_unsubscribe.get() {
                     buddy.unsubscribe_mouse_click();
                     buddy.unsubscribe_mouse_click_out();
+                    buddy.unsubscribe_mouse_press();
+                    buddy.unsubscribe_mouse_release();
                 }
                 self.should_subscribe.set(false);
                 self.should_unsubscribe.set(false);
@@ -1085,6 +1161,22 @@ mod tests {
             ) {
                 self.click_out_counter.set(self.click_out_counter.get() + 1);
             }
+
+            fn on_mouse_press(
+                &mut self,
+                _event: MousePressEvent,
+                _buddy: &mut dyn ComponentBuddy,
+            ) {
+                self.press_counter.set(self.press_counter.get() + 1);
+            }
+
+            fn on_mouse_release(
+                &mut self,
+                _event: MouseReleaseEvent,
+                _buddy: &mut dyn ComponentBuddy,
+            ) {
+                self.release_counter.set(self.release_counter.get() + 1);
+            }
         }
 
         let subscribe1 = Rc::new(Cell::new(false));
@@ -1096,6 +1188,10 @@ mod tests {
         let click_count2 = Rc::new(Cell::new(0));
         let click_out_count1 = Rc::new(Cell::new(0));
         let click_out_count2 = Rc::new(Cell::new(0));
+        let press_count1 = Rc::new(Cell::new(0));
+        let press_count2 = Rc::new(Cell::new(0));
+        let release_count1 = Rc::new(Cell::new(0));
+        let release_count2 = Rc::new(Cell::new(0));
 
         let buddy = root_buddy();
         let region = RenderRegion::between(0, 10, 20, 30);
@@ -1106,6 +1202,8 @@ mod tests {
                 should_unsubscribe: Rc::clone(&unsubscribe1),
                 click_counter: Rc::clone(&click_count1),
                 click_out_counter: Rc::clone(&click_out_count1),
+                press_counter: Rc::clone(&press_count1),
+                release_counter: Rc::clone(&release_count1),
             }),
             ComponentDomain::between(0.0, 0.0, 0.5, 0.5),
         );
@@ -1115,6 +1213,8 @@ mod tests {
                 should_unsubscribe: Rc::clone(&unsubscribe2),
                 click_counter: Rc::clone(&click_count2),
                 click_out_counter: Rc::clone(&click_out_count2),
+                press_counter: Rc::clone(&press_count2),
+                release_counter: Rc::clone(&release_count2),
             }),
             ComponentDomain::between(0.5, 0.5, 1.0, 1.0),
         );
@@ -1148,57 +1248,94 @@ mod tests {
                 &mut *buddy,
             );
         };
+        let fire_press = || {
+            let mut menu = menu_cell.borrow_mut();
+            let mut buddy = buddy_cell.borrow_mut();
+            menu.on_mouse_press(
+                MousePressEvent::new(Mouse::new(0), Point::new(0.2, 0.2), MouseButton::primary()),
+                &mut *buddy,
+            );
+            menu.on_mouse_press(
+                MousePressEvent::new(Mouse::new(0), Point::new(0.8, 0.8), MouseButton::primary()),
+                &mut *buddy,
+            );
+        };
+        let fire_release = || {
+            let mut menu = menu_cell.borrow_mut();
+            let mut buddy = buddy_cell.borrow_mut();
+            menu.on_mouse_release(
+                MouseReleaseEvent::new(Mouse::new(0), Point::new(0.2, 0.2), MouseButton::primary()),
+                &mut *buddy,
+            );
+            menu.on_mouse_release(
+                MouseReleaseEvent::new(Mouse::new(0), Point::new(0.8, 0.8), MouseButton::primary()),
+                &mut *buddy,
+            );
+        };
 
-        let check_values = |click1: u8, click_out1: u8, click2: u8, click_out2: u8| {
+        let check_values = |
+            click1: u8, click_out1: u8, press1: u8, release1: u8,
+            click2: u8, click_out2: u8, press2: u8, release2: u8,
+        | {
             assert_eq!(click1, click_count1.get());
             assert_eq!(click_out1, click_out_count1.get());
+            assert_eq!(press1, press_count1.get());
+            assert_eq!(release1, release_count1.get());
             assert_eq!(click2, click_count2.get());
             assert_eq!(click_out2, click_out_count2.get());
+            assert_eq!(press2, press_count2.get());
+            assert_eq!(release2, release_count2.get());
         };
 
         // No subscriptions yet, so these events should be ignored
         do_render();
         fire_click();
         fire_click_out();
-        check_values(0, 0, 0, 0);
+        check_values(0, 0, 0, 0, 0, 0, 0, 0);
 
         // Lets subscribe the first component
         subscribe1.set(true);
         do_render();
         fire_click();
-        check_values(1, 1, 0, 0);
+        check_values(1, 1, 0, 0, 0, 0, 0, 0);
 
         // Now the second one as well
         subscribe2.set(true);
         do_render();
         fire_click_out();
-        check_values(1, 2, 0, 1);
+        fire_press();
+        check_values(1, 2, 1, 0, 0, 1, 1, 0);
 
         // Nah, let's cancel the subscription for the second one
         unsubscribe2.set(true);
         do_render();
         fire_click();
-        check_values(2, 3, 0, 1);
+        fire_release();
+        check_values(2, 3, 1, 1, 0, 1, 1, 0);
 
         // This is not fair... lets cancel the first one as well
         unsubscribe1.set(true);
         do_render();
         fire_click_out();
-        check_values(2, 3, 0, 1);
+        fire_release();
+        fire_press();
+        check_values(2, 3, 1, 1, 0, 1, 1, 0);
 
         // Lets give the second one a comeback
         subscribe2.set(true);
         do_render();
         fire_click();
         fire_click_out();
-        check_values(2, 3, 1, 3);
+        fire_press();
+        fire_release();
+        check_values(2, 3, 1, 1, 1, 3, 2, 1);
 
         // Let's stop
         unsubscribe2.set(true);
         do_render();
         fire_click();
         fire_click_out();
-        check_values(2, 3, 1, 3);
+        check_values(2, 3, 1, 1, 1, 3, 2, 1);
     }
 
     struct MouseMotionComponent {
@@ -1658,6 +1795,8 @@ mod tests {
             fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
                 buddy.subscribe_mouse_click();
                 buddy.subscribe_mouse_click_out();
+                buddy.subscribe_mouse_press();
+                buddy.subscribe_mouse_release();
                 buddy.subscribe_mouse_move();
                 buddy.subscribe_mouse_enter();
                 buddy.subscribe_mouse_leave();
@@ -1685,6 +1824,8 @@ mod tests {
         let subs = buddy.get_subscriptions();
         assert!(subs.mouse_click);
         assert!(subs.mouse_click_out);
+        assert!(subs.mouse_press);
+        assert!(subs.mouse_release);
         assert!(subs.mouse_move);
         assert!(subs.mouse_enter);
         assert!(subs.mouse_leave);
@@ -2183,5 +2324,159 @@ mod tests {
         application.fire_mouse_click_event(click_event);
         assert_eq!(7, counter.get());
         assert_eq!(16, new_counter.get());
+    }
+
+    #[test]
+    fn test_mouse_press_and_release() {
+        struct PressReleaseComponent {
+            press_counter: Rc<Cell<u8>>,
+            release_counter: Rc<Cell<u8>>,
+            expected_press_event: Rc<Cell<MousePressEvent>>,
+            expected_release_event: Rc<Cell<MouseReleaseEvent>>,
+            filter_mouse_actions: bool,
+        }
+
+        impl Component for PressReleaseComponent {
+            fn on_attach(&mut self, buddy: &mut dyn ComponentBuddy) {
+                buddy.subscribe_mouse_press();
+                buddy.subscribe_mouse_release();
+            }
+
+            fn render(&mut self, _renderer: &Renderer, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+                Ok(RenderResultStruct {
+                    filter_mouse_actions: self.filter_mouse_actions,
+                    drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8)),
+                })
+            }
+
+            fn on_mouse_press(&mut self, event: MousePressEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.press_counter.set(self.press_counter.get() + 1);
+                let expected = self.expected_press_event.get();
+                assert_eq!(expected.get_mouse(), event.get_mouse());
+                assert!(expected.get_point().nearly_equal(event.get_point()));
+                assert_eq!(expected.get_button(), event.get_button());
+            }
+
+            fn on_mouse_release(&mut self, event: MouseReleaseEvent, _buddy: &mut dyn ComponentBuddy) {
+                self.release_counter.set(self.release_counter.get() + 1);
+                let expected = self.expected_release_event.get();
+                assert_eq!(expected.get_mouse(), event.get_mouse());
+                assert!(expected.get_point().nearly_equal(event.get_point()));
+                assert_eq!(expected.get_button(), event.get_button());
+            }
+        }
+
+        // The initial events don't matter, but need to be specified
+        let dummy_press_event = MousePressEvent::new(
+            Mouse::new(111), Point::new(1.1, 1.1), MouseButton::new(11)
+        );
+        let dummy_release_event = MouseReleaseEvent::new(
+            Mouse::new(222), Point::new(2.2, 2.2), MouseButton::new(22)
+        );
+
+        let press_counter1 = Rc::new(Cell::new(0));
+        let release_counter1 = Rc::new(Cell::new(0));
+        let expected_press_event1 = Rc::new(Cell::new(dummy_press_event));
+        let expected_release_event1 = Rc::new(Cell::new(dummy_release_event));
+
+        let press_counter2 = Rc::new(Cell::new(0));
+        let release_counter2 = Rc::new(Cell::new(0));
+        let expected_press_event2 = Rc::new(Cell::new(dummy_press_event));
+        let expected_release_event2 = Rc::new(Cell::new(dummy_release_event));
+
+        let mut buddy = root_buddy();
+        let mut menu = SimpleFlatMenu::new(None);
+
+        menu.add_component(
+            Box::new(PressReleaseComponent {
+                press_counter: Rc::clone(&press_counter1),
+                release_counter: Rc::clone(&release_counter1),
+                expected_press_event: Rc::clone(&expected_press_event1),
+                expected_release_event: Rc::clone(&expected_release_event1),
+                filter_mouse_actions: true
+            }), ComponentDomain::between(0.0, 0.0, 0.5, 0.5)
+        );
+
+        menu.add_component(
+            Box::new(PressReleaseComponent {
+                press_counter: Rc::clone(&press_counter2),
+                release_counter: Rc::clone(&release_counter2),
+                expected_press_event: Rc::clone(&expected_press_event2),
+                expected_release_event: Rc::clone(&expected_release_event2),
+                filter_mouse_actions: false
+            }), ComponentDomain::between(0.5, 0.5, 1.0, 1.0)
+        );
+
+        // Attaching and rendering should be done before sending events
+        menu.on_attach(&mut buddy);
+        menu.render(
+            &test_renderer(RenderRegion::with_size(0, 0, 1000, 1000)),
+            &mut buddy, false
+        ).unwrap();
+
+        let check_counters = |press1: u8, release1: u8, press2: u8, release2: u8| {
+            assert_eq!(press1, press_counter1.get());
+            assert_eq!(release1, release_counter1.get());
+            assert_eq!(press2, press_counter2.get());
+            assert_eq!(release2, release_counter2.get());
+        };
+
+        // Miss these events on purpose:
+        menu.on_mouse_press(MousePressEvent::new(
+            Mouse::new(1), Point::new(0.2, 0.7), MouseButton::primary()
+        ), &mut buddy);
+        menu.on_mouse_release(MouseReleaseEvent::new(
+            Mouse::new(1), Point::new(0.2, 0.7), MouseButton::primary()
+        ), &mut buddy);
+        check_counters(0, 0, 0, 0);
+
+        // Press and release in the middle of both components
+        expected_press_event1.set(MousePressEvent::new(
+            Mouse::new(2), Point::new(0.5, 0.5), MouseButton::new(1)
+        ));
+        menu.on_mouse_press(MousePressEvent::new(
+            Mouse::new(2), Point::new(0.25, 0.25), MouseButton::new(1)
+        ), &mut buddy);
+        expected_press_event2.set(MousePressEvent::new(
+            Mouse::new(3), Point::new(0.5, 0.5), MouseButton::new(2)
+        ));
+        menu.on_mouse_press(MousePressEvent::new(
+            Mouse::new(3), Point::new(0.75, 0.75), MouseButton::new(2)
+        ), &mut buddy);
+        expected_release_event1.set(MouseReleaseEvent::new(
+            Mouse::new(2), Point::new(0.5, 0.5), MouseButton::new(1)
+        ));
+        menu.on_mouse_release(MouseReleaseEvent::new(
+            Mouse::new(2), Point::new(0.25, 0.25), MouseButton::new(1)
+        ), &mut buddy);
+        expected_release_event2.set(MouseReleaseEvent::new(
+            Mouse::new(3), Point::new(0.5, 0.5), MouseButton::new(2)
+        ));
+        menu.on_mouse_release(MouseReleaseEvent::new(
+            Mouse::new(3), Point::new(0.75, 0.75), MouseButton::new(2)
+        ), &mut buddy);
+        check_counters(1, 1, 1, 1);
+
+        // This time, press near bottom left corner and release near top right corner
+        // Since the first component filters mouse actions, only the second component should notice this
+        menu.on_mouse_press(MousePressEvent::new(
+            Mouse::new(4), Point::new(0.05, 0.05), MouseButton::new(3)
+        ), &mut buddy);
+        menu.on_mouse_release(MouseReleaseEvent::new(
+            Mouse::new(4), Point::new(0.45, 0.45), MouseButton::new(3)
+        ), &mut buddy);
+        expected_press_event2.set(MousePressEvent::new(
+            Mouse::new(5), Point::new(0.1, 0.1), MouseButton::new(4)
+        ));
+        menu.on_mouse_press(MousePressEvent::new(
+            Mouse::new(5), Point::new(0.55, 0.55), MouseButton::new(4)
+        ), &mut buddy);
+        expected_release_event2.set(MouseReleaseEvent::new(
+            Mouse::new(5), Point::new(0.9, 0.9), MouseButton::new(4)
+        ));
+        menu.on_mouse_release(MouseReleaseEvent::new(
+            Mouse::new(5), Point::new(0.95, 0.95), MouseButton::new(4)
+        ), &mut buddy);
+        check_counters(1, 1, 2, 2);
     }
 }

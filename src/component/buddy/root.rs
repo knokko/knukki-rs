@@ -106,6 +106,22 @@ impl ComponentBuddy for RootComponentBuddy {
         self.subscriptions.mouse_click_out = false;
     }
 
+    fn subscribe_mouse_press(&mut self) {
+        self.subscriptions.mouse_press = true;
+    }
+
+    fn unsubscribe_mouse_press(&mut self) {
+        self.subscriptions.mouse_press = false;
+    }
+
+    fn subscribe_mouse_release(&mut self) {
+        self.subscriptions.mouse_release = true;
+    }
+
+    fn unsubscribe_mouse_release(&mut self) {
+        self.subscriptions.mouse_release = false;
+    }
+
     fn subscribe_mouse_move(&mut self) {
         self.subscriptions.mouse_move = true;
     }
