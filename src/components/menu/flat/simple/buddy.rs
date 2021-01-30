@@ -214,11 +214,7 @@ impl ComponentBuddy for SimpleFlatBuddy {
         None
     }
 
-    fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> bool {
-        unimplemented!()
-    }
-
-    fn is_primary_mouse_button_down(&self, mouse: Mouse) -> bool {
+    fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> Option<bool> {
         unimplemented!()
     }
 

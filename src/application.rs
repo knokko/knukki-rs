@@ -159,6 +159,14 @@ impl Application {
     }
 
     pub fn fire_mouse_press_event(&mut self, event: MousePressEvent) {
+
+        let mut mouse_store = self.mouse_store.borrow_mut();
+        match mouse_store.update_mouse_state(event.get_mouse()) {
+            Some(state) => state.buttons.press(event.get_button()),
+            None => debug_assert!(false) // Shouldn't happen, but not critical enough for release crash
+        };
+        drop(mouse_store);
+
         if self.root_buddy.get_subscriptions().mouse_press {
             if let Some(render_result) = self.root_buddy.get_last_render_result() {
                 if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(event.get_point()) {
@@ -170,6 +178,14 @@ impl Application {
     }
 
     pub fn fire_mouse_release_event(&mut self, event: MouseReleaseEvent) {
+
+        let mut mouse_store = self.mouse_store.borrow_mut();
+        match mouse_store.update_mouse_state(event.get_mouse()) {
+            Some(state) => state.buttons.release(event.get_button()),
+            None => debug_assert!(false) // Shouldn't happen, but not critical enough for release crash
+        };
+        drop(mouse_store);
+
         if self.root_buddy.get_subscriptions().mouse_release {
             if let Some(render_result) = self.root_buddy.get_last_render_result() {
                 if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(event.get_point()) {
@@ -206,6 +222,7 @@ impl Application {
                     event.get_mouse(),
                     MouseState {
                         position: event.get_to(),
+                        buttons: PressedMouseButtons::new(),
                     },
                 );
             }
@@ -303,6 +320,8 @@ impl Application {
             event.get_mouse(),
             MouseState {
                 position: event.get_entrance_point(),
+                // TODO Perhaps ask the provider which buttons are pressed
+                buttons: PressedMouseButtons::new(),
             },
         );
         drop(mouse_store);
@@ -555,6 +574,9 @@ mod tests {
         };
         let mut application = Application::new(Box::new(component));
 
+        application.fire_mouse_enter_event(MouseEnterEvent::new(
+            Mouse::new(0), Point::new(0.1, 0.1)
+        ));
         let miss_click =
             MouseClickEvent::new(Mouse::new(0), Point::new(0.3, 0.3), MouseButton::primary());
         let miss_press =
@@ -1230,6 +1252,108 @@ mod tests {
         application.render(&test_renderer(region), true);
         next_check.set(check(mouse2, 0.7, 0.1));
         application.render(&test_renderer(region), true);
+    }
+
+    #[test]
+    fn test_buddy_is_mouse_button_pressed() {
+        #[derive(Copy, Clone)]
+        struct MouseCheck {
+            mouse: Mouse,
+            button: MouseButton,
+            result: Option<bool>,
+        }
+
+        impl MouseCheck {
+            fn new(mouse: Mouse, button: MouseButton, result: Option<bool>) -> Self {
+                Self { mouse, button, result }
+            }
+        }
+
+        struct MouseCheckComponent {
+            next_check: Rc<Cell<MouseCheck>>,
+            render_counter: Rc<Cell<u8>>,
+        }
+
+        impl Component for MouseCheckComponent {
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(&mut self, _renderer: &Renderer, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+                self.render_counter.set(self.render_counter.get() + 1);
+                let next_check = self.next_check.get();
+                assert_eq!(next_check.result, buddy.is_mouse_button_down(next_check.mouse, next_check.button));
+
+                Ok(RenderResultStruct {
+                    filter_mouse_actions: true,
+                    drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8))
+                })
+            }
+        }
+
+        let mouse1 = Mouse::new(1);
+        let mouse2 = Mouse::new(2);
+
+        let button = MouseButton::primary();
+
+        let render_counter = Rc::new(Cell::new(0));
+        let next_check = Rc::new(Cell::new(
+            MouseCheck::new(mouse1, button, None)
+        ));
+
+        let mut application = Application::new(Box::new(MouseCheckComponent {
+            render_counter: Rc::clone(&render_counter),
+            next_check: Rc::clone(&next_check)
+        }));
+        let renderer = test_renderer(RenderRegion::with_size(0, 0, 10, 20));
+
+        application.render(&renderer, false);
+        assert_eq!(1, render_counter.get());
+
+        let miss_point = Point::new(0.1, 0.1);
+        let middle = Point::new(0.5, 0.5);
+
+        application.fire_mouse_enter_event(MouseEnterEvent::new(mouse1, miss_point));
+        application.fire_mouse_press_event(MousePressEvent::new(mouse1, miss_point, button));
+
+        // The component filters mouse actions and this is outside its drawn region
+        application.render(&renderer, true);
+        assert_eq!(2, render_counter.get());
+
+        // But if we move the mouse inside...
+        application.fire_mouse_move_event(MouseMoveEvent::new(mouse1, miss_point, middle));
+        next_check.set(MouseCheck::new(mouse1, button, Some(true)));
+        application.render(&renderer, true);
+        assert_eq!(3, render_counter.get());
+
+        // Let's also add the other mouse
+        application.fire_mouse_enter_event(MouseEnterEvent::new(mouse2, middle));
+        application.fire_mouse_press_event(MousePressEvent::new(mouse2, middle, button));
+        next_check.set(MouseCheck::new(mouse2, button, Some(true)));
+        application.render(&renderer, true);
+        assert_eq!(4, render_counter.get());
+
+        // Let's release mouse 1
+        application.fire_mouse_release_event(MouseReleaseEvent::new(mouse1, middle, button));
+        next_check.set(MouseCheck::new(mouse1, button, Some(false)));
+        application.render(&renderer, true);
+        assert_eq!(5, render_counter.get());
+        // Mouse 2 should still be pressed
+        next_check.set(MouseCheck::new(mouse2, button, Some(true)));
+
+        // Let's move mouse 2 away
+        application.fire_mouse_move_event(MouseMoveEvent::new(mouse2, middle, miss_point));
+        next_check.set(MouseCheck::new(mouse2, button, None));
+        application.render(&renderer, true);
+        assert_eq!(6, render_counter.get());
+        // Mouse 1 should still be released
+        next_check.set(MouseCheck::new(mouse1, button, Some(false)));
+        application.render(&renderer, true);
+        assert_eq!(7, render_counter.get());
+
+        // Let mouse 1 leave
+        application.fire_mouse_leave_event(MouseLeaveEvent::new(mouse1, middle));
+        next_check.set(MouseCheck::new(mouse1, button, None));
+        application.render(&renderer, true);
+        assert_eq!(8, render_counter.get());
     }
 
     #[test]

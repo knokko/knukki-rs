@@ -148,13 +148,19 @@ pub trait ComponentBuddy {
     /// Checks if the given button of the given mouse is currently being
     /// pressed/down. This method can be called during any event.
     ///
+    /// If the mouse is not hovering over the component, this method will return `None`.
+    ///
     /// If you want to check whether the *primary* button of the given mouse is
     /// pressed, the `is_primary_mouse_down` should be more convenient.
-    fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> bool;
+    fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> Option<bool>;
 
     /// Checks if the primary button of the given mouse is currently being
     /// pressed/down. This method can be called during any event.
-    fn is_primary_mouse_button_down(&self, mouse: Mouse) -> bool;
+    ///
+    /// If the mouse is not hovering over the component, this method will return `None`.
+    fn is_primary_mouse_button_down(&self, mouse: Mouse) -> Option<bool> {
+        self.is_mouse_button_down(mouse, MouseButton::primary())
+    }
 
     /// Gets all `Mouse`s that are currently hovering over the (domain of) this component.
     ///

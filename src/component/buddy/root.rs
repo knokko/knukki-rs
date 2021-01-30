@@ -162,12 +162,20 @@ impl ComponentBuddy for RootComponentBuddy {
             .map(|state| state.position)
     }
 
-    fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> bool {
-        unimplemented!()
-    }
+    fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> Option<bool> {
+        let mouse_store = self.get_mouse_store();
 
-    fn is_primary_mouse_button_down(&self, mouse: Mouse) -> bool {
-        unimplemented!()
+        match mouse_store.get_mouse_state(mouse) {
+            Some(state) => {
+                if let Some(render_result) = &self.last_render_result {
+                    if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(state.position) {
+                        return Some(state.buttons.is_pressed(button));
+                    }
+                }
+                None
+            },
+            None => None
+        }
     }
 
     fn get_local_mouses(&self) -> Vec<Mouse> {

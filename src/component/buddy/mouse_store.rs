@@ -80,9 +80,60 @@ struct MouseEntry {
 pub struct MouseState {
     /// The current position of the associated mouse
     pub position: Point,
-    // TODO buttons that are pressed
+    pub buttons: PressedMouseButtons,
 }
 
+#[derive(Eq, Clone, Debug)]
+pub struct PressedMouseButtons {
+    button_vec: Vec<MouseButton>,
+}
+
+impl PartialEq for PressedMouseButtons {
+    fn eq(&self, other: &Self) -> bool {
+        'own_outer_loop:
+        for own_button in &self.button_vec {
+            for other_button in &other.button_vec {
+                if own_button == other_button {
+                    continue 'own_outer_loop;
+                }
+            }
+            return false;
+        }
+
+        'other_outer_loop:
+        for other_button in &other.button_vec {
+            for own_button in &self.button_vec {
+                if own_button == other_button {
+                    continue 'other_outer_loop;
+                }
+            }
+            return false;
+        }
+
+        true
+    }
+}
+
+impl PressedMouseButtons {
+
+    pub fn new() -> Self {
+        Self { button_vec: Vec::with_capacity(2) }
+    }
+
+    pub fn is_pressed(&self, button: MouseButton) -> bool {
+        self.button_vec.contains(&button)
+    }
+
+    pub fn press(&mut self, button: MouseButton) {
+        if !self.is_pressed(button) {
+            self.button_vec.push(button);
+        }
+    }
+
+    pub fn release(&mut self, button: MouseButton) {
+        self.button_vec.retain(|pressed_button| *pressed_button != button);
+    }
+}
 #[cfg(test)]
 mod tests {
 
@@ -96,6 +147,7 @@ mod tests {
         let mouse3 = Mouse::new(33);
         let test_state = MouseState {
             position: Point::new(0.4, 0.1),
+            buttons: PressedMouseButtons::new(),
         };
 
         assert!(store.get_mouse_state(mouse1).is_none());
@@ -151,12 +203,15 @@ mod tests {
 
         let mut state1 = MouseState {
             position: Point::new(0.0, 0.2),
+            buttons: PressedMouseButtons::new(),
         };
         let mut state2 = MouseState {
             position: Point::new(0.3, 0.1),
+            buttons: PressedMouseButtons::new(),
         };
         let mut state3 = MouseState {
             position: Point::new(0.6, 0.7),
+            buttons: PressedMouseButtons::new(),
         };
 
         let mut store = MouseStore::new();
@@ -206,5 +261,82 @@ mod tests {
             store.update_mouse_state(mouse2).unwrap().position
         );
         assert_eq!(vec![mouse2], store.get_mouses());
+    }
+
+    #[test]
+    fn test_pressed_buttons_eq() {
+        assert_eq!(PressedMouseButtons::new(), PressedMouseButtons::new());
+        assert_eq!(PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2)]
+        }, PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2)]
+        });
+        assert_eq!(PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2), MouseButton::new(5)]
+        }, PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2), MouseButton::new(5)]
+        });
+        assert_eq!(PressedMouseButtons {
+            button_vec: vec![MouseButton::new(5), MouseButton::new(2)]
+        }, PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2), MouseButton::new(5)]
+        });
+
+        assert_ne!(PressedMouseButtons::new(), PressedMouseButtons {
+            button_vec: vec![MouseButton::new(0)]
+        });
+        assert_ne!(PressedMouseButtons {
+            button_vec: vec![MouseButton::new(0)]
+        }, PressedMouseButtons::new());
+        assert_ne!(PressedMouseButtons {
+            button_vec: vec![MouseButton::new(1)]
+        }, PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2)]
+        });
+        assert_ne!(PressedMouseButtons {
+            button_vec: vec![MouseButton::new(1), MouseButton::new(2)]
+        }, PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2)]
+        });
+        assert_ne!(PressedMouseButtons {
+            button_vec: vec![MouseButton::new(1)]
+        }, PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2), MouseButton::new(1)]
+        });
+        assert_ne!(PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2), MouseButton::new(3)]
+        }, PressedMouseButtons {
+            button_vec: vec![MouseButton::new(2), MouseButton::new(1)]
+        });
+    }
+
+    #[test]
+    fn test_pressed_buttons() {
+        let mut buttons = PressedMouseButtons::new();
+        let button1 = MouseButton::new(0);
+        let button2 = MouseButton::new(2);
+        let button3 = MouseButton::new(3);
+
+        assert!(!buttons.is_pressed(button1));
+
+        buttons.press(button1);
+        assert!(buttons.is_pressed(button1));
+        assert!(!buttons.is_pressed(button2));
+
+        buttons.press(button3);
+        assert!(buttons.is_pressed(button1));
+        assert!(!buttons.is_pressed(button2));
+        assert!(buttons.is_pressed(button3));
+
+        buttons.release(button1);
+        assert!(!buttons.is_pressed(button1));
+        assert!(buttons.is_pressed(button3));
+
+        buttons.press(button2);
+        assert!(buttons.is_pressed(button2));
+        buttons.press(button2);
+        assert!(!buttons.is_pressed(button1));
+        assert!(buttons.is_pressed(button2));
+        assert!(buttons.is_pressed(button3));
     }
 }
