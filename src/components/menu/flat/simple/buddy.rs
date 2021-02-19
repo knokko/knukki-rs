@@ -85,7 +85,7 @@ impl ComponentBuddy for SimpleFlatBuddy {
     }
 
     fn request_text_input(&self, start_text: String) -> Option<String> {
-        unimplemented!()
+        todo!()
     }
 
     fn request_render(&mut self) {
@@ -194,11 +194,11 @@ impl ComponentBuddy for SimpleFlatBuddy {
     }
 
     fn subscribe_char_type(&self) -> Result<(), ()> {
-        unimplemented!()
+        todo!()
     }
 
     fn unsubscribe_char_type(&self) {
-        unimplemented!()
+        todo!()
     }
 
     fn get_mouse_position(&self, mouse: Mouse) -> Option<Point> {
@@ -214,8 +214,26 @@ impl ComponentBuddy for SimpleFlatBuddy {
         None
     }
 
+    fn get_pressed_mouse_buttons(&self, mouse: Mouse) -> Option<Vec<MouseButton>> {
+        let mouse_buddy = self.mouse_buddy.borrow();
+        for entry in &mouse_buddy.local_mouses {
+            if self.domain.is_inside(entry.position) && entry.mouse == mouse {
+                return Some(entry.pressed_buttons.clone());
+            }
+        }
+
+        None
+    }
+
     fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> Option<bool> {
-        unimplemented!()
+        let mouse_buddy = self.mouse_buddy.borrow();
+        for entry in &mouse_buddy.local_mouses {
+            if self.domain.is_inside(entry.position) && entry.mouse == mouse {
+                return Some(entry.pressed_buttons.contains(&button));
+            }
+        }
+
+        None
     }
 
     fn get_local_mouses(&self) -> Vec<Mouse> {
@@ -240,8 +258,9 @@ pub(super) struct MouseBuddy {
     pub local_mouses: Vec<MouseEntry>,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub(super) struct MouseEntry {
     pub mouse: Mouse,
     pub position: Point,
+    pub pressed_buttons: Vec<MouseButton>,
 }

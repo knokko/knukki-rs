@@ -83,7 +83,7 @@ impl ComponentBuddy for RootComponentBuddy {
     }
 
     fn request_text_input(&self, start_text: String) -> Option<String> {
-        unimplemented!()
+        todo!()
     }
 
     fn request_render(&mut self) {
@@ -147,11 +147,11 @@ impl ComponentBuddy for RootComponentBuddy {
     }
 
     fn subscribe_char_type(&self) -> Result<(), ()> {
-        unimplemented!()
+        todo!()
     }
 
     fn unsubscribe_char_type(&self) {
-        unimplemented!()
+        todo!()
     }
 
     fn get_mouse_position(&self, mouse: Mouse) -> Option<Point> {
@@ -160,6 +160,11 @@ impl ComponentBuddy for RootComponentBuddy {
         mouse_store
             .get_mouse_state(mouse)
             .map(|state| state.position)
+    }
+
+    fn get_pressed_mouse_buttons(&self, mouse: Mouse) -> Option<Vec<MouseButton>> {
+        let mouse_store = self.get_mouse_store();
+        mouse_store.get_mouse_state(mouse).map(|state| state.buttons.get_pressed_buttons())
     }
 
     fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> Option<bool> {

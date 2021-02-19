@@ -133,6 +133,10 @@ impl PressedMouseButtons {
     pub fn release(&mut self, button: MouseButton) {
         self.button_vec.retain(|pressed_button| *pressed_button != button);
     }
+
+    pub fn get_pressed_buttons(&self) -> Vec<MouseButton> {
+        self.button_vec.clone()
+    }
 }
 #[cfg(test)]
 mod tests {

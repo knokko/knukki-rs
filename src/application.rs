@@ -1255,7 +1255,7 @@ mod tests {
     }
 
     #[test]
-    fn test_buddy_is_mouse_button_pressed() {
+    fn test_buddy_pressed_mouse_buttons() {
         #[derive(Copy, Clone)]
         struct MouseCheck {
             mouse: Mouse,
