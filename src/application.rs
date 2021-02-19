@@ -159,18 +159,20 @@ impl Application {
     }
 
     pub fn fire_mouse_press_event(&mut self, event: MousePressEvent) {
-
         let mut mouse_store = self.mouse_store.borrow_mut();
         match mouse_store.update_mouse_state(event.get_mouse()) {
             Some(state) => state.buttons.press(event.get_button()),
-            None => debug_assert!(false) // Shouldn't happen, but not critical enough for release crash
+            None => debug_assert!(false), // Shouldn't happen, but not critical enough for release crash
         };
         drop(mouse_store);
 
         if self.root_buddy.get_subscriptions().mouse_press {
             if let Some(render_result) = self.root_buddy.get_last_render_result() {
-                if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(event.get_point()) {
-                    self.root_component.on_mouse_press(event, &mut self.root_buddy);
+                if !render_result.filter_mouse_actions
+                    || render_result.drawn_region.is_inside(event.get_point())
+                {
+                    self.root_component
+                        .on_mouse_press(event, &mut self.root_buddy);
                     self.work_after_events();
                 }
             }
@@ -178,18 +180,20 @@ impl Application {
     }
 
     pub fn fire_mouse_release_event(&mut self, event: MouseReleaseEvent) {
-
         let mut mouse_store = self.mouse_store.borrow_mut();
         match mouse_store.update_mouse_state(event.get_mouse()) {
             Some(state) => state.buttons.release(event.get_button()),
-            None => debug_assert!(false) // Shouldn't happen, but not critical enough for release crash
+            None => debug_assert!(false), // Shouldn't happen, but not critical enough for release crash
         };
         drop(mouse_store);
 
         if self.root_buddy.get_subscriptions().mouse_release {
             if let Some(render_result) = self.root_buddy.get_last_render_result() {
-                if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(event.get_point()) {
-                    self.root_component.on_mouse_release(event, &mut self.root_buddy);
+                if !render_result.filter_mouse_actions
+                    || render_result.drawn_region.is_inside(event.get_point())
+                {
+                    self.root_component
+                        .on_mouse_release(event, &mut self.root_buddy);
                     self.work_after_events();
                 }
             }
@@ -556,7 +560,11 @@ mod tests {
                 self.press_counter.set(self.press_counter.get() + 1);
             }
 
-            fn on_mouse_release(&mut self, _event: MouseReleaseEvent, _buddy: &mut dyn ComponentBuddy) {
+            fn on_mouse_release(
+                &mut self,
+                _event: MouseReleaseEvent,
+                _buddy: &mut dyn ComponentBuddy,
+            ) {
                 self.release_counter.set(self.release_counter.get() + 1);
             }
         }
@@ -574,9 +582,8 @@ mod tests {
         };
         let mut application = Application::new(Box::new(component));
 
-        application.fire_mouse_enter_event(MouseEnterEvent::new(
-            Mouse::new(0), Point::new(0.1, 0.1)
-        ));
+        application
+            .fire_mouse_enter_event(MouseEnterEvent::new(Mouse::new(0), Point::new(0.1, 0.1)));
         let miss_click =
             MouseClickEvent::new(Mouse::new(0), Point::new(0.3, 0.3), MouseButton::primary());
         let miss_press =
@@ -1003,7 +1010,11 @@ mod tests {
                 flags.mouse_press = true;
             }
 
-            fn on_mouse_release(&mut self, _event: MouseReleaseEvent, _buddy: &mut dyn ComponentBuddy) {
+            fn on_mouse_release(
+                &mut self,
+                _event: MouseReleaseEvent,
+                _buddy: &mut dyn ComponentBuddy,
+            ) {
                 let mut flags = self.received_events.borrow_mut();
                 flags.mouse_release = true;
             }
@@ -1040,9 +1051,11 @@ mod tests {
         };
 
         let mut application = Application::new(Box::new(component));
-        let mut try_events = |
-            mouse_click: bool, mouse_press: bool, mouse_release: bool, mouse_enter: bool, mouse_leave: bool
-        | {
+        let mut try_events = |mouse_click: bool,
+                              mouse_press: bool,
+                              mouse_release: bool,
+                              mouse_enter: bool,
+                              mouse_leave: bool| {
             let mut subscribe = desired_subscriptions.borrow_mut();
             subscribe.mouse_click = mouse_click;
             subscribe.mouse_press = mouse_press;
@@ -1265,7 +1278,11 @@ mod tests {
 
         impl MouseCheck {
             fn new(mouse: Mouse, button: MouseButton, result: Option<bool>) -> Self {
-                Self { mouse, button, result }
+                Self {
+                    mouse,
+                    button,
+                    result,
+                }
             }
         }
 
@@ -1277,14 +1294,22 @@ mod tests {
         impl Component for MouseCheckComponent {
             fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
 
-            fn render(&mut self, _renderer: &Renderer, buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _renderer: &Renderer,
+                buddy: &mut dyn ComponentBuddy,
+                _force: bool,
+            ) -> RenderResult {
                 self.render_counter.set(self.render_counter.get() + 1);
                 let next_check = self.next_check.get();
-                assert_eq!(next_check.result, buddy.is_mouse_button_down(next_check.mouse, next_check.button));
+                assert_eq!(
+                    next_check.result,
+                    buddy.is_mouse_button_down(next_check.mouse, next_check.button)
+                );
 
                 Ok(RenderResultStruct {
                     filter_mouse_actions: true,
-                    drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8))
+                    drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8)),
                 })
             }
         }
@@ -1295,13 +1320,11 @@ mod tests {
         let button = MouseButton::primary();
 
         let render_counter = Rc::new(Cell::new(0));
-        let next_check = Rc::new(Cell::new(
-            MouseCheck::new(mouse1, button, None)
-        ));
+        let next_check = Rc::new(Cell::new(MouseCheck::new(mouse1, button, None)));
 
         let mut application = Application::new(Box::new(MouseCheckComponent {
             render_counter: Rc::clone(&render_counter),
-            next_check: Rc::clone(&next_check)
+            next_check: Rc::clone(&next_check),
         }));
         let renderer = test_renderer(RenderRegion::with_size(0, 0, 10, 20));
 

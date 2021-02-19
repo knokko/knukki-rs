@@ -67,9 +67,11 @@ impl SimpleFlatMenu {
             let should_have_pressed_buttons = own_buddy.get_pressed_mouse_buttons(mouse);
             if let Some(position) = should_have_position {
                 if let Some(pressed_buttons) = should_have_pressed_buttons {
-                    mouse_buddy
-                        .local_mouses
-                        .push(MouseEntry { mouse, position, pressed_buttons });
+                    mouse_buddy.local_mouses.push(MouseEntry {
+                        mouse,
+                        position,
+                        pressed_buttons,
+                    });
                 } else {
                     // This is weird behavior that should be investigated, but not worth a production
                     // crash
@@ -1167,11 +1169,7 @@ mod tests {
                 self.click_out_counter.set(self.click_out_counter.get() + 1);
             }
 
-            fn on_mouse_press(
-                &mut self,
-                _event: MousePressEvent,
-                _buddy: &mut dyn ComponentBuddy,
-            ) {
+            fn on_mouse_press(&mut self, _event: MousePressEvent, _buddy: &mut dyn ComponentBuddy) {
                 self.press_counter.set(self.press_counter.get() + 1);
             }
 
@@ -1278,10 +1276,14 @@ mod tests {
             );
         };
 
-        let check_values = |
-            click1: u8, click_out1: u8, press1: u8, release1: u8,
-            click2: u8, click_out2: u8, press2: u8, release2: u8,
-        | {
+        let check_values = |click1: u8,
+                            click_out1: u8,
+                            press1: u8,
+                            release1: u8,
+                            click2: u8,
+                            click_out2: u8,
+                            press2: u8,
+                            release2: u8| {
             assert_eq!(click1, click_count1.get());
             assert_eq!(click_out1, click_out_count1.get());
             assert_eq!(press1, press_count1.get());
@@ -2347,7 +2349,12 @@ mod tests {
                 buddy.subscribe_mouse_release();
             }
 
-            fn render(&mut self, _renderer: &Renderer, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+            fn render(
+                &mut self,
+                _renderer: &Renderer,
+                _buddy: &mut dyn ComponentBuddy,
+                _force: bool,
+            ) -> RenderResult {
                 Ok(RenderResultStruct {
                     filter_mouse_actions: self.filter_mouse_actions,
                     drawn_region: Box::new(RectangularDrawnRegion::new(0.2, 0.2, 0.8, 0.8)),
@@ -2362,7 +2369,11 @@ mod tests {
                 assert_eq!(expected.get_button(), event.get_button());
             }
 
-            fn on_mouse_release(&mut self, event: MouseReleaseEvent, _buddy: &mut dyn ComponentBuddy) {
+            fn on_mouse_release(
+                &mut self,
+                event: MouseReleaseEvent,
+                _buddy: &mut dyn ComponentBuddy,
+            ) {
                 self.release_counter.set(self.release_counter.get() + 1);
                 let expected = self.expected_release_event.get();
                 assert_eq!(expected.get_mouse(), event.get_mouse());
@@ -2372,12 +2383,10 @@ mod tests {
         }
 
         // The initial events don't matter, but need to be specified
-        let dummy_press_event = MousePressEvent::new(
-            Mouse::new(111), Point::new(1.1, 1.1), MouseButton::new(11)
-        );
-        let dummy_release_event = MouseReleaseEvent::new(
-            Mouse::new(222), Point::new(2.2, 2.2), MouseButton::new(22)
-        );
+        let dummy_press_event =
+            MousePressEvent::new(Mouse::new(111), Point::new(1.1, 1.1), MouseButton::new(11));
+        let dummy_release_event =
+            MouseReleaseEvent::new(Mouse::new(222), Point::new(2.2, 2.2), MouseButton::new(22));
 
         let press_counter1 = Rc::new(Cell::new(0));
         let release_counter1 = Rc::new(Cell::new(0));
@@ -2398,8 +2407,9 @@ mod tests {
                 release_counter: Rc::clone(&release_counter1),
                 expected_press_event: Rc::clone(&expected_press_event1),
                 expected_release_event: Rc::clone(&expected_release_event1),
-                filter_mouse_actions: true
-            }), ComponentDomain::between(0.0, 0.0, 0.5, 0.5)
+                filter_mouse_actions: true,
+            }),
+            ComponentDomain::between(0.0, 0.0, 0.5, 0.5),
         );
 
         menu.add_component(
@@ -2408,16 +2418,19 @@ mod tests {
                 release_counter: Rc::clone(&release_counter2),
                 expected_press_event: Rc::clone(&expected_press_event2),
                 expected_release_event: Rc::clone(&expected_release_event2),
-                filter_mouse_actions: false
-            }), ComponentDomain::between(0.5, 0.5, 1.0, 1.0)
+                filter_mouse_actions: false,
+            }),
+            ComponentDomain::between(0.5, 0.5, 1.0, 1.0),
         );
 
         // Attaching and rendering should be done before sending events
         menu.on_attach(&mut buddy);
         menu.render(
             &test_renderer(RenderRegion::with_size(0, 0, 1000, 1000)),
-            &mut buddy, false
-        ).unwrap();
+            &mut buddy,
+            false,
+        )
+        .unwrap();
 
         let check_counters = |press1: u8, release1: u8, press2: u8, release2: u8| {
             assert_eq!(press1, press_counter1.get());
@@ -2427,61 +2440,83 @@ mod tests {
         };
 
         // Miss these events on purpose:
-        menu.on_mouse_press(MousePressEvent::new(
-            Mouse::new(1), Point::new(0.2, 0.7), MouseButton::primary()
-        ), &mut buddy);
-        menu.on_mouse_release(MouseReleaseEvent::new(
-            Mouse::new(1), Point::new(0.2, 0.7), MouseButton::primary()
-        ), &mut buddy);
+        menu.on_mouse_press(
+            MousePressEvent::new(Mouse::new(1), Point::new(0.2, 0.7), MouseButton::primary()),
+            &mut buddy,
+        );
+        menu.on_mouse_release(
+            MouseReleaseEvent::new(Mouse::new(1), Point::new(0.2, 0.7), MouseButton::primary()),
+            &mut buddy,
+        );
         check_counters(0, 0, 0, 0);
 
         // Press and release in the middle of both components
         expected_press_event1.set(MousePressEvent::new(
-            Mouse::new(2), Point::new(0.5, 0.5), MouseButton::new(1)
+            Mouse::new(2),
+            Point::new(0.5, 0.5),
+            MouseButton::new(1),
         ));
-        menu.on_mouse_press(MousePressEvent::new(
-            Mouse::new(2), Point::new(0.25, 0.25), MouseButton::new(1)
-        ), &mut buddy);
+        menu.on_mouse_press(
+            MousePressEvent::new(Mouse::new(2), Point::new(0.25, 0.25), MouseButton::new(1)),
+            &mut buddy,
+        );
         expected_press_event2.set(MousePressEvent::new(
-            Mouse::new(3), Point::new(0.5, 0.5), MouseButton::new(2)
+            Mouse::new(3),
+            Point::new(0.5, 0.5),
+            MouseButton::new(2),
         ));
-        menu.on_mouse_press(MousePressEvent::new(
-            Mouse::new(3), Point::new(0.75, 0.75), MouseButton::new(2)
-        ), &mut buddy);
+        menu.on_mouse_press(
+            MousePressEvent::new(Mouse::new(3), Point::new(0.75, 0.75), MouseButton::new(2)),
+            &mut buddy,
+        );
         expected_release_event1.set(MouseReleaseEvent::new(
-            Mouse::new(2), Point::new(0.5, 0.5), MouseButton::new(1)
+            Mouse::new(2),
+            Point::new(0.5, 0.5),
+            MouseButton::new(1),
         ));
-        menu.on_mouse_release(MouseReleaseEvent::new(
-            Mouse::new(2), Point::new(0.25, 0.25), MouseButton::new(1)
-        ), &mut buddy);
+        menu.on_mouse_release(
+            MouseReleaseEvent::new(Mouse::new(2), Point::new(0.25, 0.25), MouseButton::new(1)),
+            &mut buddy,
+        );
         expected_release_event2.set(MouseReleaseEvent::new(
-            Mouse::new(3), Point::new(0.5, 0.5), MouseButton::new(2)
+            Mouse::new(3),
+            Point::new(0.5, 0.5),
+            MouseButton::new(2),
         ));
-        menu.on_mouse_release(MouseReleaseEvent::new(
-            Mouse::new(3), Point::new(0.75, 0.75), MouseButton::new(2)
-        ), &mut buddy);
+        menu.on_mouse_release(
+            MouseReleaseEvent::new(Mouse::new(3), Point::new(0.75, 0.75), MouseButton::new(2)),
+            &mut buddy,
+        );
         check_counters(1, 1, 1, 1);
 
         // This time, press near bottom left corner and release near top right corner
         // Since the first component filters mouse actions, only the second component should notice this
-        menu.on_mouse_press(MousePressEvent::new(
-            Mouse::new(4), Point::new(0.05, 0.05), MouseButton::new(3)
-        ), &mut buddy);
-        menu.on_mouse_release(MouseReleaseEvent::new(
-            Mouse::new(4), Point::new(0.45, 0.45), MouseButton::new(3)
-        ), &mut buddy);
+        menu.on_mouse_press(
+            MousePressEvent::new(Mouse::new(4), Point::new(0.05, 0.05), MouseButton::new(3)),
+            &mut buddy,
+        );
+        menu.on_mouse_release(
+            MouseReleaseEvent::new(Mouse::new(4), Point::new(0.45, 0.45), MouseButton::new(3)),
+            &mut buddy,
+        );
         expected_press_event2.set(MousePressEvent::new(
-            Mouse::new(5), Point::new(0.1, 0.1), MouseButton::new(4)
+            Mouse::new(5),
+            Point::new(0.1, 0.1),
+            MouseButton::new(4),
         ));
-        menu.on_mouse_press(MousePressEvent::new(
-            Mouse::new(5), Point::new(0.55, 0.55), MouseButton::new(4)
-        ), &mut buddy);
+        menu.on_mouse_press(
+            MousePressEvent::new(Mouse::new(5), Point::new(0.55, 0.55), MouseButton::new(4)),
+            &mut buddy,
+        );
         expected_release_event2.set(MouseReleaseEvent::new(
-            Mouse::new(5), Point::new(0.9, 0.9), MouseButton::new(4)
+            Mouse::new(5),
+            Point::new(0.9, 0.9),
+            MouseButton::new(4),
         ));
-        menu.on_mouse_release(MouseReleaseEvent::new(
-            Mouse::new(5), Point::new(0.95, 0.95), MouseButton::new(4)
-        ), &mut buddy);
+        menu.on_mouse_release(
+            MouseReleaseEvent::new(Mouse::new(5), Point::new(0.95, 0.95), MouseButton::new(4)),
+            &mut buddy,
+        );
         check_counters(1, 1, 2, 2);
     }
 
@@ -2495,7 +2530,11 @@ mod tests {
 
         impl MouseCheck {
             fn new(mouse: Mouse, button: MouseButton, result: Option<bool>) -> Self {
-                Self { mouse, button, result }
+                Self {
+                    mouse,
+                    button,
+                    result,
+                }
             }
         }
 
@@ -2523,11 +2562,14 @@ mod tests {
                 &mut self,
                 _renderer: &Renderer,
                 buddy: &mut dyn ComponentBuddy,
-                _force: bool
+                _force: bool,
             ) -> RenderResult {
                 let checks = self.checks.take();
                 for check in checks {
-                    assert_eq!(check.result, buddy.is_mouse_button_down(check.mouse, check.button));
+                    assert_eq!(
+                        check.result,
+                        buddy.is_mouse_button_down(check.mouse, check.button)
+                    );
                 }
 
                 let vec_checks = self.vec_checks.take();
@@ -2550,16 +2592,22 @@ mod tests {
         let vec_checks2 = Rc::new(Cell::new(Vec::new()));
 
         let mut menu = SimpleFlatMenu::new(None);
-        menu.add_component(Box::new(MouseCheckComponent {
-            checks: Rc::clone(&checks1),
-            vec_checks: Rc::clone(&vec_checks1),
-            render_counter: Rc::clone(&counter1)
-        }), ComponentDomain::between(0.2, 0.5, 0.7, 0.7));
-        menu.add_component(Box::new(MouseCheckComponent {
-            checks: Rc::clone(&checks2),
-            vec_checks: Rc::clone(&vec_checks2),
-            render_counter: Rc::clone(&counter2)
-        }), ComponentDomain::between(0.8, 0.8, 1.0, 1.0));
+        menu.add_component(
+            Box::new(MouseCheckComponent {
+                checks: Rc::clone(&checks1),
+                vec_checks: Rc::clone(&vec_checks1),
+                render_counter: Rc::clone(&counter1),
+            }),
+            ComponentDomain::between(0.2, 0.5, 0.7, 0.7),
+        );
+        menu.add_component(
+            Box::new(MouseCheckComponent {
+                checks: Rc::clone(&checks2),
+                vec_checks: Rc::clone(&vec_checks2),
+                render_counter: Rc::clone(&counter2),
+            }),
+            ComponentDomain::between(0.8, 0.8, 1.0, 1.0),
+        );
 
         let check_counters = |expected: u8| {
             assert_eq!(expected, counter1.get());
@@ -2571,17 +2619,23 @@ mod tests {
         let renderer = test_renderer(RenderRegion::between(10, 20, 30, 40));
 
         // No mouse should be present initially
-        checks1.set(vec![MouseCheck::new(Mouse::new(0), MouseButton::primary(), None)]);
+        checks1.set(vec![MouseCheck::new(
+            Mouse::new(0),
+            MouseButton::primary(),
+            None,
+        )]);
         vec_checks1.set(vec![VecCheck::new(Mouse::new(0), None)]);
         application.render(&renderer, true);
         check_counters(1);
 
         // Spawn a mouse on component 1, but don't press any buttons yet
         let mouse1 = Mouse::new(3);
-        application.fire_mouse_enter_event(
-            MouseEnterEvent::new(mouse1, Point::new(0.6, 0.6))
-        );
-        checks1.set(vec![MouseCheck::new(mouse1, MouseButton::primary(), Some(false))]);
+        application.fire_mouse_enter_event(MouseEnterEvent::new(mouse1, Point::new(0.6, 0.6)));
+        checks1.set(vec![MouseCheck::new(
+            mouse1,
+            MouseButton::primary(),
+            Some(false),
+        )]);
         checks2.set(vec![MouseCheck::new(mouse1, MouseButton::primary(), None)]);
         vec_checks1.set(vec![VecCheck::new(mouse1, Some(Vec::new()))]);
         vec_checks2.set(vec![VecCheck::new(mouse1, None)]);
@@ -2592,34 +2646,38 @@ mod tests {
         let button1 = MouseButton::new(1);
         let button2 = MouseButton::new(2);
         application.fire_mouse_press_event(MousePressEvent::new(
-            mouse1, Point::new(0.6, 0.6), button1
+            mouse1,
+            Point::new(0.6, 0.6),
+            button1,
         ));
         checks1.set(vec![
             MouseCheck::new(mouse1, button1, Some(true)),
-            MouseCheck::new(mouse1, button2, Some(false))
+            MouseCheck::new(mouse1, button2, Some(false)),
         ]);
         checks2.set(vec![
             MouseCheck::new(mouse1, button1, None),
-            MouseCheck::new(mouse1, button2, None)
+            MouseCheck::new(mouse1, button2, None),
         ]);
         vec_checks1.set(vec![
             VecCheck::new(mouse1, Some(vec![button1])),
-            VecCheck::new(Mouse::new(10), None)
+            VecCheck::new(Mouse::new(10), None),
         ]);
         application.render(&renderer, true);
         check_counters(3);
 
         // Move the mouse away
         application.fire_mouse_move_event(MouseMoveEvent::new(
-            mouse1, Point::new(0.6, 0.6), Point::new(0.0, 0.0)
+            mouse1,
+            Point::new(0.6, 0.6),
+            Point::new(0.0, 0.0),
         ));
         checks1.set(vec![
             MouseCheck::new(mouse1, button1, None),
-            MouseCheck::new(mouse1, button2, None)
+            MouseCheck::new(mouse1, button2, None),
         ]);
         checks2.set(vec![
             MouseCheck::new(mouse1, button1, None),
-            MouseCheck::new(mouse1, button2, None)
+            MouseCheck::new(mouse1, button2, None),
         ]);
         vec_checks1.set(vec![VecCheck::new(mouse1, None)]);
         application.render(&renderer, true);
@@ -2627,19 +2685,21 @@ mod tests {
 
         // Move the mouse to component 2
         application.fire_mouse_move_event(MouseMoveEvent::new(
-            mouse1, Point::new(0.0, 0.0), Point::new(0.9, 0.9)
+            mouse1,
+            Point::new(0.0, 0.0),
+            Point::new(0.9, 0.9),
         ));
         checks1.set(vec![
             MouseCheck::new(mouse1, button1, None),
-            MouseCheck::new(mouse1, button2, None)
+            MouseCheck::new(mouse1, button2, None),
         ]);
         checks2.set(vec![
             MouseCheck::new(mouse1, button1, Some(true)),
-            MouseCheck::new(mouse1, button2, Some(false))
+            MouseCheck::new(mouse1, button2, Some(false)),
         ]);
         vec_checks2.set(vec![
             VecCheck::new(mouse1, Some(vec![button1])),
-            VecCheck::new(Mouse::new(10), None)
+            VecCheck::new(Mouse::new(10), None),
         ]);
         application.render(&renderer, true);
         check_counters(5);

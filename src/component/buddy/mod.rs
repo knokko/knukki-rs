@@ -159,7 +159,8 @@ pub trait ComponentBuddy {
     /// If you want to check whether the *primary* button of the given mouse is
     /// pressed, the `is_primary_mouse_down` should be more convenient.
     fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> Option<bool> {
-        self.get_pressed_mouse_buttons(mouse).map(|pressed_buttons| pressed_buttons.contains(&button))
+        self.get_pressed_mouse_buttons(mouse)
+            .map(|pressed_buttons| pressed_buttons.contains(&button))
     }
 
     /// Checks if the primary button of the given mouse is currently being

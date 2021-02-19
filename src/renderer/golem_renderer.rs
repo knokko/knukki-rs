@@ -87,9 +87,10 @@ impl Renderer {
     /// (because the `Renderer` will take care of that), and it will automatically be shared by all
     /// other `Component` that use this method and the same shader **id**.
     pub fn use_cached_shader(
-        &self, id: &ShaderId,
+        &self,
+        id: &ShaderId,
         create_shader: impl FnOnce(&golem::Context) -> Result<ShaderProgram, GolemError>,
-        use_shader: impl FnOnce(&mut ShaderProgram) -> Result<(), GolemError>
+        use_shader: impl FnOnce(&mut ShaderProgram) -> Result<(), GolemError>,
     ) -> Result<(), GolemError> {
         let mut cache = self.storage.shader_cache.borrow_mut();
         cache.use_shader(id, || create_shader(&self.context), use_shader)
@@ -147,9 +148,10 @@ impl ShaderCache {
     }
 
     fn use_shader(
-        &mut self, id: &ShaderId,
+        &mut self,
+        id: &ShaderId,
         create_shader: impl FnOnce() -> Result<ShaderProgram, GolemError>,
-        use_shader: impl FnOnce(&mut ShaderProgram) -> Result<(), GolemError>
+        use_shader: impl FnOnce(&mut ShaderProgram) -> Result<(), GolemError>,
     ) -> Result<(), GolemError> {
         self.current_time += 1;
 
@@ -167,19 +169,24 @@ impl ShaderCache {
 
         // If we would exceed the maximum number of cached shaders, we remove the least recently used half
         if new_length > self.max_cached_shaders {
-            let mut last_used_times: Vec<u64> = self.map.values().map(|cached_shader| cached_shader.last_used).collect();
+            let mut last_used_times: Vec<u64> = self
+                .map
+                .values()
+                .map(|cached_shader| cached_shader.last_used)
+                .collect();
             last_used_times.sort();
             let median = last_used_times[last_used_times.len() / 2];
 
             // Remove at least half of the cached shaders
-            self.map.retain(|_id, cached_shader| cached_shader.last_used > median);
+            self.map
+                .retain(|_id, cached_shader| cached_shader.last_used > median);
         }
 
         // Now that we are sure we won't exceed the maximum number of shaders, we can insert the
         // new shader, and return a reference to it.
         let value = self.map.entry(id.clone()).or_insert(CachedShader {
             last_used: self.current_time,
-            shader: create_shader()?
+            shader: create_shader()?,
         });
         value.shader.bind();
         use_shader(&mut value.shader)
@@ -211,7 +218,10 @@ impl ShaderId {
     /// Constructs a `ShaderId` with the given `crate_name` and `shader_name`. See the documentation
     /// of this struct for more information.
     pub fn from_strings(crate_name: String, shader_name: String) -> Self {
-        Self { crate_name, shader_name }
+        Self {
+            crate_name,
+            shader_name,
+        }
     }
 
     /// Constructs a `ShaderId` with the given `crate_name` and `shader_name`. See the documentation

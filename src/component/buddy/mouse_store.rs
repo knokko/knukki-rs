@@ -90,8 +90,7 @@ pub struct PressedMouseButtons {
 
 impl PartialEq for PressedMouseButtons {
     fn eq(&self, other: &Self) -> bool {
-        'own_outer_loop:
-        for own_button in &self.button_vec {
+        'own_outer_loop: for own_button in &self.button_vec {
             for other_button in &other.button_vec {
                 if own_button == other_button {
                     continue 'own_outer_loop;
@@ -100,8 +99,7 @@ impl PartialEq for PressedMouseButtons {
             return false;
         }
 
-        'other_outer_loop:
-        for other_button in &other.button_vec {
+        'other_outer_loop: for other_button in &other.button_vec {
             for own_button in &self.button_vec {
                 if own_button == other_button {
                     continue 'other_outer_loop;
@@ -115,9 +113,10 @@ impl PartialEq for PressedMouseButtons {
 }
 
 impl PressedMouseButtons {
-
     pub fn new() -> Self {
-        Self { button_vec: Vec::with_capacity(2) }
+        Self {
+            button_vec: Vec::with_capacity(2),
+        }
     }
 
     pub fn is_pressed(&self, button: MouseButton) -> bool {
@@ -131,7 +130,8 @@ impl PressedMouseButtons {
     }
 
     pub fn release(&mut self, button: MouseButton) {
-        self.button_vec.retain(|pressed_button| *pressed_button != button);
+        self.button_vec
+            .retain(|pressed_button| *pressed_button != button);
     }
 
     pub fn get_pressed_buttons(&self) -> Vec<MouseButton> {
@@ -270,48 +270,75 @@ mod tests {
     #[test]
     fn test_pressed_buttons_eq() {
         assert_eq!(PressedMouseButtons::new(), PressedMouseButtons::new());
-        assert_eq!(PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2)]
-        }, PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2)]
-        });
-        assert_eq!(PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2), MouseButton::new(5)]
-        }, PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2), MouseButton::new(5)]
-        });
-        assert_eq!(PressedMouseButtons {
-            button_vec: vec![MouseButton::new(5), MouseButton::new(2)]
-        }, PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2), MouseButton::new(5)]
-        });
+        assert_eq!(
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2)]
+            },
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2)]
+            }
+        );
+        assert_eq!(
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2), MouseButton::new(5)]
+            },
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2), MouseButton::new(5)]
+            }
+        );
+        assert_eq!(
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(5), MouseButton::new(2)]
+            },
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2), MouseButton::new(5)]
+            }
+        );
 
-        assert_ne!(PressedMouseButtons::new(), PressedMouseButtons {
-            button_vec: vec![MouseButton::new(0)]
-        });
-        assert_ne!(PressedMouseButtons {
-            button_vec: vec![MouseButton::new(0)]
-        }, PressedMouseButtons::new());
-        assert_ne!(PressedMouseButtons {
-            button_vec: vec![MouseButton::new(1)]
-        }, PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2)]
-        });
-        assert_ne!(PressedMouseButtons {
-            button_vec: vec![MouseButton::new(1), MouseButton::new(2)]
-        }, PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2)]
-        });
-        assert_ne!(PressedMouseButtons {
-            button_vec: vec![MouseButton::new(1)]
-        }, PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2), MouseButton::new(1)]
-        });
-        assert_ne!(PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2), MouseButton::new(3)]
-        }, PressedMouseButtons {
-            button_vec: vec![MouseButton::new(2), MouseButton::new(1)]
-        });
+        assert_ne!(
+            PressedMouseButtons::new(),
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(0)]
+            }
+        );
+        assert_ne!(
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(0)]
+            },
+            PressedMouseButtons::new()
+        );
+        assert_ne!(
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(1)]
+            },
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2)]
+            }
+        );
+        assert_ne!(
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(1), MouseButton::new(2)]
+            },
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2)]
+            }
+        );
+        assert_ne!(
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(1)]
+            },
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2), MouseButton::new(1)]
+            }
+        );
+        assert_ne!(
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2), MouseButton::new(3)]
+            },
+            PressedMouseButtons {
+                button_vec: vec![MouseButton::new(2), MouseButton::new(1)]
+            }
+        );
     }
 
     #[test]

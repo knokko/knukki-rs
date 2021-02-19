@@ -122,7 +122,11 @@ pub struct MousePressEvent {
 impl MousePressEvent {
     /// Constructs a new `MousePressEvent` with the given `Mouse`, `Point`, and `MouseButton`.
     pub fn new(mouse: Mouse, point: Point, button: MouseButton) -> Self {
-        Self { mouse, point, button }
+        Self {
+            mouse,
+            point,
+            button,
+        }
     }
 
     /// Gets the `Mouse` that was pressed.
@@ -156,7 +160,11 @@ pub struct MouseReleaseEvent {
 impl MouseReleaseEvent {
     /// Constructs a new `MouseReleaseEvent` with the given `Mouse`, `Point`, and `MouseButton`.
     pub fn new(mouse: Mouse, point: Point, button: MouseButton) -> Self {
-        Self { mouse, point, button }
+        Self {
+            mouse,
+            point,
+            button,
+        }
     }
 
     /// Gets the `Mouse` that was released.

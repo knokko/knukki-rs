@@ -164,7 +164,9 @@ impl ComponentBuddy for RootComponentBuddy {
 
     fn get_pressed_mouse_buttons(&self, mouse: Mouse) -> Option<Vec<MouseButton>> {
         let mouse_store = self.get_mouse_store();
-        mouse_store.get_mouse_state(mouse).map(|state| state.buttons.get_pressed_buttons())
+        mouse_store
+            .get_mouse_state(mouse)
+            .map(|state| state.buttons.get_pressed_buttons())
     }
 
     fn is_mouse_button_down(&self, mouse: Mouse, button: MouseButton) -> Option<bool> {
@@ -173,13 +175,15 @@ impl ComponentBuddy for RootComponentBuddy {
         match mouse_store.get_mouse_state(mouse) {
             Some(state) => {
                 if let Some(render_result) = &self.last_render_result {
-                    if !render_result.filter_mouse_actions || render_result.drawn_region.is_inside(state.position) {
+                    if !render_result.filter_mouse_actions
+                        || render_result.drawn_region.is_inside(state.position)
+                    {
                         return Some(state.buttons.is_pressed(button));
                     }
                 }
                 None
-            },
-            None => None
+            }
+            None => None,
         }
     }
 
