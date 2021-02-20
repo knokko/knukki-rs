@@ -216,6 +216,8 @@ impl Component for SimpleFlatMenu {
         event: MouseClickOutEvent,
         own_buddy: &mut dyn ComponentBuddy,
     ) {
+        self.update_internal(own_buddy, false);
+
         // TODO PERFORMANCE Maintain a list for just the interested components
         for component_cell in &self.components {
             let mut component_entry = component_cell.borrow_mut();
@@ -252,29 +254,35 @@ impl Component for SimpleFlatMenu {
         }
     }
 
-    fn on_mouse_move(&mut self, event: MouseMoveEvent, buddy: &mut dyn ComponentBuddy) {
+    fn on_mouse_move(&mut self, event: MouseMoveEvent, own_buddy: &mut dyn ComponentBuddy) {
+        self.update_internal(own_buddy, false);
+
         // TODO PERFORMANCE Consider only the components intersecting the rectangle around the line from
         // event.from to event.to (using some kind of 2d range tree)
         for entry_cell in &self.components {
             let mut entry = entry_cell.borrow_mut();
             entry.mouse_move(event);
-            self.check_buddy(buddy, &mut entry, false);
+            self.check_buddy(own_buddy, &mut entry, false);
         }
     }
 
-    fn on_mouse_enter(&mut self, event: MouseEnterEvent, buddy: &mut dyn ComponentBuddy) {
+    fn on_mouse_enter(&mut self, event: MouseEnterEvent, own_buddy: &mut dyn ComponentBuddy) {
+        self.update_internal(own_buddy, false);
+
         if let Some(hit_component_entry) = self.get_component_at(event.get_entrance_point()) {
             let mut borrowed_entry = hit_component_entry.borrow_mut();
             borrowed_entry.mouse_enter(event);
-            self.check_buddy(buddy, &mut borrowed_entry, false);
+            self.check_buddy(own_buddy, &mut borrowed_entry, false);
         }
     }
 
-    fn on_mouse_leave(&mut self, event: MouseLeaveEvent, buddy: &mut dyn ComponentBuddy) {
+    fn on_mouse_leave(&mut self, event: MouseLeaveEvent, own_buddy: &mut dyn ComponentBuddy) {
+        self.update_internal(own_buddy, false);
+
         if let Some(hit_component_entry) = self.get_component_at(event.get_exit_point()) {
             let mut borrowed_entry = hit_component_entry.borrow_mut();
             borrowed_entry.mouse_leave(event);
-            self.check_buddy(buddy, &mut borrowed_entry, false);
+            self.check_buddy(own_buddy, &mut borrowed_entry, false);
         }
     }
 
