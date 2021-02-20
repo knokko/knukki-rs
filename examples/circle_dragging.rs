@@ -2,15 +2,34 @@ use golem::*;
 use knukki::*;
 
 fn main() {
-    let component = CircleDraggingComponent {
+
+    let mut menu = SimpleFlatMenu::new(Some(Color::rgb(50, 150, 100)));
+
+    menu.add_component(Box::new(CircleDraggingComponent {
         base_color: Color::rgb(50, 50, 50),
         drag_color: Color::rgb(200, 50, 50),
         background_color: Color::rgb(150, 150, 200),
         radius: 0.1,
         max_center_distance: 0.4,
-        circle_position: Point::new(0.5, 0.5)
-    };
-    start(Application::new(Box::new(component)), "Drag the circles");
+
+        circle_position: Point::new(0.5, 0.5),
+        last_radius_x: None,
+        last_radius_y: None,
+    }), ComponentDomain::between(0.1, 0.3, 0.4, 0.7));
+
+    menu.add_component(Box::new(CircleDraggingComponent {
+        base_color: Color::rgb(50, 250, 50),
+        drag_color: Color::rgb(50, 50, 50),
+        background_color: Color::rgb(150, 0, 200),
+        radius: 0.15,
+        max_center_distance: 0.3,
+
+        circle_position: Point::new(0.8, 0.2),
+        last_radius_x: None,
+        last_radius_y: None,
+    }), ComponentDomain::between(0.5, 0.5, 0.9, 1.0));
+
+    start(Application::new(Box::new(menu)), "Drag the circles");
 }
 
 struct CircleDraggingComponent {
@@ -21,6 +40,8 @@ struct CircleDraggingComponent {
     max_center_distance: f32,
 
     circle_position: Point,
+    last_radius_x: Option<f32>,
+    last_radius_y: Option<f32>,
 }
 
 #[rustfmt::skip]
@@ -59,7 +80,16 @@ fn create_shader(golem: &Context) -> Result<ShaderProgram, GolemError> {
 
 impl CircleDraggingComponent {
     fn is_inside(&self, mouse: Point) -> bool {
-        self.circle_position.distance_to(mouse) <= self.radius
+        if let Some(radius_x) = self.last_radius_x {
+            if let Some(radius_y) = self.last_radius_y {
+                let dx = (mouse.get_x() - self.circle_position.get_x()) / radius_x;
+                let dy = (mouse.get_y() - self.circle_position.get_y()) / radius_y;
+                return dx * dx + dy * dy <= 1.0;
+            }
+        }
+
+        // Always return false before the first render
+        false
     }
 }
 
@@ -104,6 +134,9 @@ impl Component for CircleDraggingComponent {
             radius_x = self.radius;
             radius_y = self.radius * aspect_ratio;
         }
+
+        self.last_radius_x = Some(radius_x);
+        self.last_radius_y = Some(radius_y);
 
         renderer.use_cached_shader(
             &ShaderId::from_strs("knukki", "ExampleCircleDragging"),
