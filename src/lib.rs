@@ -7,8 +7,8 @@ mod components;
 mod events;
 mod point;
 
-#[cfg(feature = "provider")]
-mod provider;
+#[cfg(feature = "wrapper")]
+mod wrapper;
 mod renderer;
 
 pub use application::*;
@@ -17,6 +17,6 @@ pub use components::*;
 pub use events::*;
 pub use point::*;
 
-#[cfg(feature = "provider")]
-pub use provider::*;
+#[cfg(feature = "wrapper")]
+pub use wrapper::*;
 pub use renderer::*;

@@ -14,7 +14,7 @@ pub struct CharTypeEvent {
 
 impl CharTypeEvent {
     /// Constructs a new `CharTypeEvent` with the given `text`. This function
-    /// should normally only be used by the *provider*.
+    /// should normally only be used by the *wrapper*.
     pub fn new(text: String) -> CharTypeEvent {
         Self { text }
     }

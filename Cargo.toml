@@ -9,43 +9,43 @@ edition = "2018"
 [features]
 default = []
 golem_rendering = ["golem"]
-provider = ["glutin", "glow"]
+wrapper = ["glutin", "glow"]
 
 [[example]]
 name = "circle_dragging"
-required-features = ["golem_rendering", "provider"]
+required-features = ["golem_rendering", "wrapper"]
 
 [[example]]
 name = "color_clicking"
-required-features = ["golem_rendering", "provider"]
+required-features = ["golem_rendering", "wrapper"]
 
 [[example]]
 name = "color_clicking_menu"
-required-features = ["golem_rendering", "provider"]
+required-features = ["golem_rendering", "wrapper"]
 
 [[example]]
 name = "color_changing_rect"
-required-features = ["golem_rendering", "provider"]
+required-features = ["golem_rendering", "wrapper"]
 
 [[example]]
 name = "partial_color_changing_rect"
-required-features = ["golem_rendering", "provider"]
+required-features = ["golem_rendering", "wrapper"]
 
 [[example]]
 name = "color_changing_rect_menu"
-required-features = ["golem_rendering", "provider"]
+required-features = ["golem_rendering", "wrapper"]
 
 [[example]]
 name = "hover_color_circle"
-required-features = ["golem_rendering", "provider"]
+required-features = ["golem_rendering", "wrapper"]
 
 [[example]]
 name = "hover_color_circle_menu"
-required-features = ["golem_rendering", "provider"]
+required-features = ["golem_rendering", "wrapper"]
 
 [[example]]
 name = "hover_color_circle_grid"
-required-features = ["golem_rendering", "provider"]
+required-features = ["golem_rendering", "wrapper"]
 
 [dependencies]
 golem = { git = "https://github.com/ryanisaacg/golem.git", optional = true }

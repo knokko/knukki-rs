@@ -14,7 +14,7 @@ pub struct MouseButton {
 
 impl MouseButton {
     /// Constructs a new `MouseButton` with the given `index`. This function
-    /// should normally only be used by the *provider*.
+    /// should normally only be used by the *wrapper*.
     pub const fn new(index: u8) -> Self {
         Self { index }
     }

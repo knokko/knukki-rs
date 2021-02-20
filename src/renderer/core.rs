@@ -123,10 +123,10 @@ impl Renderer {
     /// method will return `None`.
     ///
     /// ## Motivation
-    /// The motivation behind this function is to help menu components and the provider with doing
-    /// partial redraws. For instance, the provider could use a scissor when only a small part of
+    /// The motivation behind this function is to help menu components and the *wrapper* with doing
+    /// partial redraws. For instance, the *wrapper* could use a scissor when only a small part of
     /// the window needs to be redrawn. (In particular, I am considering adding custom mouses.
-    /// Using this scissor system, the provider could instruct the application to only
+    /// Using this scissor system, the *wrapper* could instruct the application to only
     /// redraw the area that used to be behind the custom mouse). It could also be helpful to
     /// layered menu components: when a small component is (re)moved on the front layer, only the
     /// part on the background layer behind that component needs to be redrawn.
@@ -173,7 +173,7 @@ impl Renderer {
     /// the entire viewport stack and scissor stack.
     ///
     /// This method requires a mutable reference to `self` because it is intended to be used only
-    /// by the *provider*, which should call this before the `render` method of the `Application`,
+    /// by the *wrapper*, which should call this before the `render` method of the `Application`,
     /// to specify where the `Application` should be rendered.
     pub fn reset_viewport(&mut self, new_viewport: RenderRegion) {
         let mut viewport_stack = self.viewport_stack.borrow_mut();

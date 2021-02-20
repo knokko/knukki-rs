@@ -7,17 +7,26 @@ use std::rc::Rc;
 /// encapsulates all the components and their buddies.
 ///
 /// The application has methods to fire events to the components and to
-/// render them. It is the responsibility of the *provider* to make
+/// render them. It is the responsibility of the *wrapper* to make
 /// sure these methods are called when appropriate.
 ///
-/// The application knows nothing about the *provider*: it doesn't even
+/// This makes the application very portable: it can run on any platform
+/// for which a *wrapper* is available. Most *wrapper*s won't have many
+/// lines of code (currently a few hundred for the desktop wrapper). This
+/// is intentional.
+///
+/// The application knows nothing about the *wrapper*: it doesn't even
 /// know whether it is being controlled by a real user or an automatic
-/// testing program (except that the latter one will probably not call
-/// the render method).
+/// testing program (that having said, it could usually figure this out
+/// by checking if the movements are 'natural').
 ///
 /// This has the interesting implication that an application can be tested
 /// with regular unit tests, without needing any kind of window or
 /// browser environment.
+///
+/// The *wrapper*s are hard to test with regular unit tests and are more
+/// suitable for manual testing. Since they are small, this is not a big
+/// problem.
 pub struct Application {
     root_component: Box<dyn Component>,
     root_buddy: RootComponentBuddy,
@@ -68,8 +77,8 @@ impl Application {
     /// Gives the `Application` the opportunity to render its components, or
     /// even `force`s it to do so.
     ///
-    /// ### Provider
-    /// The *provider* should make sure that this method is called frequently
+    /// ### Wrapper
+    /// The *wrapper* should make sure that this method is called frequently
     /// (typically 60 times per second). If the window resized or lost its
     /// previous pixels, the `force` should be set to true to inform the
     /// application that it should really use this opportunity to render.

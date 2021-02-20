@@ -251,7 +251,7 @@ pub fn start(mut app: Application, title: &str) {
                 .expect("Should be able to draw app");
             }
             Event::RedrawRequested(_) => {
-                // This provider will never request a winit redraw, so when this
+                // This *wrapper* will never request a winit redraw, so when this
                 // event is fired, it must have come from the OS.
                 let force = true;
 

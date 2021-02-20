@@ -39,7 +39,7 @@ pub trait Component {
     ///
     /// # When this method will be called
     /// This method will only be called if the component asked for it via the
-    /// `request_render` method of its buddy, or the parent (or provider)
+    /// `request_render` method of its buddy, or the parent (or *wrapper*)
     /// determined that it was necessary (for instance, the window was resized
     /// or the operating system requested it). In the latter case, the value
     /// of the parameter *force* will be true. If *force* is true, the

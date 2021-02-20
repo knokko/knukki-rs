@@ -40,7 +40,7 @@ pub use golem_renderer::ShaderId;
 /// }
 /// ```
 /// ## Constructing instances
-/// The provider is responsible for constructing the `Renderer`(s). In production environments, it
+/// The *wrapper* is responsible for constructing the `Renderer`(s). In production environments, it
 /// will construct a real `Renderer` from a `golem` `Context`. Unit tests can use the
 /// `test_renderer` function to easily construct a dummy `Renderer`.
 pub struct Renderer {

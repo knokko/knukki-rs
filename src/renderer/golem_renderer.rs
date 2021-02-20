@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 impl Renderer {
     /// Constructs a new `Renderer` that will draw onto the given golem `Context` within the given
-    /// *initial_viewport*. Normally, only the provider should use this function.
+    /// *initial_viewport*. Normally, only the *wrapper* should use this function.
     pub fn new(context: Context, initial_viewport: RenderRegion) -> Self {
         Self {
             storage: GolemRenderStorage::new(&context).expect("Should be able to init storage"),

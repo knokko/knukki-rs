@@ -17,21 +17,21 @@ pub use button::*;
 ///
 /// ### Creating instances
 /// The `new` function can be used to construct `Mouse`s, but only the
-/// *provider* should do this.
+/// *wrapper* should do this.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Mouse {
     id: u16,
 }
 
 impl Mouse {
-    /// Constructs a new `Mouse` with the given `id`. Only the *provider* should
+    /// Constructs a new `Mouse` with the given `id`. Only the *wrapper* should
     /// use this function.
     pub fn new(id: u16) -> Self {
         Self { id }
     }
 
     /// Gets the numerical id of this `Mouse`. This method is mostly useful for the
-    /// *provider*, but components might also find this method useful.
+    /// *wrapper*, but components might also find this method useful.
     pub fn get_id(&self) -> u16 {
         self.id
     }
@@ -248,7 +248,7 @@ impl MouseMoveEvent {
 /// of the borders of the component. But for other 'mouses' (like fingers on phones),
 /// this can be anywhere in the component.
 ///
-/// If this event comes directly from the provider and any mouse buttons are pressed, the provider
+/// If this event comes directly from the *wrapper* and any mouse buttons are pressed, the *wrapper*
 /// will fire `MousePressEvent`s right after this event. This is needed by the `Application` to
 /// update the pressed buttons in its `MouseStore`.
 #[derive(Copy, Clone, Debug, PartialEq)]
