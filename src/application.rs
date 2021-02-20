@@ -324,7 +324,6 @@ impl Application {
             event.get_mouse(),
             MouseState {
                 position: event.get_entrance_point(),
-                // TODO Perhaps ask the provider which buttons are pressed
                 buttons: PressedMouseButtons::new(),
             },
         );
