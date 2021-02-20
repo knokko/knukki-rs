@@ -12,6 +12,10 @@ golem_rendering = ["golem"]
 provider = ["glutin", "glow"]
 
 [[example]]
+name = "circle_dragging"
+required-features = ["golem_rendering", "provider"]
+
+[[example]]
 name = "color_clicking"
 required-features = ["golem_rendering", "provider"]
 

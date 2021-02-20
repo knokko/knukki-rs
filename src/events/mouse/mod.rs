@@ -247,6 +247,10 @@ impl MouseMoveEvent {
 /// inside the component. For regular mouses, this position will always be on one
 /// of the borders of the component. But for other 'mouses' (like fingers on phones),
 /// this can be anywhere in the component.
+///
+/// If this event comes directly from the provider and any mouse buttons are pressed, the provider
+/// will fire `MousePressEvent`s right after this event. This is needed by the `Application` to
+/// update the pressed buttons in its `MouseStore`.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct MouseEnterEvent {
     mouse: Mouse,

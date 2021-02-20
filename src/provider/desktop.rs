@@ -1,6 +1,4 @@
-use crate::{
-    Application, MouseEnterEvent, MouseLeaveEvent, MouseMoveEvent, RenderRegion, Renderer,
-};
+use crate::{Application, MouseEnterEvent, MouseLeaveEvent, MouseMoveEvent, RenderRegion, Renderer, MousePressEvent};
 
 use golem::*;
 
@@ -53,6 +51,7 @@ pub fn start(mut app: Application, title: &str) {
     let mut start_time = Instant::now();
 
     let mut mouse_position: Option<PhysicalPosition<i32>> = None;
+    let mut pressed_buttons = Vec::with_capacity(2);
     let mut should_fire_mouse_enter_event = false;
 
     let mut render_surface: Option<Surface> = None;
@@ -82,7 +81,22 @@ pub fn start(mut app: Application, title: &str) {
                         button,
                         ..
                     } => {
-                        if state == ElementState::Released {
+                        if state == ElementState::Released || state == ElementState::Pressed {
+
+                            // Convert winit button to knukki button
+                            let knukki_button = match button {
+                                MouseButton::Left => crate::MouseButton::primary(),
+                                MouseButton::Right => crate::MouseButton::new(1),
+                                MouseButton::Middle => crate::MouseButton::new(2),
+                                MouseButton::Other(id) => crate::MouseButton::new(id),
+                            };
+
+                            if state == ElementState::Pressed {
+                                pressed_buttons.push(knukki_button);
+                            } else {
+                                pressed_buttons.retain(|pressed_button| *pressed_button != knukki_button);
+                            }
+
                             // It would be weird if we don't have a mouse position
                             if let Some(click_position) = mouse_position {
                                 // Just 1 mouse on desktops
@@ -95,22 +109,30 @@ pub fn start(mut app: Application, title: &str) {
                                     1.0 - (click_position.y as f32 / window_size.height as f32);
                                 let knukki_point = crate::Point::new(knukki_x, knukki_y);
 
-                                // Convert winit button to knukki button
-                                let knukki_button = match button {
-                                    MouseButton::Left => crate::MouseButton::primary(),
-                                    MouseButton::Right => crate::MouseButton::new(1),
-                                    MouseButton::Middle => crate::MouseButton::new(2),
-                                    MouseButton::Other(id) => crate::MouseButton::new(id),
-                                };
+                                // Construct and fire the events
+                                if state == ElementState::Pressed {
+                                    let knukki_press_event = crate::MousePressEvent::new(
+                                        knukki_mouse,
+                                        knukki_point,
+                                        knukki_button
+                                    );
 
-                                // Construct and fire the event
-                                let knukki_event = crate::MouseClickEvent::new(
-                                    knukki_mouse,
-                                    knukki_point,
-                                    knukki_button,
-                                );
+                                    app.fire_mouse_press_event(knukki_press_event);
+                                } else {
+                                    let knukki_release_event = crate::MouseReleaseEvent::new(
+                                        knukki_mouse,
+                                        knukki_point,
+                                        knukki_button
+                                    );
+                                    let knukki_click_event = crate::MouseClickEvent::new(
+                                        knukki_mouse,
+                                        knukki_point,
+                                        knukki_button,
+                                    );
 
-                                app.fire_mouse_click_event(knukki_event);
+                                    app.fire_mouse_release_event(knukki_release_event);
+                                    app.fire_mouse_click_event(knukki_click_event);
+                                }
                             }
                         }
                     }
@@ -122,14 +144,38 @@ pub fn start(mut app: Application, title: &str) {
                         // Winit seems to fire mouse move events in occasions like clicking on the
                         // app icon in the taskbar or opening the window, even when the cursor is
                         // not inside the window. Let's just ignore these events.
+                        // Also, winit seems to fire mouse move events outside the window if a mouse
+                        // button is pressed.
                         let window_size = windowed_context.window().inner_size();
-                        if position.x < 0
-                            || position.y < 0
+                        if position.x <= 0
+                            || position.y <= 0
                             || (position.x as u32) >= window_size.width
                             || (position.y as u32) >= window_size.height
                         {
                             return;
                         }
+
+                        if should_fire_mouse_enter_event {
+                            let x = position.x as f32 / window_size.width as f32;
+                            let y = 1.0 - position.y as f32 / window_size.height as f32;
+                            let mouse = crate::Mouse::new(0);
+                            let entrance_point = crate::Point::new(x, y);
+
+                            let event = MouseEnterEvent::new(
+                                mouse,
+                                entrance_point
+                            );
+                            app.fire_mouse_enter_event(event);
+                            should_fire_mouse_enter_event = false;
+
+                            // Also fire press events for all buttons that are pressed
+                            for button in &pressed_buttons {
+                                app.fire_mouse_press_event(MousePressEvent::new(
+                                    mouse, entrance_point, *button
+                                ));
+                            }
+                        }
+
                         // If there is a previous mouse position, fire a move event
                         if let Some(previous_position) = mouse_position {
                             // Winit seems to fire a double cursor move event when the cursor enters
@@ -150,18 +196,8 @@ pub fn start(mut app: Application, title: &str) {
                                 );
                                 app.fire_mouse_move_event(event);
                             }
-                        } else {
-                            if should_fire_mouse_enter_event {
-                                let x = position.x as f32 / window_size.width as f32;
-                                let y = 1.0 - position.y as f32 / window_size.height as f32;
-                                let event = MouseEnterEvent::new(
-                                    crate::Mouse::new(0),
-                                    crate::Point::new(x, y),
-                                );
-                                app.fire_mouse_enter_event(event);
-                                should_fire_mouse_enter_event = false;
-                            }
                         }
+
                         mouse_position = Some(position);
                     }
                     WindowEvent::CursorEntered { .. } => {

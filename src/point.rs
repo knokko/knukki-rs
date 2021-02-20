@@ -1,3 +1,9 @@
+use std::ops::{
+    Add,
+    Sub,
+    Mul,
+};
+
 /// Represents an immutable 2-dimensional point with floating point coordinates.
 ///
 /// In the coordinate system used by this crate, the point `(0.0, 0.0)` indicates the bottom-left
@@ -47,6 +53,39 @@ impl Point {
     }
 }
 
+impl Add for Point {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y
+        }
+    }
+}
+
+impl Sub for Point {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        Self {
+            x: self.x - other.x,
+            y: self.y - other.y
+        }
+    }
+}
+
+impl Mul<f32> for Point {
+    type Output = Self;
+
+    fn mul(self, scalar: f32) -> Self {
+        Self {
+            x: self.x * scalar,
+            y: self.y * scalar
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -75,5 +114,20 @@ mod tests {
         assert!(!Point::new(10.0, 20.0).nearly_equal(Point::new(10.1, 19.9)));
         assert!(Point::new(-10.0, 20.0).nearly_equal(Point::new(-10.0001, 19.999)));
         assert!(!Point::new(-10.0, 20.0).nearly_equal(Point::new(-10.1, 19.9)));
+    }
+
+    #[test]
+    fn test_add() {
+        assert_eq!(Point::new(4.0, 6.0), Point::new(1.0, 2.0) + Point::new(3.0, 4.0));
+    }
+
+    #[test]
+    fn test_sub() {
+        assert_eq!(Point::new(1.0, 2.0), Point::new(4.0, 6.0) - Point::new(3.0, 4.0));
+    }
+
+    #[test]
+    fn test_mul() {
+        assert_eq!(Point::new(4.0, 6.0), Point::new(8.0, 12.0) * 0.5);
     }
 }
