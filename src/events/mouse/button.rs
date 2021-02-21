@@ -33,6 +33,26 @@ impl MouseButton {
     /// This method is particularly useful to distinguish the other buttons from
     /// each other. Use the `is_primary` button if you just want to check whether
     /// this is the primary mouse button.
+    ///
+    /// # Index conventions
+    /// To keep this crate cross-platform, there are very little rules that describe the meaning of
+    /// the index of a `MouseButton`. To help applications that focus on a particular platform and
+    /// need to know which button it is, here are some conventions:
+    ///
+    /// ## Desktop mouse
+    /// - 0 (primary) is the left mouse button
+    /// - 1 is the right mouse button
+    /// - 2 is the mouse wheel button
+    /// - 3 and higher are macro buttons
+    ///
+    /// ## Mobile 'mouse'
+    /// - 0 (primary) is the finger
+    /// - [Experimental] 1 and higher can be used to indicate some special touch devices. I will
+    /// stabilize this when I do more research into mobile events (and there is a mobile wrapper
+    /// available)
+    ///
+    /// ## Controller device/mouse
+    /// I will standardize this when I do research into this and add support in the wrappers.
     pub fn get_index(&self) -> u8 {
         self.index
     }

@@ -64,7 +64,9 @@ wasm-bindgen = { version = "*", optional = true }
 [target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
 version = "*"
 features = [
-    "console", "Document", "HtmlCanvasElement", "HtmlElement",
-    "Element", "Event", "WebGlRenderingContext", "Window", "Navigator"
+    "console", "Document", "Window",
+    "HtmlCanvasElement", "HtmlElement", "Element",
+    "Event", "MouseEvent",
+    "WebGlRenderingContext"
 ]
 optional = true
