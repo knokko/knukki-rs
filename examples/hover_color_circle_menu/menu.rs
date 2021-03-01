@@ -1,6 +1,6 @@
 use knukki::*;
 
-fn main() {
+pub fn create_app() -> Application {
     let mut menu = SimpleFlatMenu::new(Some(Color::rgb(100, 200, 50)));
     menu.add_component(
         Box::new(HoverColorCircleComponent::new(
@@ -23,5 +23,6 @@ fn main() {
         )),
         ComponentDomain::between(0.7, 0.4, 0.9, 0.8),
     );
-    start(Application::new(Box::new(menu)), "Hover color circle menu");
+
+    Application::new(Box::new(menu))
 }

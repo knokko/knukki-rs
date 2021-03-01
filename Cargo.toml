@@ -12,7 +12,7 @@ resolver = "2"
 [features]
 default = []
 golem_rendering = ["golem"]
-wrapper = ["glutin", "glow", "wasm-bindgen", "web-sys"]
+wrapper = ["glutin", "glow", "wasm-bindgen", "web-sys", "console_error_panic_hook", "console_log", "serde", "serde_json"]
 
 [[example]]
 name = "circle_dragging"
@@ -58,8 +58,12 @@ glutin = { version = "0.22.0", optional = true }
 glow = { version = "0.4.0", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-glow = { version = "0.4.0", features=["web-sys"], optional = true }
-wasm-bindgen = { version = "*", optional = true }
+glow = { version = "0.4.0", features = ["web-sys"], optional = true }
+wasm-bindgen = { version = "*", features = ["serde-serialize"], optional = true }
+console_error_panic_hook = { version = "0.1.6", optional = true }
+console_log = { version = "0.2.0", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
 version = "*"
