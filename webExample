@@ -2,5 +2,5 @@
 
 wasm-pack build examples/$1 --target web --out-name web --out-dir ../../pkg
 
-xdg-open http://0.0.0.0:8000/pkg/ || start "" http://localhost:8000/pkg/
+xdg-open http://localhost:8000/pkg/ || start "" http://localhost:8000/pkg/
 python3 -m http.server || python -m http.server
