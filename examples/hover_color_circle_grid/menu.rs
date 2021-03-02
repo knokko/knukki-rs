@@ -1,6 +1,6 @@
 use knukki::*;
 
-fn main() {
+pub fn create_app() -> Application {
     let mut menu = SimpleFlatMenu::new(Some(Color::rgb(150, 150, 250)));
     for x in 0..50 {
         for y in 0..50 {
@@ -16,5 +16,6 @@ fn main() {
             );
         }
     }
-    start(Application::new(Box::new(menu)), "Hover color circle grid");
+
+    Application::new(Box::new(menu))
 }
