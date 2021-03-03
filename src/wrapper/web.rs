@@ -122,8 +122,14 @@ fn start_render_loop(
     );
 
     let mut render_function = move || {
+        let scale_factor = get_scale_factor();
+        let unscaled_width = get_window_width();
+        let unscaled_height = get_window_height();
+
         let region = RenderRegion::with_size(
-            0, 0, get_window_width(), get_window_height()
+            0, 0,
+            get_scaled(unscaled_width, scale_factor),
+            get_scaled(unscaled_height, scale_factor)
         );
         renderer.reset_viewport(region);
 
@@ -298,8 +304,20 @@ fn maintain_canvas_size(canvas: &HtmlCanvasElement, force_next_render: Rc<Cell<b
     let canvas = canvas.clone();
 
     let resize_closure = Closure::wrap(Box::new(move || {
-        canvas.set_width(get_window_width());
-        canvas.set_height(get_window_height());
+
+        let unscaled_width = get_window_width();
+        let unscaled_height = get_window_height();
+        let scale_factor = get_scale_factor();
+
+        canvas.set_width(get_scaled(unscaled_width, scale_factor));
+        canvas.set_height(get_scaled(unscaled_height, scale_factor));
+
+        let canvas_style = canvas.style();
+        canvas_style.set_property("width", &format!("{}px", unscaled_width))
+            .expect("Should be able to set canvas CSS width");
+        canvas_style.set_property("height", &format!("{}px", unscaled_height))
+            .expect("Should be able to set canvas CSS height");
+
         force_next_render.set(true);
         // TODO Fire resize event
     }) as Box<dyn FnMut()>);
@@ -322,4 +340,13 @@ fn get_window_height() -> u32 {
 fn extract_window_size<E: Debug>(name: &'static str, width_or_height: Result<JsValue, E>) -> u32 {
     width_or_height.expect(&*("Window.".to_owned() + name + " should exist"))
         .as_f64().expect(&*("Window.".to_owned() + name + " should be a JS number")) as u32
+}
+
+fn get_scale_factor() -> f64 {
+    let the_window = window().expect("There should be a window");
+    the_window.device_pixel_ratio()
+}
+
+fn get_scaled(size: u32, scale_factor: f64) -> u32 {
+    ((size as f64 * scale_factor) as u32).max(10)
 }
