@@ -70,8 +70,7 @@ fn create_canvas() -> HtmlCanvasElement {
 
     canvas.set_id("knukki-canvas");
 
-    canvas.set_width(get_window_width());
-    canvas.set_height(get_window_height());
+    set_canvas_size(&canvas);
 
     body.append_child(&canvas).expect("Should be able to insert the knukki canvas");
 
@@ -304,20 +303,7 @@ fn maintain_canvas_size(canvas: &HtmlCanvasElement, force_next_render: Rc<Cell<b
     let canvas = canvas.clone();
 
     let resize_closure = Closure::wrap(Box::new(move || {
-
-        let unscaled_width = get_window_width();
-        let unscaled_height = get_window_height();
-        let scale_factor = get_scale_factor();
-
-        canvas.set_width(get_scaled(unscaled_width, scale_factor));
-        canvas.set_height(get_scaled(unscaled_height, scale_factor));
-
-        let canvas_style = canvas.style();
-        canvas_style.set_property("width", &format!("{}px", unscaled_width))
-            .expect("Should be able to set canvas CSS width");
-        canvas_style.set_property("height", &format!("{}px", unscaled_height))
-            .expect("Should be able to set canvas CSS height");
-
+        set_canvas_size(&canvas);
         force_next_render.set(true);
         // TODO Fire resize event
     }) as Box<dyn FnMut()>);
@@ -327,6 +313,21 @@ fn maintain_canvas_size(canvas: &HtmlCanvasElement, force_next_render: Rc<Cell<b
     ).expect("Should be able to add resize listener");
 
     resize_closure.forget();
+}
+
+fn set_canvas_size(canvas: &HtmlCanvasElement) {
+    let unscaled_width = get_window_width();
+    let unscaled_height = get_window_height();
+    let scale_factor = get_scale_factor();
+
+    canvas.set_width(get_scaled(unscaled_width, scale_factor));
+    canvas.set_height(get_scaled(unscaled_height, scale_factor));
+
+    let canvas_style = canvas.style();
+    canvas_style.set_property("width", &format!("{}px", unscaled_width))
+        .expect("Should be able to set canvas CSS width");
+    canvas_style.set_property("height", &format!("{}px", unscaled_height))
+        .expect("Should be able to set canvas CSS height");
 }
 
 fn get_window_width() -> u32 {
