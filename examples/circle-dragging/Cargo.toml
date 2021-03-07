@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 knukki = { path = "../../", default-features = false, features = ["golem_rendering", "wrapper"] }
+golem = { git = "https://github.com/ryanisaacg/golem.git" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "*"
