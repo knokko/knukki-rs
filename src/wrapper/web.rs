@@ -22,6 +22,7 @@ use wasm_bindgen::{
 use web_sys::{
     Document,
     Element,
+    Event,
     HtmlCanvasElement,
     HtmlElement,
     MouseEvent,
@@ -312,8 +313,14 @@ fn propagate_mouse_events(
         mouse_point_rc_leave.set(None);
     }) as Box<dyn FnMut(MouseEvent)>);
 
+    let context_closure = Closure::wrap(Box::new(|event: Event| {
+        event.prevent_default();
+    }) as Box<dyn FnMut(Event)>);
+
     the_window.add_event_listener_with_callback("click", click_closure.as_ref().unchecked_ref())
         .expect("Should be able to add click listener");
+    the_window.add_event_listener_with_callback("auxclick", click_closure.as_ref().unchecked_ref())
+        .expect("Should be able to add auxclick listener");
     the_window.add_event_listener_with_callback("mousedown", press_closure.as_ref().unchecked_ref())
         .expect("Should be able to add mousedown listener");
     the_window.add_event_listener_with_callback("mouseup", release_closure.as_ref().unchecked_ref())
@@ -324,6 +331,8 @@ fn propagate_mouse_events(
         .expect("Should be able to add mouseover listener");
     the_window.add_event_listener_with_callback("mouseout", leave_closure.as_ref().unchecked_ref())
         .expect("Should be able to add mouseout listener");
+    the_window.add_event_listener_with_callback("contextmenu", context_closure.as_ref().unchecked_ref())
+        .expect("Should be able to add contextmenu listener");
 
     click_closure.forget();
     press_closure.forget();
@@ -331,6 +340,7 @@ fn propagate_mouse_events(
     move_closure.forget();
     enter_closure.forget();
     leave_closure.forget();
+    context_closure.forget();
 }
 
 fn maintain_canvas_size(canvas: &HtmlCanvasElement, force_next_render: Rc<Cell<bool>>) {
