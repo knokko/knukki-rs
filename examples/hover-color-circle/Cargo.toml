@@ -1,0 +1,14 @@
+[package]
+name = "hover-color-circle"
+version = "0.1.0"
+authors = ["knokko <knokogator@hotmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+knukki = { path = "../../", default-features = false, features = ["golem_rendering", "wrapper"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "*"

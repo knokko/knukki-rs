@@ -1,3 +1,4 @@
 #!/bin/sh
 
 cp "templates/example/" "examples/$1/" -r
+sed -i "s/example-name/$1/g" "examples/$1/Cargo.toml" "examples/$1/menu.rs"

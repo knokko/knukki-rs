@@ -1,5 +1,7 @@
 use knukki::*;
 
+pub const EXAMPLE_NAME: &'static str = "example-name";
+
 pub fn create_app() -> Application {
     let mut menu = SimpleFlatMenu::new(Some(Color::rgb(100, 200, 50)));
 
