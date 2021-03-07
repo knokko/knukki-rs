@@ -192,21 +192,52 @@ fn propagate_mouse_events(
     // controllers or keyboard-controlled mouses later.
     let primary_mouse = Mouse::new(0);
     let mouse_point_rc = Rc::new(Cell::new(None));
+    let last_press_point_rc = Rc::new(Cell::new(None));
 
     let click_wrap_app = Rc::clone(wrap_app);
+    let press_wrap_app = Rc::clone(wrap_app);
+    let release_wrap_app = Rc::clone(wrap_app);
     let move_wrap_app = Rc::clone(wrap_app);
     let enter_wrap_app = Rc::clone(wrap_app);
     let leave_wrap_app = Rc::clone(wrap_app);
 
+    let press_point_rc_press = Rc::clone(&last_press_point_rc);
+    let press_point_rc_click = Rc::clone(&last_press_point_rc);
     let mouse_point_rc_move = Rc::clone(&mouse_point_rc);
     let mouse_point_rc_enter = Rc::clone(&mouse_point_rc);
     let mouse_point_rc_leave = Rc::clone(&mouse_point_rc);
 
-    // TODO Handle MousePressEvent and MouseReleaseEvent
-
     let click_closure = Closure::wrap(Box::new(move |event| {
-        let mut app = click_wrap_app.borrow_mut();
-        app.fire_mouse_click_event(MouseClickEvent::new(
+        if let Some(press_point) = press_point_rc_click.get() {
+            let click_point = Point::new(get_x(&event), get_y(&event));
+
+            // I don't want to count drags as clicks, so I only fire the event if the point of
+            // clicking/release is close enough to the point where the mouse was pressed.
+            if click_point.distance_to(press_point) < 0.1 {
+                let mut app = click_wrap_app.borrow_mut();
+                app.fire_mouse_click_event(MouseClickEvent::new(
+                    primary_mouse,
+                    click_point,
+                    get_button(&event)
+                ));
+            }
+        }
+    }) as Box<dyn FnMut(MouseEvent)>);
+
+    let press_closure = Closure::wrap(Box::new(move |event| {
+        let mut app = press_wrap_app.borrow_mut();
+        let point = Point::new(get_x(&event), get_y(&event));
+        app.fire_mouse_press_event(MousePressEvent::new(
+            primary_mouse,
+            point,
+            get_button(&event)
+        ));
+        press_point_rc_press.set(Some(point));
+    }) as Box<dyn FnMut(MouseEvent)>);
+
+    let release_closure = Closure::wrap(Box::new(move |event| {
+        let mut app = release_wrap_app.borrow_mut();
+        app.fire_mouse_release_event(MouseReleaseEvent::new(
             primary_mouse,
             Point::new(get_x(&event), get_y(&event)),
             get_button(&event)
@@ -283,6 +314,10 @@ fn propagate_mouse_events(
 
     the_window.add_event_listener_with_callback("click", click_closure.as_ref().unchecked_ref())
         .expect("Should be able to add click listener");
+    the_window.add_event_listener_with_callback("mousedown", press_closure.as_ref().unchecked_ref())
+        .expect("Should be able to add mousedown listener");
+    the_window.add_event_listener_with_callback("mouseup", release_closure.as_ref().unchecked_ref())
+        .expect("Should be able to add mouseup listener");
     the_window.add_event_listener_with_callback("mousemove", move_closure.as_ref().unchecked_ref())
         .expect("Should be able to add mousemove listener");
     the_window.add_event_listener_with_callback("mouseover", enter_closure.as_ref().unchecked_ref())
@@ -291,6 +326,8 @@ fn propagate_mouse_events(
         .expect("Should be able to add mouseout listener");
 
     click_closure.forget();
+    press_closure.forget();
+    release_closure.forget();
     move_closure.forget();
     enter_closure.forget();
     leave_closure.forget();
