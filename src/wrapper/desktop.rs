@@ -51,6 +51,7 @@ pub fn start(mut app: Application, title: &str) {
     let mut start_time = Instant::now();
 
     let mut mouse_position: Option<PhysicalPosition<i32>> = None;
+    let mut last_press_point: Option<crate::Point> = None;
     let mut pressed_buttons = Vec::with_capacity(2);
     let mut should_fire_mouse_enter_event = false;
 
@@ -118,20 +119,26 @@ pub fn start(mut app: Application, title: &str) {
                                     );
 
                                     app.fire_mouse_press_event(knukki_press_event);
+                                    last_press_point = Some(knukki_point);
                                 } else {
                                     let knukki_release_event = crate::MouseReleaseEvent::new(
                                         knukki_mouse,
                                         knukki_point,
                                         knukki_button
                                     );
-                                    let knukki_click_event = crate::MouseClickEvent::new(
-                                        knukki_mouse,
-                                        knukki_point,
-                                        knukki_button,
-                                    );
 
                                     app.fire_mouse_release_event(knukki_release_event);
-                                    app.fire_mouse_click_event(knukki_click_event);
+
+                                    if let Some(press_point) = last_press_point {
+                                        if knukki_point.distance_to(press_point) < 0.1 {
+                                            let knukki_click_event = crate::MouseClickEvent::new(
+                                                knukki_mouse,
+                                                knukki_point,
+                                                knukki_button,
+                                            );
+                                            app.fire_mouse_click_event(knukki_click_event);
+                                        }
+                                    }
                                 }
                             }
                         }
