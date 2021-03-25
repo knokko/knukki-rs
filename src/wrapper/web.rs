@@ -36,6 +36,7 @@ pub fn start(app: Application, title: &str) {
     bind_console();
 
     set_title(title);
+    prepare_document();
 
     let canvas = create_canvas();
 
@@ -60,6 +61,15 @@ fn set_title(title: &str) {
     let the_window = window().expect("Expected window");
     let document: Document = the_window.document().expect("Expected document");
     document.set_title(title);
+}
+
+fn prepare_document() {
+    let the_window = window().expect("Expected window");
+    let document: Document = the_window.document().expect("Expected document");
+    let body: HtmlElement = document.body().expect("The document should have a body");
+    let body_style = body.style();
+    body_style.set_property("margin", "0px").expect("Should be able to remove document body margin");
+    body_style.set_property("overflow", "hidden").expect("Should be able to hide document body overflow");
 }
 
 fn create_canvas() -> HtmlCanvasElement {
