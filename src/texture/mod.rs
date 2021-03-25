@@ -8,7 +8,7 @@ use std::ops::{
     Index, IndexMut
 };
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct Texture {
     width: usize,
     height: usize,
