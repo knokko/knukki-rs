@@ -10,44 +10,44 @@ use std::ops::{
 
 #[derive(Clone)]
 pub struct Texture {
-    width: usize,
-    height: usize,
+    width: u32,
+    height: u32,
 
     pixels: Vec<Color>,
 }
 
 impl Texture {
-    pub fn new(width: usize, height: usize, background: Color) -> Self {
-        let pixels = vec![background; width * height];
+    pub fn new(width: u32, height: u32, background: Color) -> Self {
+        let pixels = vec![background; (width * height) as usize];
         Self {
             width, height, pixels
         }
     }
 
-    pub fn get_width(&self) -> usize {
+    pub fn get_width(&self) -> u32{
         self.width
     }
 
-    pub fn get_height(&self) -> usize {
+    pub fn get_height(&self) -> u32{
         self.height
     }
 
-    fn index(&self, x: usize, y: usize) -> usize {
+    fn index(&self, x: u32, y: u32) -> usize {
         assert!(x < self.width);
         assert!(y < self.height);
-        x * self.height + y
+        (x * self.height + y) as usize
     }
 
-    pub fn get_color(&self, x: usize, y: usize) -> Color {
+    pub fn get_color(&self, x: u32, y: u32) -> Color {
         self.pixels[self.index(x, y)]
     }
 
-    pub fn set_color(&mut self, x: usize, y: usize, new_color: Color) {
+    pub fn set_color(&mut self, x: u32, y: u32, new_color: Color) {
         let index = self.index(x, y);
         self.pixels[index] = new_color;
     }
 
-    pub fn fill_rect(&mut self, min_x: usize, min_y: usize, width: usize, height: usize, new_color: Color) {
+    pub fn fill_rect(&mut self, min_x: u32, min_y: u32, width: u32, height: u32, new_color: Color) {
 
         let bound_x = min_x + width;
         let bound_y = min_y + height;
@@ -62,8 +62,8 @@ impl Texture {
     }
 
     pub fn copy_to(
-        &self, own_min_x: usize, own_min_y: usize, copy_width: usize, copy_height: usize,
-        destination: &mut Texture, dest_min_x: usize, dest_min_y: usize
+        &self, own_min_x: u32, own_min_y: u32, copy_width: u32, copy_height: u32,
+        destination: &mut Texture, dest_min_x: u32, dest_min_y: u32
     ) {
         assert!(own_min_x + copy_width <= self.width);
         assert!(own_min_y + copy_height <= self.height);

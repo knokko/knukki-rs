@@ -40,7 +40,7 @@ pub struct TextureAtlas {
 
 impl TextureAtlas {
     /// Constructs and returns a new empty `TextureAtlas` width the given `width` and `height`
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(width: u32, height: u32) -> Self {
         Self {
             // We use a very weird background color (pink) because it should never be shown and it
             // will speed up debugging if it is shown for some reason
@@ -52,7 +52,10 @@ impl TextureAtlas {
         }
     }
 
-    pub fn add_textures(&mut self, textures: Vec<&Texture>, test: bool) -> TexturePlaceResult {
+
+
+    pub fn add_textures(&mut self, textures: &[Texture], test: bool) -> TexturePlaceResult {
+
         let mut num_row_ratings = 0;
         let row_ratings: Vec<Vec<RowRating>> = textures.iter().map(|texture| {
             let ratings = self.rows_info.rank_placement_rows(texture.width, texture.height);
@@ -60,10 +63,6 @@ impl TextureAtlas {
             ratings
         }).collect();
 
-        struct IndexedRowRating {
-            index: usize,
-            row_rating: RowRating,
-        }
         let mut combined_ratings = Vec::with_capacity(num_row_ratings);
         for index in 0 .. row_ratings.len() {
             for row_rating in row_ratings[index] {
@@ -72,34 +71,134 @@ impl TextureAtlas {
         }
 
         combined_ratings.sort_unstable_by(|a, b| {
-            // Intentionally revert the order, so that high ratings appear first
-            b.row_rating.rating.partial_cmp(&a.row_rating.rating).expect("NaN is impossible")
+            a.row_rating.rating.partial_cmp(&b.row_rating.rating).expect("NaN is impossible")
         });
+        combined_ratings.reverse();
+
+        // It is time to find placement locations for the textures (but don't commit anything yet)
+        let mut placements = vec![None; textures.len()];
+        let mut test_rows_info = self.rows_info.clone();
+
+        // First try to put some of the textures in existing rows in the atlas
+        Self::place_in_existing_rows(
+            &mut test_rows_info, &mut placements,
+            textures, &combined_ratings
+        );
+
+        // Try to place the remaining textures in new rows
+        Self::place_in_new_rows(
+            &mut test_rows_info, &mut placements, textures
+        );
         todo!()
     }
+
+    fn place_in_existing_rows(
+        rows_info: &mut RowsInfo, placements: &mut [Option<TextureAtlasPosition>],
+        textures: &[Texture], suggestions: &[IndexedRowRating]
+    ) {
+
+        for suggestion in suggestions {
+            if placements[suggestion.index].is_none() {
+
+                let row = &mut rows_info.rows[suggestion.row_rating.row_index];
+                let width = textures[suggestion.index].get_width();
+                if row.bound_x + width <= rows_info.atlas_width {
+
+                    placements[suggestion.index] = Some(TextureAtlasPosition {
+                        min_x: row.bound_x,
+                        min_y: row.min_y,
+                        width,
+                        height: textures[suggestion.index].height,
+                    });
+                    row.bound_x += width;
+                }
+            }
+        }
+    }
+
+    fn place_in_new_rows(
+        rows_info: &mut RowsInfo, placements: &mut [Option<TextureAtlasPosition>],
+        textures: &[Texture]
+    ) {
+        let num_remaining_textures = placements.iter()
+            .filter(|placement| placement.is_none()).count();
+        let mut remaining_textures = Vec::with_capacity(num_remaining_textures);
+        for index in 0 .. placements.len() {
+            if placements[index].is_none() {
+                remaining_textures.push(&textures[index]);
+            }
+        }
+
+        remaining_textures.sort_unstable_by_key(|texture| texture.get_height());
+        remaining_textures.reverse();
+
+        for texture in remaining_textures {
+
+            // Whether this texture is the first in a new row
+            let add_new_row = match rows_info.rows.last() {
+                Some(last_row) => last_row.bound_x + texture.width > rows_info.atlas_width,
+                None => true
+            };
+
+            if add_new_row {
+                if rows_info.bound_y + texture.height <= rows_info.atlas_height {
+                    rows_info.rows.push(RowInfo {
+                        min_y: rows_info.bound_y,
+                        height: texture.height,
+                        bound_x: 0
+                    });
+                    rows_info.bound_y += texture.height;
+                } else {
+                    // When this occurs, the current texture can't be placed in a new row
+                    continue;
+                }
+            }
+
+            let dest_row = rows_info.rows.last_mut().unwrap();
+
+            // Handle the edge case where the texture is wider than the texture atlas
+            // And with handling, I mean simply not placing it (because it is impossible)
+            if texture.width <= rows_info.atlas_width {
+                // TODO Wait... I didn't remember the texture_index...
+                placements[texture_index] = Some(TextureAtlasPosition {
+                    min_x: dest_row.bound_x,
+                    min_y: dest_row.min_y,
+                    width: texture.width,
+                    height: texture.height
+                });
+                dest_row.bound_x += texture.width;
+            }
+        }
+    }
+}
+
+struct IndexedRowRating {
+    index: usize,
+    row_rating: RowRating,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 struct RowInfo {
-    min_y: usize,
-    height: usize,
-    bound_x: usize
+    min_y: u32,
+    height: u32,
+    bound_x: u32,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 struct RowsInfo {
     rows: Vec<RowInfo>,
-    atlas_width: usize,
+    atlas_width: u32,
+    bound_y: u32,
 }
 
 impl RowsInfo {
-    fn new(atlas_width: usize) -> Self {
+    fn new(atlas_width: u32) -> Self {
         Self {
-            rows: Vec::new(), atlas_width
+            rows: Vec::new(), atlas_width, bound_y: 0
         }
     }
 
-    fn rank_placement_rows(&self, texture_width: usize, texture_height: usize) -> Vec<RowRating> {
+    fn rank_placement_rows(&self, texture_width: u32, texture_height: u32) -> Vec<RowRating> {
         let mut result = Vec::new();
         for index in 0 .. self.rows.len() {
             let row = self.rows[index];
