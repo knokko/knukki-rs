@@ -1,1 +1,1 @@
-cargo test && cargo check --examples --features="golem_rendering wrapper"
+cargo check --examples --features="golem_rendering wrapper" && cargo test --lib && cargo test --doc
