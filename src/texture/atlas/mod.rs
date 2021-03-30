@@ -9,7 +9,6 @@ pub use position::*;
 use crate::*;
 
 use std::cell::Cell;
-use std::cmp::Ordering;
 use std::rc::Rc;
 
 /// Represents a texture atlas. This is a big texture on which many smaller textures are stored.
@@ -33,7 +32,6 @@ use std::rc::Rc;
 pub struct TextureAtlas {
     big_texture: Texture,
 
-    next_id: u64,
     placements: Vec<Rc<PlacedTexture>>,
     rows_info: RowsInfo,
 }
@@ -46,15 +44,44 @@ impl TextureAtlas {
             // will speed up debugging if it is shown for some reason
             big_texture: Texture::new(width, height, Color::rgb(200, 0, 100)),
 
-            next_id: 0,
             placements: Vec::new(),
-            rows_info: RowsInfo::new(width),
+            rows_info: RowsInfo::new(width, height),
         }
     }
 
+    /// Gets a reference to the texture on which all textures are placed
+    pub fn get_texture(&self) -> &Texture {
+        &self.big_texture
+    }
 
-
-    pub fn add_textures(&mut self, textures: &[Texture], test: bool) -> TexturePlaceResult {
+    /// Attempts to place the given `textures` onto this texture atlas.
+    ///
+    /// ## Procedure
+    /// First, this method will attempt to place the given textures on the unused space of this
+    /// texture atlas. (This can fail if there is not enough place available or the place that is
+    /// available is too fragmented.)
+    ///
+    /// If not all textures were placed on the unused space, this method will remove 'unimportant'
+    /// existing textures to make space for the new textures. Textures are considered 'unimportant'
+    /// when they haven't been used for a while or are not frequently used.
+    ///
+    /// If not all textures can be placed, even after removing all existing textures, some of the
+    /// textures won't be placed.
+    ///
+    /// ## Return value
+    /// The return value of this method is a `TexturePlaceResult`. It indicates which of the
+    /// `textures` were placed successfully, where they were placed, and how many existing textures
+    /// had to be sacrificed to make this happen. See the documentation of `TexturePlaceResult` for
+    /// more information.
+    ///
+    /// ## Test
+    /// The `test` parameter can be used to test/simulate this method. When you give it the value
+    /// `true`, this method will return the same return value as if you used the value `false`, but
+    /// without actually placing the textures (and without removing any textures on this atlas).
+    /// This is particularly useful for `TextureAtlasGroup` to decide on which texture atlas to put
+    /// a slice of textures (to avoid cases where not all textures can be placed on the same atlas
+    /// or avoid removing existing textures).
+    pub fn add_textures(&mut self, textures: &[&Texture], test: bool) -> TexturePlaceResult {
 
         let mut num_row_ratings = 0;
         let row_ratings: Vec<Vec<RowRating>> = textures.iter().map(|texture| {
@@ -65,8 +92,8 @@ impl TextureAtlas {
 
         let mut combined_ratings = Vec::with_capacity(num_row_ratings);
         for index in 0 .. row_ratings.len() {
-            for row_rating in row_ratings[index] {
-                combined_ratings.push(IndexedRowRating { index, row_rating });
+            for row_rating in &row_ratings[index] {
+                combined_ratings.push(IndexedRowRating { index, row_rating: *row_rating });
             }
         }
 
@@ -89,12 +116,49 @@ impl TextureAtlas {
         Self::place_in_new_rows(
             &mut test_rows_info, &mut placements, textures
         );
-        todo!()
+
+        // TODO Create a mechanism to remove old textures
+
+        // Unless this method call was a test, we should actually place these textures
+        if !test {
+            self.rows_info = test_rows_info;
+        }
+
+        let mut resulting_placements = Vec::with_capacity(placements.len());
+        println!("Placements are {:?}", placements);
+        for index in 0 .. placements.len() {
+            if let Some(position) = placements[index] {
+                let placement = Rc::new(PlacedTexture {
+                    position: Cell::new(Some(position)),
+                    priority: Cell::new(PlacedTexture::INITIAL_PRIORITY)
+                });
+
+                if !test {
+                    self.placements.push(Rc::clone(&placement));
+                    textures[index].copy_to(
+                        0, 0, position.width, position.height,
+                        &mut self.big_texture, position.min_x, position.min_y
+                    );
+                }
+
+                resulting_placements.push(placement);
+            } else {
+                resulting_placements.push(Rc::new(PlacedTexture {
+                    position: Cell::new(None),
+                    priority: Cell::new(0),
+                }));
+            }
+        }
+
+        TexturePlaceResult {
+            placements: resulting_placements,
+            num_replaced_textures: 0,
+        }
     }
 
     fn place_in_existing_rows(
         rows_info: &mut RowsInfo, placements: &mut [Option<TextureAtlasPosition>],
-        textures: &[Texture], suggestions: &[IndexedRowRating]
+        textures: &[&Texture], suggestions: &[IndexedRowRating]
     ) {
 
         for suggestion in suggestions {
@@ -118,27 +182,41 @@ impl TextureAtlas {
 
     fn place_in_new_rows(
         rows_info: &mut RowsInfo, placements: &mut [Option<TextureAtlasPosition>],
-        textures: &[Texture]
+        textures: &[&Texture]
     ) {
+
+        struct RemainingTexture<'a> {
+            texture: &'a Texture,
+            index: usize,
+        }
+
         let num_remaining_textures = placements.iter()
             .filter(|placement| placement.is_none()).count();
         let mut remaining_textures = Vec::with_capacity(num_remaining_textures);
         for index in 0 .. placements.len() {
             if placements[index].is_none() {
-                remaining_textures.push(&textures[index]);
+                remaining_textures.push(RemainingTexture { texture: textures[index], index });
             }
         }
 
-        remaining_textures.sort_unstable_by_key(|texture| texture.get_height());
+        remaining_textures.sort_unstable_by_key(|texture| texture.texture.get_height());
         remaining_textures.reverse();
 
-        for texture in remaining_textures {
+        println!("There are {} remaining textures", remaining_textures.len());
+
+        for indexed_texture in remaining_textures {
+            let texture = indexed_texture.texture;
 
             // Whether this texture is the first in a new row
             let add_new_row = match rows_info.rows.last() {
-                Some(last_row) => last_row.bound_x + texture.width > rows_info.atlas_width,
+                Some(last_row) =>
+                    (last_row.bound_x + texture.width > rows_info.atlas_width)
+                        || (texture.height > last_row.height
+                    ),
                 None => true
             };
+
+            println!("Add new row? {}", add_new_row);
 
             if add_new_row {
                 if rows_info.bound_y + texture.height <= rows_info.atlas_height {
@@ -150,6 +228,7 @@ impl TextureAtlas {
                     rows_info.bound_y += texture.height;
                 } else {
                     // When this occurs, the current texture can't be placed in a new row
+                    println!("Texture height is too big");
                     continue;
                 }
             }
@@ -159,8 +238,7 @@ impl TextureAtlas {
             // Handle the edge case where the texture is wider than the texture atlas
             // And with handling, I mean simply not placing it (because it is impossible)
             if texture.width <= rows_info.atlas_width {
-                // TODO Wait... I didn't remember the texture_index...
-                placements[texture_index] = Some(TextureAtlasPosition {
+                placements[indexed_texture.index] = Some(TextureAtlasPosition {
                     min_x: dest_row.bound_x,
                     min_y: dest_row.min_y,
                     width: texture.width,
@@ -188,13 +266,14 @@ struct RowInfo {
 struct RowsInfo {
     rows: Vec<RowInfo>,
     atlas_width: u32,
+    atlas_height: u32,
     bound_y: u32,
 }
 
 impl RowsInfo {
-    fn new(atlas_width: u32) -> Self {
+    fn new(atlas_width: u32, atlas_height: u32) -> Self {
         Self {
-            rows: Vec::new(), atlas_width, bound_y: 0
+            rows: Vec::new(), atlas_width, atlas_height, bound_y: 0
         }
     }
 
@@ -249,6 +328,8 @@ pub struct PlacedTexture {
 }
 
 impl PlacedTexture {
+    const INITIAL_PRIORITY: u32 = 10_000;
+
     /// Checks whether the texture is still present on the texture atlas at its original position.
     /// If this method returns `false`, the texture should be placed on the atlas again, and all
     /// models that used the texture should be recreated with the new texture position.
@@ -266,5 +347,85 @@ impl PlacedTexture {
     /// this will return `None`.
     pub fn get_position(&self) -> Option<TextureAtlasPosition> {
         self.position.get()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    // TODO Test place_textures
+
+    fn assert_filled(atlas: &TextureAtlas, x: u32, y: u32, width: u32, height: u32, color: Color) {
+        for test_x in x .. x + width {
+            for test_y in y .. y + height {
+                assert_eq!(color, atlas.get_texture()[test_x][test_y as usize]);
+            }
+        }
+    }
+
+    fn assert_result(
+        positions: Vec<Option<TextureAtlasPosition>>, num_placed_textures: u32,
+        result: TexturePlaceResult
+    ) {
+        assert_eq!(num_placed_textures, result.num_replaced_textures);
+        assert_eq!(positions.len(), result.placements.len());
+
+        for index in 0 .. positions.len() {
+            assert_eq!(positions[index], result.placements[index].position.get());
+        }
+    }
+
+    #[test]
+    fn test_place_textures_one_by_one() {
+        let red = Color::rgb(200, 0, 0);
+        let green = Color::rgb(0, 200, 0);
+        let blue = Color::rgb(0, 0, 200);
+
+        let mut atlas = TextureAtlas::new(25, 100);
+        let old_color = atlas.get_texture()[0][0];
+        let texture1 = Texture::new(10, 8, red);
+        let texture2 = Texture::new(9, 12, green);
+        let texture3 = Texture::new(15, 4, blue);
+
+        assert_result(
+            vec![Some(TextureAtlasPosition {
+                min_x: 0, min_y: 0, width: 10, height: 8
+            })], 0,
+            atlas.add_textures(&[&texture1], false)
+        );
+        assert_filled(&atlas, 0, 0, 10, 8, red);
+
+        assert_result(
+            vec![Some(TextureAtlasPosition {
+                min_x: 0, min_y: 8, width: 9, height: 12
+            })], 0,
+            atlas.add_textures(&[&texture2], true)
+        );
+        assert_filled(&atlas, 0, 8, 9, 12, old_color);
+
+        assert_result(
+            vec![Some(TextureAtlasPosition {
+                min_x: 0, min_y: 8, width: 9, height: 12
+            })], 0,
+            atlas.add_textures(&[&texture2], false)
+        );
+        assert_filled(&atlas, 0, 8, 9, 12, green);
+    }
+
+    #[test]
+    fn test_place_textures_many_partial() {
+
+    }
+
+    #[test]
+    fn test_place_textures_many_full() {
+
+    }
+
+    #[test]
+    fn test_too_big_textures() {
+
     }
 }

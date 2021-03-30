@@ -56,7 +56,7 @@ impl Texture {
 
         for x in min_x .. bound_x {
             for y in min_y .. bound_y {
-                self[x][y] = new_color;
+                self[x][y as usize] = new_color;
             }
         }
     }
@@ -72,26 +72,26 @@ impl Texture {
 
         for offset_x in 0 .. copy_width {
             for offset_y in 0 .. copy_height {
-                let new_pixel = self[own_min_x + offset_x][own_min_y + offset_y];
-                destination[dest_min_x + offset_x][dest_min_y + offset_y] = new_pixel;
+                let new_pixel = self[own_min_x + offset_x][(own_min_y + offset_y) as usize];
+                destination[dest_min_x + offset_x][(dest_min_y + offset_y) as usize] = new_pixel;
             }
         }
     }
 }
 
-impl<'a> Index<usize> for Texture {
+impl Index<u32> for Texture {
     type Output = [Color];
 
-    fn index(&self, column_index: usize) -> &Self::Output {
-        let offset = column_index * self.height;
-        &self.pixels[offset .. offset + self.height]
+    fn index(&self, column_index: u32) -> &Self::Output {
+        let offset = (column_index * self.height) as usize;
+        &self.pixels[offset .. offset + self.height as usize]
     }
 }
 
-impl<'a> IndexMut<usize> for Texture {
-    fn index_mut(&mut self, column_index: usize) -> &mut Self::Output {
-        let offset = column_index * self.height;
-        &mut self.pixels[offset .. offset + self.height]
+impl IndexMut<u32> for Texture {
+    fn index_mut(&mut self, column_index: u32) -> &mut Self::Output {
+        let offset = (column_index * self.height) as usize;
+        &mut self.pixels[offset .. offset + self.height as usize]
     }
 }
 
@@ -115,7 +115,7 @@ mod tests {
 
         for x in 0 .. width {
             for y in 0 .. height {
-                assert_eq!(background_color, texture[x][y]);
+                assert_eq!(background_color, texture[x][y as usize]);
             }
         }
 
