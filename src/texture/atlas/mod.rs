@@ -366,10 +366,10 @@ mod tests {
     }
 
     fn assert_result(
-        positions: Vec<Option<TextureAtlasPosition>>, num_placed_textures: u32,
+        positions: Vec<Option<TextureAtlasPosition>>, num_unplaced_textures: u32,
         result: TexturePlaceResult
     ) {
-        assert_eq!(num_placed_textures, result.num_replaced_textures);
+        assert_eq!(num_unplaced_textures, result.num_replaced_textures);
         assert_eq!(positions.len(), result.placements.len());
 
         for index in 0 .. positions.len() {
@@ -378,7 +378,7 @@ mod tests {
     }
 
     #[test]
-    fn test_place_textures_one_by_one() {
+    fn test_place_textures_one_by_one_unsorted() {
         let red = Color::rgb(200, 0, 0);
         let green = Color::rgb(0, 200, 0);
         let blue = Color::rgb(0, 0, 200);
@@ -412,20 +412,166 @@ mod tests {
             atlas.add_textures(&[&texture2], false)
         );
         assert_filled(&atlas, 0, 8, 9, 12, green);
+
+        assert_result(
+            vec![Some(TextureAtlasPosition {
+                min_x: 10, min_y: 0, width: 15, height: 4
+            })], 0,
+            atlas.add_textures(&[&texture3], false)
+        );
+        assert_filled(&atlas, 10, 0, 15, 4, blue);
+
+        assert_filled(&atlas, 0, 20,
+                      atlas.get_texture().width, atlas.get_texture().height - 20,
+                      old_color);
     }
 
     #[test]
-    fn test_place_textures_many_partial() {
+    fn test_place_textures_one_by_one_sorted() {
+        let red = Color::rgb(200, 0, 0);
+        let green = Color::rgb(0, 200, 0);
+        let blue = Color::rgb(0, 0, 200);
 
+        let mut atlas = TextureAtlas::new(25, 100);
+        let old_color = atlas.get_texture()[0][0];
+        let texture1 = Texture::new(10, 8, red);
+        let texture2 = Texture::new(9, 12, green);
+        let texture3 = Texture::new(15, 4, blue);
+
+        assert_result(
+            vec![Some(TextureAtlasPosition {
+                min_x: 0, min_y: 0, width: 9, height: 12
+            })], 0,
+            atlas.add_textures(&[&texture2], false)
+        );
+        assert_filled(&atlas, 0, 0, 9, 12, green);
+
+        assert_result(
+            vec![Some(TextureAtlasPosition {
+                min_x: 9, min_y: 0, width: 10, height: 8
+            })], 0,
+            atlas.add_textures(&[&texture1], false)
+        );
+        assert_filled(&atlas, 9, 0, 10, 8, red);
+
+        assert_result(
+            vec![Some(TextureAtlasPosition {
+                min_x:0, min_y: 12, width: 15, height: 4
+            })], 0,
+            atlas.add_textures(&[&texture3], true)
+        );
+        assert_filled(&atlas, 0, 12, 15, 4, old_color);
+
+        assert_result(
+            vec![Some(TextureAtlasPosition {
+                min_x:0, min_y: 12, width: 15, height: 4
+            })], 0,
+            atlas.add_textures(&[&texture3], false)
+        );
+        assert_filled(&atlas, 0, 12, 15, 4, blue);
     }
 
     #[test]
-    fn test_place_textures_many_full() {
+    fn test_place_textures_multiple() {
+        let mut atlas = TextureAtlas::new(50, 18);
+        let color1 = Color::rgb(87, 14, 108);
+        let color2 = Color::rgb(5, 208, 190);
+        let color3 = Color::rgb(200, 100, 150);
+        let color4 = Color::rgb(134, 86, 0);
+        let color5 = Color::rgb(201, 243, 129);
 
+        let texture1 = Texture::new(20, 8, color1);
+        let texture2 = Texture::new(21, 7, color2);
+        let texture3 = Texture::new(30, 6, color3);
+        let texture4 = Texture::new(20, 5, color4);
+        let texture5 = Texture::new(10, 4, color5);
+
+        assert_result(vec![
+            Some(TextureAtlasPosition { min_x: 30, min_y: 8, width: 20, height: 5 }),
+            Some(TextureAtlasPosition { min_x: 20, min_y: 0, width: 21, height: 7 }),
+            Some(TextureAtlasPosition { min_x: 0, min_y: 0, width: 20, height: 8 }),
+            Some(TextureAtlasPosition { min_x: 0, min_y: 14, width: 10, height: 4 }),
+            Some(TextureAtlasPosition { min_x: 0, min_y: 8, width: 30, height: 6 })
+        ], 0, atlas.add_textures(
+            &[&texture4, &texture2, &texture1, &texture5, &texture3], false
+        ));
+
+        let color6 = Color::rgb(74, 183, 76);
+        let color7 = Color::rgb(31, 108, 93);
+
+        let texture6 = Texture::new(5, 7, color6);
+        let texture7 = Texture::new(8, 4, color7);
+
+        for test in &[true, false] {
+            assert_result(vec![
+                Some(TextureAtlasPosition { min_x: 10, min_y: 14, width: 8, height: 4 }),
+                Some(TextureAtlasPosition { min_x: 41, min_y: 0, width: 5, height: 7 })
+            ], 0, atlas.add_textures(&[&texture7, &texture6], *test));
+        }
+
+        let color8 = Color::rgb(241, 178, 250);
+        let color9 = Color::rgb(157, 201, 37);
+
+        let texture8 = Texture::new(4, 8, color8);
+        let texture9 = Texture::new(12, 1, color9);
+
+        assert_result(vec![
+            Some(TextureAtlasPosition { min_x: 46, min_y: 0, width: 4, height: 8 }),
+            Some(TextureAtlasPosition { min_x: 18, min_y: 14, width: 12, height: 1 })
+        ], 0, atlas.add_textures(&[&texture8, &texture9], false));
+
+        assert_filled(&atlas, 0, 0, 20, 8, color1);
+        assert_filled(&atlas, 20, 0, 21, 7, color2);
+        assert_filled(&atlas, 0, 08, 30, 6, color3);
+        assert_filled(&atlas, 30, 8, 20, 5, color4);
+        assert_filled(&atlas, 0, 14, 10, 4, color5);
+        assert_filled(&atlas, 41, 0, 5, 7, color6);
+        assert_filled(&atlas, 10, 14, 8, 4, color7);
+        assert_filled(&atlas, 46, 0, 4, 8, color8);
+        assert_filled(&atlas, 18, 14, 12, 1, color9);
     }
 
     #[test]
-    fn test_too_big_textures() {
+    fn test_place_textures_too_big() {
+        let mut atlas = TextureAtlas::new(10, 10);
+        let color = Color::rgb(1, 2, 3);
 
+        assert_result(vec![None], 0, atlas.add_textures(
+            &[&Texture::new(11, 10, color)], true
+        ));
+        assert_result(vec![None], 0, atlas.add_textures(
+            &[&Texture::new(10, 11, color)], false
+        ));
+        assert_result(vec![None], 0, atlas.add_textures(
+            &[&Texture::new(11, 11, color)], false
+        ));
+        assert_result(vec![Some(TextureAtlasPosition {
+            min_x: 0, min_y: 0, width: 10, height: 10
+        })], 0, atlas.add_textures(
+            &[&Texture::new(10, 10, color)], true
+        ));
+
+        assert_result(vec![Some(TextureAtlasPosition {
+            min_x: 0, min_y: 0, width: 1, height: 1
+        })], 0, atlas.add_textures(&[&Texture::new(
+            1, 1, color
+        )], false));
+
+        // The 10x10 won't fit anymore
+        assert_result(vec![None], 0, atlas.add_textures(
+            &[&Texture::new(10, 10, color)], false
+        ));
+
+        // Due to the algorithm implementation, 9x10 won't fit either
+        assert_result(vec![None], 0, atlas.add_textures(
+            &[&Texture::new(9, 10, color)], false
+        ));
+
+        // But 10x9 should still fit
+        assert_result(vec![Some(TextureAtlasPosition {
+            min_x: 0, min_y: 1, width: 10, height: 9
+        })], 0, atlas.add_textures(&[&Texture::new(
+            10, 9, color
+        )], true));
     }
 }
