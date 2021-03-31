@@ -77,6 +77,25 @@ impl Texture {
             }
         }
     }
+
+    pub fn copy_to_pixel_buffer(&self, dest: &mut [u8]) {
+        for x in 0 .. self.width {
+            for y in 0 .. self.height {
+                let dest_index = 4 * (x + y * self.width) as usize;
+                let source_color = self[x][y as usize];
+                dest[dest_index] = source_color.get_red_int();
+                dest[dest_index + 1] = source_color.get_green_int();
+                dest[dest_index + 2] = source_color.get_blue_int();
+                dest[dest_index + 3] = source_color.get_alpha_int();
+            }
+        }
+    }
+
+    pub fn create_pixel_buffer(&self) -> Vec<u8> {
+        let mut pixel_buffer = vec![0; (self.width * self.height * 4) as usize];
+        self.copy_to_pixel_buffer(&mut pixel_buffer);
+        pixel_buffer
+    }
 }
 
 impl Index<u32> for Texture {
@@ -171,5 +190,26 @@ mod tests {
         for x in 2 .. 6 {
             assert_eq!(red, destination[x][1]);
         }
+    }
+
+    #[test]
+    fn test_pixel_buffer() {
+        let color1 = Color::rgba(13, 87, 105, 255);
+        let color2 = Color::rgb(217, 185, 197);
+        let color3 = Color::rgba(201, 140, 0, 200);
+        let color4 = Color::rgba(15, 97, 5, 0);
+        let color5 = Color::rgb(89, 58, 240);
+
+        let mut texture = Texture::new(2, 3, Color::rgb(200, 100, 150));
+        texture[0][0] = color1;
+        texture[1][0] = color2;
+        texture[0][1] = color3;
+        texture[1][1] = color4;
+        texture[0][2] = color5;
+
+        let mut pixel_buffer = texture.create_pixel_buffer();
+        assert_eq!(vec![
+            13, 87, 105, 255, 217, 185, 197, 255, 201, 140, 0, 200, 15, 97, 5, 0, 89, 58, 240, 255, 200, 100, 150, 255
+        ], pixel_buffer);
     }
 }

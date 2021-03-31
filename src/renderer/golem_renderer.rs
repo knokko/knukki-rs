@@ -95,6 +95,20 @@ impl Renderer {
         let mut cache = self.storage.shader_cache.borrow_mut();
         cache.use_shader(id, || create_shader(&self.context), use_shader)
     }
+
+    pub fn load_texture(&self, cpu_texture: &crate::Texture) -> Result<golem::Texture, GolemError> {
+        let mut gpu_texture = golem::Texture::new(&self.context)?;
+        let mut pixel_buffer = cpu_texture.create_pixel_buffer();
+
+        gpu_texture.set_image(
+            Some(&pixel_buffer),
+            cpu_texture.get_width(),
+            cpu_texture.get_height(),
+            ColorFormat::RGBA,
+        );
+
+        Ok(gpu_texture)
+    }
 }
 
 pub(super) struct GolemRenderStorage {
