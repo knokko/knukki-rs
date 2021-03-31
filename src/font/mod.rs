@@ -10,6 +10,8 @@ use font_kit::family_name::FamilyName;
 use font_kit::properties::Properties;
 use font_kit::hinting::HintingOptions;
 use font_kit::canvas::{RasterizationOptions, Canvas, Format};
+use unicode_segmentation::*;
+use ttf_parser::Face;
 
 pub trait Font {
     fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Texture;
@@ -32,8 +34,8 @@ impl SystemFont {
 
         all_fonts.sort_by_key(|font| font.glyph_count());
         for font in all_fonts {
-            println!("Font is {:?} and glyph count is {}", font, font.glyph_count());
-            println!("Postscript name is {:?}", font.postscript_name());
+            //println!("Font is {:?} and glyph count is {}", font, font.glyph_count());
+            //println!("Postscript name is {:?}", font.postscript_name());
         }
     }
 }
@@ -46,7 +48,7 @@ impl Font for SystemFont {
         //     FamilyName::SansSerif
         // ], &Properties::new()).unwrap();
         let font_handle = system_font_source.select_by_postscript_name(
-            "NotoSerifCJKtc-Regular"
+            "MingLiU-ExtB"
         ).expect("Should have the font");
 
         let font = font_handle.load().unwrap();
@@ -56,6 +58,8 @@ impl Font for SystemFont {
         let canvas_format = Format::A8;
 
         // TODO Use graphemes instead
+        //UnicodeSegmentation::graphemes();
+        let char_face = Face::from_slice(grapheme.as_bytes(), 0);
         let glyph_id = font.glyph_for_char(
             grapheme.chars().next().expect("At least 1 char was given")
         ).expect("Should have the glyph id for this character");

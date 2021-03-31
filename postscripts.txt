@@ -1,716 +1,1758 @@
-Font is "Samyak Tamil" and glyph count is 120
-Postscript name is Some("Samyak-Tamil")
-Font is "Lohit Gurmukhi" and glyph count is 166
-Postscript name is Some("Lohit-Gurmukhi")
-Font is "Standard Symbols PS" and glyph count is 191
-Postscript name is Some("StandardSymbolsPS")
-Font is "Standard Symbols PS" and glyph count is 191
-Postscript name is Some("StandardSymbolsPS")
-Font is "Saab" and glyph count is 198
-Postscript name is Some("Saab")
-Font is "D050000L" and glyph count is 203
-Postscript name is Some("D050000L")
-Font is "D050000L" and glyph count is 203
-Postscript name is Some("D050000L")
-Font is "Lohit Malayalam" and glyph count is 203
-Postscript name is Some("Lohit-Malayalam")
-Font is "KacstDigital" and glyph count is 206
-Postscript name is Some("KacstDigital")
-Font is "KacstTitle" and glyph count is 206
-Postscript name is Some("KacstTitle")
-Font is "KacstTitleL" and glyph count is 206
-Postscript name is Some("KacstTitleL")
-Font is "KacstPoster" and glyph count is 206
-Postscript name is Some("KacstPoster")
-Font is "KacstArt" and glyph count is 206
-Postscript name is Some("KacstArt")
-Font is "KacstOffice" and glyph count is 206
-Postscript name is Some("KacstOffice")
-Font is "KacstPen" and glyph count is 206
-Postscript name is Some("KacstPen")
-Font is "KacstNaskh" and glyph count is 206
-Postscript name is Some("KacstNaskh")
-Font is "KacstFarsi" and glyph count is 206
-Postscript name is Some("KacstFarsi")
-Font is "KacstBook" and glyph count is 206
-Postscript name is Some("KacstBook")
-Font is "KacstLetter" and glyph count is 206
-Postscript name is Some("KacstLetter")
-Font is "KacstScreen" and glyph count is 207
-Postscript name is Some("KacstScreen")
-Font is "Samyak Malayalam" and glyph count is 211
-Postscript name is Some("Samyak-Malayalam")
-Font is "KacstQurn" and glyph count is 216
-Postscript name is Some("KacstQurn")
-Font is "Bitstream Charter" and glyph count is 229
-Postscript name is Some("CharterBT-Roman")
-Font is "Bitstream Charter" and glyph count is 229
-Postscript name is Some("CharterBT-Bold")
-Font is "Courier 10 Pitch" and glyph count is 229
-Postscript name is Some("Courier10PitchBT-Italic")
-Font is "Courier 10 Pitch" and glyph count is 229
-Postscript name is Some("Courier10PitchBT-BoldItalic")
-Font is "Courier 10 Pitch" and glyph count is 229
-Postscript name is Some("Courier10PitchBT-Roman")
-Font is "Bitstream Charter" and glyph count is 229
-Postscript name is Some("CharterBT-Italic")
-Font is "Bitstream Charter" and glyph count is 229
-Postscript name is Some("CharterBT-BoldItalic")
-Font is "Courier 10 Pitch" and glyph count is 229
-Postscript name is Some("Courier10PitchBT-Bold")
-Font is "KacstDecorative" and glyph count is 237
-Postscript name is Some("KacstDecorative")
-Font is "Lohit Tamil Classical" and glyph count is 255
-Postscript name is Some("Lohit-Tamil-Classical")
-Font is "Lohit Tamil" and glyph count is 255
-Postscript name is Some("Lohit-Tamil")
-Font is "Samyak Gujarati" and glyph count is 274
-Postscript name is Some("Samyak-Gujarati")
-Font is "Pagul" and glyph count is 286
-Postscript name is Some("Pagul")
-Font is "ori1Uni" and glyph count is 290
-Postscript name is Some("utkal")
-Font is "padmaa" and glyph count is 297
-Postscript name is Some("padmaa-Medium")
-Font is "Mitra Mono" and glyph count is 324
-Postscript name is Some("Mitra")
-Font is "Tlwg Mono" and glyph count is 334
-Postscript name is Some("TlwgMono-Oblique")
-Font is "Tlwg Mono" and glyph count is 334
-Postscript name is Some("TlwgMono")
-Font is "Tlwg Mono" and glyph count is 334
-Postscript name is Some("TlwgMono-BoldOblique")
-Font is "Tlwg Mono" and glyph count is 334
-Postscript name is Some("TlwgMono-Bold")
-Font is "RaghuMalayalamSans" and glyph count is 337
-Postscript name is Some("RaghuMalayalamSans-Regular")
-Font is "Samyak Devanagari" and glyph count is 338
-Postscript name is Some("Samyak-Devanagari")
-Font is "Tlwg Typo" and glyph count is 346
-Postscript name is Some("TlwgTypo-Oblique")
-Font is "Tlwg Typo" and glyph count is 346
-Postscript name is Some("TlwgTypo")
-Font is "Tlwg Typo" and glyph count is 350
-Postscript name is Some("TlwgTypo-BoldOblique")
-Font is "Tlwg Typo" and glyph count is 350
-Postscript name is Some("TlwgTypo-Bold")
-Font is "Tlwg Typist" and glyph count is 351
-Postscript name is Some("TlwgTypist-Oblique")
-Font is "Tlwg Typewriter" and glyph count is 351
-Postscript name is Some("TlwgTypewriter-Bold")
-Font is "Tlwg Typewriter" and glyph count is 351
-Postscript name is Some("TlwgTypewriter-Oblique")
-Font is "Tlwg Typist" and glyph count is 351
-Postscript name is Some("TlwgTypist")
-Font is "Tlwg Typewriter" and glyph count is 351
-Postscript name is Some("TlwgTypewriter")
-Font is "Tlwg Typewriter" and glyph count is 351
-Postscript name is Some("TlwgTypewriter-BoldOblique")
-Font is "Lohit Gujarati" and glyph count is 352
-Postscript name is Some("Lohit-Gujarati")
-Font is "Tlwg Typist" and glyph count is 355
-Postscript name is Some("TlwgTypist-Bold")
-Font is "Tlwg Typist" and glyph count is 355
-Postscript name is Some("TlwgTypist-BoldOblique")
-Font is "Garuda" and glyph count is 363
-Postscript name is Some("Garuda-Bold")
-Font is "Garuda" and glyph count is 363
-Postscript name is Some("Garuda-Oblique")
-Font is "Garuda" and glyph count is 363
-Postscript name is Some("Garuda")
-Font is "Garuda" and glyph count is 363
-Postscript name is Some("Garuda-BoldOblique")
-Font is "Kinnari" and glyph count is 364
-Postscript name is Some("Kinnari-BoldItalic")
-Font is "Kinnari" and glyph count is 364
-Postscript name is Some("Kinnari-BoldOblique")
-Font is "Kinnari" and glyph count is 364
-Postscript name is Some("Kinnari-Bold")
-Font is "Kinnari" and glyph count is 364
-Postscript name is Some("Kinnari")
-Font is "Kinnari" and glyph count is 364
-Postscript name is Some("Kinnari-Oblique")
-Font is "Kinnari" and glyph count is 364
-Postscript name is Some("Kinnari-Italic")
-Font is "Loma" and glyph count is 369
-Postscript name is Some("Loma")
-Font is "Loma" and glyph count is 369
-Postscript name is Some("Loma-Oblique")
-Font is "Loma" and glyph count is 369
-Postscript name is Some("Loma-BoldOblique")
-Font is "Loma" and glyph count is 369
-Postscript name is Some("Loma-Bold")
-Font is "Lohit Odia" and glyph count is 370
-Postscript name is Some("Lohit-Odia")
-Font is "Umpush" and glyph count is 371
-Postscript name is Some("Umpush-LightOblique")
-Font is "Umpush" and glyph count is 371
-Postscript name is Some("Umpush-Oblique")
-Font is "Umpush" and glyph count is 371
-Postscript name is Some("Umpush")
-Font is "Umpush" and glyph count is 371
-Postscript name is Some("Umpush-Light")
-Font is "Sawasdee" and glyph count is 373
-Postscript name is Some("Sawasdee")
-Font is "Sawasdee" and glyph count is 373
-Postscript name is Some("Sawasdee-Oblique")
-Font is "Sawasdee" and glyph count is 373
-Postscript name is Some("Sawasdee-BoldOblique")
-Font is "Sawasdee" and glyph count is 373
-Postscript name is Some("Sawasdee-Bold")
-Font is "Umpush" and glyph count is 374
-Postscript name is Some("Umpush-BoldOblique")
-Font is "Umpush" and glyph count is 374
-Postscript name is Some("Umpush-Bold")
-Font is "aakar" and glyph count is 375
-Postscript name is Some("aakar-medium")
-Font is "Rekha" and glyph count is 407
-Postscript name is Some("Rekha")
-Font is "Norasi" and glyph count is 409
-Postscript name is Some("Norasi-Oblique")
-Font is "Norasi" and glyph count is 409
-Postscript name is Some("Norasi-BoldItalic")
-Font is "Norasi" and glyph count is 409
-Postscript name is Some("Norasi-Bold")
-Font is "Norasi" and glyph count is 409
-Postscript name is Some("Norasi")
-Font is "Norasi" and glyph count is 409
-Postscript name is Some("Norasi-BoldOblique")
-Font is "Norasi" and glyph count is 409
-Postscript name is Some("Norasi-Italic")
-Font is "Waree" and glyph count is 420
-Postscript name is Some("Waree-Bold")
-Font is "Waree" and glyph count is 420
-Postscript name is Some("Waree")
-Font is "Waree" and glyph count is 420
-Postscript name is Some("Waree-Oblique")
-Font is "Waree" and glyph count is 420
-Postscript name is Some("Waree-BoldOblique")
-Font is "Purisa" and glyph count is 432
-Postscript name is Some("Purisa-BoldOblique")
-Font is "Purisa" and glyph count is 432
-Postscript name is Some("Purisa-Oblique")
-Font is "Purisa" and glyph count is 432
-Postscript name is Some("Purisa")
-Font is "Purisa" and glyph count is 432
-Postscript name is Some("Purisa-Bold")
-Font is "Sarai" and glyph count is 441
-Postscript name is Some("Sarai")
-Font is "Gubbi" and glyph count is 469
-Postscript name is Some("Gubbi")
-Font is "Gargi" and glyph count is 472
-Postscript name is Some("Gargi")
-Font is "Ani" and glyph count is 473
-Postscript name is Some("Ani")
-Font is "Yrsa" and glyph count is 478
-Postscript name is Some("Yrsa-Regular")
-Font is "Phetsarath OT" and glyph count is 478
-Postscript name is None
-Font is "Yrsa" and glyph count is 478
-Postscript name is Some("Yrsa-Bold")
-Font is "Yrsa" and glyph count is 478
-Postscript name is Some("Yrsa-SemiBold")
-Font is "Yrsa" and glyph count is 478
-Postscript name is Some("Yrsa-Medium")
-Font is "Yrsa" and glyph count is 478
-Postscript name is Some("Yrsa-Light")
-Font is "padmaa-Bold.1.1" and glyph count is 488
-Postscript name is Some("padmaa-Bold.1.1")
-Font is "Lohit Assamese" and glyph count is 488
-Postscript name is Some("Lohit-Assamese")
-Font is "Lohit Bengali" and glyph count is 488
-Postscript name is Some("Lohit-Bengali")
-Font is "padmaa" and glyph count is 492
-Postscript name is Some("padmaa")
-Font is "KacstOne" and glyph count is 502
-Postscript name is Some("KacstOne-Bold")
-Font is "KacstOne" and glyph count is 502
-Postscript name is Some("KacstOne")
-Font is "LKLUG" and glyph count is 515
-Postscript name is Some("LKLUG")
-Font is "Laksaman" and glyph count is 523
-Postscript name is Some("Laksaman-BoldItalic")
-Font is "Laksaman" and glyph count is 523
-Postscript name is Some("Laksaman-Italic")
-Font is "Laksaman" and glyph count is 523
-Postscript name is Some("Laksaman-Bold")
-Font is "Laksaman" and glyph count is 526
-Postscript name is Some("Laksaman")
-Font is "Navilu" and glyph count is 549
-Postscript name is Some("Navilu")
-Font is "Likhan" and glyph count is 579
-Postscript name is Some("LikhanNormal")
-Font is "Mukti Narrow" and glyph count is 599
-Postscript name is Some("muktinarrowbold")
-Font is "Mukti Narrow" and glyph count is 599
-Postscript name is Some("muktinarrow")
-Font is "Jamrul" and glyph count is 611
-Postscript name is Some("JamrulNormal")
-Font is "Pothana2000" and glyph count is 636
-Postscript name is Some("Pothana2000")
-Font is "Vemana2000" and glyph count is 636
-Postscript name is Some("Vemana2000")
-Font is "Lohit Kannada" and glyph count is 651
-Postscript name is Some("Lohit-Kannada")
-Font is "Liberation Serif" and glyph count is 672
-Postscript name is Some("LiberationSerif-Bold")
-Font is "Liberation Serif" and glyph count is 673
-Postscript name is Some("LiberationSerif")
-Font is "Liberation Mono" and glyph count is 674
-Postscript name is Some("LiberationMono-Italic")
-Font is "Liberation Mono" and glyph count is 674
-Postscript name is Some("LiberationMono")
-Font is "Liberation Mono" and glyph count is 674
-Postscript name is Some("LiberationMono-BoldItalic")
-Font is "Liberation Mono" and glyph count is 674
-Postscript name is Some("LiberationMono-Bold")
-Font is "Liberation Serif" and glyph count is 677
-Postscript name is Some("LiberationSerif-BoldItalic")
-Font is "Liberation Serif" and glyph count is 678
-Postscript name is Some("LiberationSerif-Italic")
-Font is "Liberation Sans" and glyph count is 681
-Postscript name is Some("LiberationSans-Bold")
-Font is "Liberation Sans Narrow" and glyph count is 681
-Postscript name is Some("LiberationSansNarrow-Italic")
-Font is "Liberation Sans Narrow" and glyph count is 681
-Postscript name is Some("LiberationSansNarrow-Bold")
-Font is "Liberation Sans" and glyph count is 681
-Postscript name is Some("LiberationSans-BoldItalic")
-Font is "Liberation Sans" and glyph count is 681
-Postscript name is Some("LiberationSans-Italic")
-Font is "Liberation Sans Narrow" and glyph count is 681
-Postscript name is Some("LiberationSansNarrow-BoldItalic")
-Font is "Liberation Sans Narrow" and glyph count is 681
-Postscript name is Some("LiberationSansNarrow")
-Font is "Liberation Sans" and glyph count is 681
-Postscript name is Some("LiberationSans")
-Font is "Lohit Devanagari" and glyph count is 711
-Postscript name is Some("Lohit-Devanagari")
-Font is "Padauk" and glyph count is 727
-Postscript name is Some("Padauk-Bold")
-Font is "Padauk" and glyph count is 727
-Postscript name is Some("Padauk-Regular")
-Font is "Padauk Book" and glyph count is 727
-Postscript name is Some("PadaukBook-Bold")
-Font is "Padauk Book" and glyph count is 727
-Postscript name is Some("PadaukBook-Regular")
-Font is "Khmer OS System" and glyph count is 730
-Postscript name is Some("KhmerOSsys")
-Font is "Khmer OS" and glyph count is 730
-Postscript name is Some("KhmerOS")
-Font is "Kalimati" and glyph count is 751
-Postscript name is Some("Kalimati")
-Font is "Uroob" and glyph count is 786
-Postscript name is Some("Uroob-Regular")
-Font is "Samanata" and glyph count is 792
-Postscript name is Some("Samanata")
-Font is "Dyuthi" and glyph count is 823
-Postscript name is Some("Dyuthi-Regular")
-Font is "P052" and glyph count is 855
-Postscript name is Some("P052-Italic")
-Font is "Nimbus Sans" and glyph count is 855
-Postscript name is Some("NimbusSans-BoldItalic")
-Font is "Nimbus Sans Narrow" and glyph count is 855
-Postscript name is Some("NimbusSansNarrow-Oblique")
-Font is "C059" and glyph count is 855
-Postscript name is Some("C059-Italic")
-Font is "P052" and glyph count is 855
-Postscript name is Some("P052-Roman")
-Font is "Nimbus Sans Narrow" and glyph count is 855
-Postscript name is Some("NimbusSansNarrow-BoldOblique")
-Font is "Nimbus Mono PS" and glyph count is 855
-Postscript name is Some("NimbusMonoPS-Italic")
-Font is "C059" and glyph count is 855
-Postscript name is Some("C059-Roman")
-Font is "URW Bookman" and glyph count is 855
-Postscript name is Some("URWBookman-DemiItalic")
-Font is "URW Bookman" and glyph count is 855
-Postscript name is Some("URWBookman-Demi")
-Font is "Nimbus Sans Narrow" and glyph count is 855
-Postscript name is Some("NimbusSansNarrow-Bold")
-Font is "C059" and glyph count is 855
-Postscript name is Some("C059-Bold")
-Font is "Nimbus Roman" and glyph count is 855
-Postscript name is Some("NimbusRoman-Bold")
-Font is "C059" and glyph count is 855
-Postscript name is Some("C059-BdIta")
-Font is "URW Gothic" and glyph count is 855
-Postscript name is Some("URWGothic-DemiOblique")
-Font is "C059" and glyph count is 855
-Postscript name is Some("C059-Italic")
-Font is "Nimbus Sans" and glyph count is 855
-Postscript name is Some("NimbusSans-Italic")
-Font is "Nimbus Sans" and glyph count is 855
-Postscript name is Some("NimbusSans-BoldItalic")
-Font is "Nimbus Mono PS" and glyph count is 855
-Postscript name is Some("NimbusMonoPS-Regular")
-Font is "URW Bookman" and glyph count is 855
-Postscript name is Some("URWBookman-LightItalic")
-Font is "Nimbus Mono PS" and glyph count is 855
-Postscript name is Some("NimbusMonoPS-Bold")
-Font is "URW Gothic" and glyph count is 855
-Postscript name is Some("URWGothic-Demi")
-Font is "Nimbus Sans" and glyph count is 855
-Postscript name is Some("NimbusSans-Bold")
-Font is "Nimbus Sans Narrow" and glyph count is 855
-Postscript name is Some("NimbusSansNarrow-Regular")
-Font is "Nimbus Roman" and glyph count is 855
-Postscript name is Some("NimbusRoman-Regular")
-Font is "Z003" and glyph count is 855
-Postscript name is Some("Z003-MediumItalic")
-Font is "URW Gothic" and glyph count is 855
-Postscript name is Some("URWGothic-BookOblique")
-Font is "P052" and glyph count is 855
-Postscript name is Some("P052-Roman")
-Font is "Nimbus Mono PS" and glyph count is 855
-Postscript name is Some("NimbusMonoPS-BoldItalic")
-Font is "P052" and glyph count is 855
-Postscript name is Some("P052-Italic")
-Font is "Nimbus Roman" and glyph count is 855
-Postscript name is Some("NimbusRoman-Italic")
-Font is "URW Bookman" and glyph count is 855
-Postscript name is Some("URWBookman-Demi")
-Font is "Nimbus Roman" and glyph count is 855
-Postscript name is Some("NimbusRoman-Regular")
-Font is "URW Bookman" and glyph count is 855
-Postscript name is Some("URWBookman-Light")
-Font is "C059" and glyph count is 855
-Postscript name is Some("C059-BdIta")
-Font is "Nimbus Roman" and glyph count is 855
-Postscript name is Some("NimbusRoman-Bold")
-Font is "Z003" and glyph count is 855
-Postscript name is Some("Z003-MediumItalic")
-Font is "Nimbus Roman" and glyph count is 855
-Postscript name is Some("NimbusRoman-Italic")
-Font is "URW Gothic" and glyph count is 855
-Postscript name is Some("URWGothic-Book")
-Font is "Nimbus Sans" and glyph count is 855
-Postscript name is Some("NimbusSans-Regular")
-Font is "C059" and glyph count is 855
-Postscript name is Some("C059-Bold")
-Font is "Nimbus Sans" and glyph count is 855
-Postscript name is Some("NimbusSans-Bold")
-Font is "Nimbus Mono PS" and glyph count is 855
-Postscript name is Some("NimbusMonoPS-Italic")
-Font is "Nimbus Sans" and glyph count is 855
-Postscript name is Some("NimbusSans-Regular")
-Font is "Nimbus Sans Narrow" and glyph count is 855
-Postscript name is Some("NimbusSansNarrow-BoldOblique")
-Font is "Nimbus Sans Narrow" and glyph count is 855
-Postscript name is Some("NimbusSansNarrow-Regular")
-Font is "Nimbus Sans Narrow" and glyph count is 855
-Postscript name is Some("NimbusSansNarrow-Bold")
-Font is "URW Gothic" and glyph count is 855
-Postscript name is Some("URWGothic-Book")
-Font is "Nimbus Sans" and glyph count is 855
-Postscript name is Some("NimbusSans-Italic")
-Font is "URW Gothic" and glyph count is 855
-Postscript name is Some("URWGothic-DemiOblique")
-Font is "URW Gothic" and glyph count is 855
-Postscript name is Some("URWGothic-BookOblique")
-Font is "Nimbus Mono PS" and glyph count is 855
-Postscript name is Some("NimbusMonoPS-BoldItalic")
-Font is "P052" and glyph count is 855
-Postscript name is Some("P052-BoldItalic")
-Font is "Nimbus Mono PS" and glyph count is 855
-Postscript name is Some("NimbusMonoPS-Regular")
-Font is "URW Bookman" and glyph count is 855
-Postscript name is Some("URWBookman-LightItalic")
-Font is "Nimbus Roman" and glyph count is 855
-Postscript name is Some("NimbusRoman-BoldItalic")
-Font is "Nimbus Sans Narrow" and glyph count is 855
-Postscript name is Some("NimbusSansNarrow-Oblique")
-Font is "Nimbus Mono PS" and glyph count is 855
-Postscript name is Some("NimbusMonoPS-Bold")
-Font is "URW Bookman" and glyph count is 855
-Postscript name is Some("URWBookman-DemiItalic")
-Font is "Nimbus Roman" and glyph count is 855
-Postscript name is Some("NimbusRoman-BoldItalic")
-Font is "URW Bookman" and glyph count is 855
-Postscript name is Some("URWBookman-Light")
-Font is "C059" and glyph count is 855
-Postscript name is Some("C059-Roman")
-Font is "URW Gothic" and glyph count is 855
-Postscript name is Some("URWGothic-Demi")
-Font is "P052" and glyph count is 855
-Postscript name is Some("P052-BoldItalic")
-Font is "P052" and glyph count is 855
-Postscript name is Some("P052-Bold")
-Font is "P052" and glyph count is 855
-Postscript name is Some("P052-Bold")
-Font is "Manjari" and glyph count is 863
-Postscript name is Some("Manjari-Bold")
-Font is "Manjari" and glyph count is 869
-Postscript name is Some("Manjari-Regular")
-Font is "Manjari" and glyph count is 869
-Postscript name is Some("Manjari-Thin")
-Font is "Chilanka" and glyph count is 873
-Postscript name is Some("Chilanka-Regular")
-Font is "Lohit Telugu" and glyph count is 888
-Postscript name is Some("Lohit-Telugu")
-Font is "Noto Mono" and glyph count is 897
-Postscript name is Some("NotoMono")
-Font is "Keraleeyam" and glyph count is 912
-Postscript name is Some("Keraleeyam-Regular")
-Font is "Rasa" and glyph count is 921
-Postscript name is Some("Rasa-Bold")
-Font is "Rasa" and glyph count is 921
-Postscript name is Some("Rasa-Medium")
-Font is "Rasa" and glyph count is 921
-Postscript name is Some("Rasa-SemiBold")
-Font is "Rasa" and glyph count is 921
-Postscript name is Some("Rasa-Regular")
-Font is "Rasa" and glyph count is 921
-Postscript name is Some("Rasa-Light")
-Font is "Suruma" and glyph count is 954
-Postscript name is Some("Suruma")
-Font is "mry_KacstQurn" and glyph count is 960
-Postscript name is Some("mry_KacstQurn")
-Font is "Kalapi" and glyph count is 1007
-Postscript name is Some("Kalapi")
-Font is "Abyssinica SIL" and glyph count is 1029
-Postscript name is Some("AbyssinicaSIL-Regular")
-Font is "OpenSymbol" and glyph count is 1056
-Postscript name is Some("OpenSymbol")
-Font is "Gayathri" and glyph count is 1126
-Postscript name is Some("Gayathri-Regular")
-Font is "Gayathri" and glyph count is 1126
-Postscript name is Some("Gayathri-Bold")
-Font is "Gayathri" and glyph count is 1126
-Postscript name is Some("Gayathri-Thin")
-Font is "Karumbi" and glyph count is 1140
-Postscript name is Some("Karumbi-Regular")
-Font is "AnjaliOldLipi" and glyph count is 1144
-Postscript name is Some("AnjaliOldLipi-Regular")
-Font is "Rachana" and glyph count is 1225
-Postscript name is Some("Rachana-Bold")
-Font is "Ubuntu Condensed" and glyph count is 1263
-Postscript name is Some("UbuntuCondensed-Regular")
-Font is "Ubuntu" and glyph count is 1264
-Postscript name is Some("Ubuntu")
-Font is "Ubuntu" and glyph count is 1264
-Postscript name is Some("Ubuntu-Bold")
-Font is "Ubuntu" and glyph count is 1264
-Postscript name is Some("Ubuntu-Medium")
-Font is "Ubuntu" and glyph count is 1264
-Postscript name is Some("Ubuntu-Light")
-Font is "Ubuntu" and glyph count is 1264
-Postscript name is Some("Ubuntu-Thin")
-Font is "Ubuntu" and glyph count is 1269
-Postscript name is Some("Ubuntu-BoldItalic")
-Font is "Ubuntu" and glyph count is 1269
-Postscript name is Some("Ubuntu-MediumItalic")
-Font is "Ubuntu" and glyph count is 1269
-Postscript name is Some("Ubuntu-LightItalic")
-Font is "Ubuntu" and glyph count is 1269
-Postscript name is Some("Ubuntu-Italic")
-Font is "Ubuntu Mono" and glyph count is 1296
-Postscript name is Some("UbuntuMono-Regular")
-Font is "Ubuntu Mono" and glyph count is 1296
-Postscript name is Some("UbuntuMono-Bold")
-Font is "Ubuntu Mono" and glyph count is 1301
-Postscript name is Some("UbuntuMono-BoldItalic")
-Font is "Ubuntu Mono" and glyph count is 1301
-Postscript name is Some("UbuntuMono-Italic")
-Font is "Meera" and glyph count is 1413
-Postscript name is Some("Meera-Regular")
-Font is "Rachana" and glyph count is 1518
-Postscript name is Some("Rachana-Regular")
-Font is "Sahadeva" and glyph count is 1570
-Postscript name is Some("Sahadeva")
-Font is "Nakula" and glyph count is 1570
-Postscript name is Some("Nakula")
-Font is "FreeMono" and glyph count is 1796
-Postscript name is Some("FreeMonoBoldOblique")
-Font is "DejaVu Sans" and glyph count is 2032
-Postscript name is Some("DejaVuSans-ExtraLight")
-Font is "FreeMono" and glyph count is 2035
-Postscript name is Some("FreeMonoBold")
-Font is "FreeMono" and glyph count is 2251
-Postscript name is Some("FreeMonoOblique")
-Font is "FreeSans" and glyph count is 2403
-Postscript name is Some("FreeSansBoldOblique")
-Font is "Liberation Mono" and glyph count is 2406
-Postscript name is Some("LiberationMono-Bold")
-Font is "Liberation Mono" and glyph count is 2406
-Postscript name is Some("LiberationMono")
-Font is "Liberation Mono" and glyph count is 2408
-Postscript name is Some("LiberationMono-Italic")
-Font is "Liberation Mono" and glyph count is 2408
-Postscript name is Some("LiberationMono-BoldItalic")
-Font is "Liberation Serif" and glyph count is 2589
-Postscript name is Some("LiberationSerif-Bold")
-Font is "Liberation Serif" and glyph count is 2589
-Postscript name is Some("LiberationSerif")
-Font is "Liberation Serif" and glyph count is 2592
-Postscript name is Some("LiberationSerif-BoldItalic")
-Font is "Liberation Serif" and glyph count is 2597
-Postscript name is Some("LiberationSerif-Italic")
-Font is "Liberation Sans" and glyph count is 2600
-Postscript name is Some("LiberationSans-Bold")
-Font is "Liberation Sans" and glyph count is 2600
-Postscript name is Some("LiberationSans")
-Font is "Liberation Sans" and glyph count is 2602
-Postscript name is Some("LiberationSans-Italic")
-Font is "Liberation Sans" and glyph count is 2602
-Postscript name is Some("LiberationSans-BoldItalic")
-Font is "DejaVu Sans Mono" and glyph count is 2710
-Postscript name is Some("DejaVuSansMono-Oblique")
-Font is "DejaVu Sans Mono" and glyph count is 2711
-Postscript name is Some("DejaVuSansMono-BoldOblique")
-Font is "FreeSerif" and glyph count is 2715
-Postscript name is Some("FreeSerifBoldItalic")
-Font is "FreeSans" and glyph count is 2911
-Postscript name is Some("FreeSansBold")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Medium")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Bold")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Thin")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-BlackItalic")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-HairlineItalic")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-LightItalic")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-MediumItalic")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Light")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-BoldItalic")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Italic")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Black")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Hairline")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Semibold")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-HeavyItalic")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-ThinItalic")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Regular")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-SemiboldItalic")
-Font is "Lato" and glyph count is 3026
-Postscript name is Some("Lato-Heavy")
-Font is "FreeSans" and glyph count is 3036
-Postscript name is Some("FreeSansOblique")
-Font is "FreeSerif" and glyph count is 3291
-Postscript name is Some("FreeSerifItalic")
-Font is "DejaVu Sans Mono" and glyph count is 3316
-Postscript name is Some("DejaVuSansMono-Bold")
-Font is "DejaVu Sans Mono" and glyph count is 3377
-Postscript name is Some("DejaVuSansMono")
-Font is "Noto Color Emoji" and glyph count is 3378
-Postscript name is Some("NotoColorEmoji")
-Font is "DejaVu Serif" and glyph count is 3506
-Postscript name is Some("DejaVuSerif-BoldItalic")
-Font is "DejaVu Serif" and glyph count is 3506
-Postscript name is Some("DejaVuSerifCondensed-BoldItalic")
-Font is "DejaVu Serif" and glyph count is 3506
-Postscript name is Some("DejaVuSerifCondensed-Bold")
-Font is "DejaVu Serif" and glyph count is 3506
-Postscript name is Some("DejaVuSerif-Bold")
-Font is "DejaVu Serif" and glyph count is 3507
-Postscript name is Some("DejaVuSerif-Italic")
-Font is "DejaVu Serif" and glyph count is 3507
-Postscript name is Some("DejaVuSerifCondensed-Italic")
-Font is "DejaVu Serif" and glyph count is 3528
-Postscript name is Some("DejaVuSerifCondensed")
-Font is "DejaVu Serif" and glyph count is 3528
-Postscript name is Some("DejaVuSerif")
-Font is "FreeMono" and glyph count is 3921
-Postscript name is Some("FreeMono")
-Font is "DejaVu Math TeX Gyre" and glyph count is 4282
-Postscript name is Some("DejaVuMathTeXGyre-Regular")
-Font is "Chandas" and glyph count is 4451
-Postscript name is Some("Chandas")
-Font is "FreeSerif" and glyph count is 4777
-Postscript name is Some("FreeSerifBold")
-Font is "Tibetan Machine Uni" and glyph count is 5110
-Postscript name is Some("Tibetan_Machine_Uni")
-Font is "DejaVu Sans" and glyph count is 5355
-Postscript name is Some("DejaVuSans-Oblique")
-Font is "DejaVu Sans" and glyph count is 5355
-Postscript name is Some("DejaVuSansCondensed-Oblique")
-Font is "DejaVu Sans" and glyph count is 5413
-Postscript name is Some("DejaVuSans-BoldOblique")
-Font is "DejaVu Sans" and glyph count is 5413
-Postscript name is Some("DejaVuSansCondensed-BoldOblique")
-Font is "DejaVu Sans" and glyph count is 6196
-Postscript name is Some("DejaVuSans-Bold")
-Font is "DejaVu Sans" and glyph count is 6196
-Postscript name is Some("DejaVuSansCondensed-Bold")
-Font is "DejaVu Sans" and glyph count is 6253
-Postscript name is Some("DejaVuSans")
-Font is "DejaVu Sans" and glyph count is 6253
-Postscript name is Some("DejaVuSansCondensed")
-Font is "FreeSans" and glyph count is 6272
-Postscript name is Some("FreeSans")
-Font is "FreeSerif" and glyph count is 10538
-Postscript name is Some("FreeSerif")
-Font is "Droid Sans Fallback" and glyph count is 49382
-Postscript name is Some("DroidSansFallback")
-Font is "Noto Sans Mono CJK TC" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKtc-Bold")
-Font is "Noto Sans Mono CJK HK" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKhk-Bold")
-Font is "Noto Sans CJK JP" and glyph count is 65535
-Postscript name is Some("NotoSansCJKjp-Bold")
-Font is "Noto Sans CJK KR" and glyph count is 65535
-Postscript name is Some("NotoSansCJKkr-Bold")
-Font is "Noto Sans CJK SC" and glyph count is 65535
-Postscript name is Some("NotoSansCJKsc-Bold")
-Font is "Noto Sans CJK TC" and glyph count is 65535
-Postscript name is Some("NotoSansCJKtc-Bold")
-Font is "Noto Sans CJK HK" and glyph count is 65535
-Postscript name is Some("NotoSansCJKhk-Bold")
-Font is "Noto Sans Mono CJK JP" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKjp-Bold")
-Font is "Noto Sans Mono CJK KR" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKkr-Bold")
-Font is "Noto Sans Mono CJK SC" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKsc-Bold")
-Font is "Noto Serif CJK TC" and glyph count is 65535
-Postscript name is Some("NotoSerifCJKtc-Regular")
-Font is "Noto Serif CJK SC" and glyph count is 65535
-Postscript name is Some("NotoSerifCJKsc-Regular")
-Font is "Noto Serif CJK KR" and glyph count is 65535
-Postscript name is Some("NotoSerifCJKkr-Regular")
-Font is "Noto Serif CJK JP" and glyph count is 65535
-Postscript name is Some("NotoSerifCJKjp-Regular")
-Font is "Noto Serif CJK SC" and glyph count is 65535
-Postscript name is Some("NotoSerifCJKsc-Bold")
-Font is "Noto Serif CJK TC" and glyph count is 65535
-Postscript name is Some("NotoSerifCJKtc-Bold")
-Font is "Noto Serif CJK JP" and glyph count is 65535
-Postscript name is Some("NotoSerifCJKjp-Bold")
-Font is "Noto Serif CJK KR" and glyph count is 65535
-Postscript name is Some("NotoSerifCJKkr-Bold")
-Font is "Noto Sans Mono CJK JP" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKjp-Regular")
-Font is "Noto Sans CJK HK" and glyph count is 65535
-Postscript name is Some("NotoSansCJKhk-Regular")
-Font is "Noto Sans Mono CJK SC" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKsc-Regular")
-Font is "Noto Sans Mono CJK KR" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKkr-Regular")
-Font is "Noto Sans CJK KR" and glyph count is 65535
-Postscript name is Some("NotoSansCJKkr-Regular")
-Font is "Noto Sans CJK JP" and glyph count is 65535
-Postscript name is Some("NotoSansCJKjp-Regular")
-Font is "Noto Sans CJK TC" and glyph count is 65535
-Postscript name is Some("NotoSansCJKtc-Regular")
-Font is "Noto Sans CJK SC" and glyph count is 65535
-Postscript name is Some("NotoSansCJKsc-Regular")
-Font is "Noto Sans Mono CJK HK" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKhk-Regular")
-Font is "Noto Sans Mono CJK TC" and glyph count is 65535
-Postscript name is Some("NotoSansMonoCJKtc-Regular")
-Texture size is 70x64
-Texture size is 70x64
+Font is "MS Outlook" and glyph count is 16
+Postscript name is Some("MSOutlook")
+Font is "MS Outlook" and glyph count is 16
+Postscript name is Some("MSOutlook")
+Font is "MS Outlook" and glyph count is 16
+Postscript name is Some("MSOutlook")
+Font is "MS Outlook" and glyph count is 16
+Postscript name is Some("MSOutlook")
+Font is "Marlett" and glyph count is 41
+Postscript name is Some("Marlett")
+Font is "Marlett" and glyph count is 41
+Postscript name is Some("Marlett")
+Font is "Marlett" and glyph count is 41
+Postscript name is Some("Marlett")
+Font is "Marlett" and glyph count is 41
+Postscript name is Some("Marlett")
+Font is "ZWAdobeF" and glyph count is 42
+Postscript name is Some("ZWAdobeF")
+Font is "ZWAdobeF" and glyph count is 42
+Postscript name is Some("ZWAdobeF")
+Font is "ZWAdobeF" and glyph count is 42
+Postscript name is Some("ZWAdobeF")
+Font is "ZWAdobeF" and glyph count is 42
+Postscript name is Some("ZWAdobeF")
+Font is "Bookshelf Symbol 7" and glyph count is 116
+Postscript name is Some("BookshelfSymbolSeven")
+Font is "Bookshelf Symbol 7" and glyph count is 116
+Postscript name is Some("BookshelfSymbolSeven")
+Font is "Bookshelf Symbol 7" and glyph count is 116
+Postscript name is Some("BookshelfSymbolSeven")
+Font is "Bookshelf Symbol 7" and glyph count is 116
+Postscript name is Some("BookshelfSymbolSeven")
+Font is "HoloLens MDL2 Assets" and glyph count is 191
+Postscript name is Some("HoloLensMDL2Assets")
+Font is "HoloLens MDL2 Assets" and glyph count is 191
+Postscript name is Some("HoloLensMDL2Assets")
+Font is "HoloLens MDL2 Assets" and glyph count is 191
+Postscript name is Some("HoloLensMDL2Assets")
+Font is "HoloLens MDL2 Assets" and glyph count is 191
+Postscript name is Some("HoloLensMDL2Assets")
+Font is "Symbol" and glyph count is 192
+Postscript name is Some("SymbolMT")
+Font is "Symbol" and glyph count is 192
+Postscript name is Some("SymbolMT")
+Font is "Symbol" and glyph count is 192
+Postscript name is Some("SymbolMT")
+Font is "Symbol" and glyph count is 192
+Postscript name is Some("SymbolMT")
+Font is "Algerian" and glyph count is 204
+Postscript name is Some("Algerian")
+Font is "Algerian" and glyph count is 204
+Postscript name is Some("Algerian")
+Font is "Algerian" and glyph count is 204
+Postscript name is Some("Algerian")
+Font is "Algerian" and glyph count is 204
+Postscript name is Some("Algerian")
+Font is "Castellar" and glyph count is 208
+Postscript name is Some("Castellar")
+Font is "Castellar" and glyph count is 208
+Postscript name is Some("Castellar")
+Font is "Castellar" and glyph count is 208
+Postscript name is Some("Castellar")
+Font is "Castellar" and glyph count is 208
+Postscript name is Some("Castellar")
+Font is "Wingdings 3" and glyph count is 211
+Postscript name is Some("Wingdings3")
+Font is "Wingdings 3" and glyph count is 211
+Postscript name is Some("Wingdings3")
+Font is "Wingdings 3" and glyph count is 211
+Postscript name is Some("Wingdings3")
+Font is "Wingdings 3" and glyph count is 211
+Postscript name is Some("Wingdings3")
+Font is "Wingdings 2" and glyph count is 220
+Postscript name is Some("Wingdings2")
+Font is "Wingdings 2" and glyph count is 220
+Postscript name is Some("Wingdings2")
+Font is "Wingdings 2" and glyph count is 220
+Postscript name is Some("Wingdings2")
+Font is "Wingdings 2" and glyph count is 220
+Postscript name is Some("Wingdings2")
+Font is "Wingdings" and glyph count is 226
+Postscript name is Some("Wingdings-Regular")
+Font is "Wingdings" and glyph count is 226
+Postscript name is Some("Wingdings-Regular")
+Font is "Wingdings" and glyph count is 226
+Postscript name is Some("Wingdings-Regular")
+Font is "Wingdings" and glyph count is 226
+Postscript name is Some("Wingdings-Regular")
+Font is "Ink Free" and glyph count is 227
+Postscript name is Some("InkFree")
+Font is "Ink Free" and glyph count is 227
+Postscript name is Some("InkFree")
+Font is "Ink Free" and glyph count is 227
+Postscript name is Some("InkFree")
+Font is "Ink Free" and glyph count is 227
+Postscript name is Some("InkFree")
+Font is "Webdings" and glyph count is 227
+Postscript name is Some("Webdings")
+Font is "Webdings" and glyph count is 227
+Postscript name is Some("Webdings")
+Font is "Webdings" and glyph count is 227
+Postscript name is Some("Webdings")
+Font is "Webdings" and glyph count is 227
+Postscript name is Some("Webdings")
+Font is "Elephant" and glyph count is 230
+Postscript name is Some("Elephant-Regular")
+Font is "Elephant" and glyph count is 230
+Postscript name is Some("Elephant-Italic")
+Font is "Elephant" and glyph count is 230
+Postscript name is Some("Elephant-Regular")
+Font is "Elephant" and glyph count is 230
+Postscript name is Some("Elephant-Regular")
+Font is "Elephant" and glyph count is 230
+Postscript name is Some("Elephant-Regular")
+Font is "Elephant" and glyph count is 230
+Postscript name is Some("Elephant-Italic")
+Font is "MS Reference Specialty" and glyph count is 231
+Postscript name is Some("MSReferenceSpecialty")
+Font is "MS Reference Specialty" and glyph count is 231
+Postscript name is Some("MSReferenceSpecialty")
+Font is "MS Reference Specialty" and glyph count is 231
+Postscript name is Some("MSReferenceSpecialty")
+Font is "MS Reference Specialty" and glyph count is 231
+Postscript name is Some("MSReferenceSpecialty")
+Font is "Stencil" and glyph count is 232
+Postscript name is Some("Stencil")
+Font is "Stencil" and glyph count is 232
+Postscript name is Some("Stencil")
+Font is "Stencil" and glyph count is 232
+Postscript name is Some("Stencil")
+Font is "Stencil" and glyph count is 232
+Postscript name is Some("Stencil")
+Font is "Onyx" and glyph count is 241
+Postscript name is Some("Onyx")
+Font is "Onyx" and glyph count is 241
+Postscript name is Some("Onyx")
+Font is "Onyx" and glyph count is 241
+Postscript name is Some("Onyx")
+Font is "Onyx" and glyph count is 241
+Postscript name is Some("Onyx")
+Font is "Calisto MT" and glyph count is 242
+Postscript name is Some("CalistoMT-Italic")
+Font is "Footlight MT" and glyph count is 242
+Postscript name is Some("FootlightMTLight")
+Font is "Footlight MT" and glyph count is 242
+Postscript name is Some("FootlightMTLight")
+Font is "Modern No. 20" and glyph count is 242
+Postscript name is Some("Modern-Regular")
+Font is "Modern No. 20" and glyph count is 242
+Postscript name is Some("Modern-Regular")
+Font is "Modern No. 20" and glyph count is 242
+Postscript name is Some("Modern-Regular")
+Font is "Modern No. 20" and glyph count is 242
+Postscript name is Some("Modern-Regular")
+Font is "Arial Rounded MT" and glyph count is 243
+Postscript name is Some("ArialRoundedMTBold")
+Font is "Arial Rounded MT" and glyph count is 243
+Postscript name is Some("ArialRoundedMTBold")
+Font is "Bell MT" and glyph count is 243
+Postscript name is Some("BellMT")
+Font is "Bell MT" and glyph count is 243
+Postscript name is Some("BellMTItalic")
+Font is "Bell MT" and glyph count is 243
+Postscript name is Some("BellMTBold")
+Font is "Bell MT" and glyph count is 243
+Postscript name is Some("BellMT")
+Font is "Bell MT" and glyph count is 243
+Postscript name is Some("BellMTBold")
+Font is "Bell MT" and glyph count is 243
+Postscript name is Some("BellMTItalic")
+Font is "Broadway" and glyph count is 243
+Postscript name is Some("Broadway")
+Font is "Broadway" and glyph count is 243
+Postscript name is Some("Broadway")
+Font is "Broadway" and glyph count is 243
+Postscript name is Some("Broadway")
+Font is "Broadway" and glyph count is 243
+Postscript name is Some("Broadway")
+Font is "Brush Script MT" and glyph count is 243
+Postscript name is Some("BrushScriptMT")
+Font is "Brush Script MT" and glyph count is 243
+Postscript name is Some("BrushScriptMT")
+Font is "Centaur" and glyph count is 243
+Postscript name is Some("Centaur")
+Font is "Centaur" and glyph count is 243
+Postscript name is Some("Centaur")
+Font is "Centaur" and glyph count is 243
+Postscript name is Some("Centaur")
+Font is "Centaur" and glyph count is 243
+Postscript name is Some("Centaur")
+Font is "Colonna MT" and glyph count is 243
+Postscript name is Some("ColonnaMT")
+Font is "Colonna MT" and glyph count is 243
+Postscript name is Some("ColonnaMT")
+Font is "Colonna MT" and glyph count is 243
+Postscript name is Some("ColonnaMT")
+Font is "Colonna MT" and glyph count is 243
+Postscript name is Some("ColonnaMT")
+Font is "Gloucester MT" and glyph count is 243
+Postscript name is Some("GloucesterMT-ExtraCondensed")
+Font is "Gloucester MT" and glyph count is 243
+Postscript name is Some("GloucesterMT-ExtraCondensed")
+Font is "Gloucester MT" and glyph count is 243
+Postscript name is Some("GloucesterMT-ExtraCondensed")
+Font is "Gloucester MT" and glyph count is 243
+Postscript name is Some("GloucesterMT-ExtraCondensed")
+Font is "Lucida Bright" and glyph count is 243
+Postscript name is Some("LucidaBright")
+Font is "Lucida Bright" and glyph count is 243
+Postscript name is Some("LucidaBright-Italic")
+Font is "Lucida Bright" and glyph count is 243
+Postscript name is Some("LucidaBright-Demi")
+Font is "Lucida Bright" and glyph count is 243
+Postscript name is Some("LucidaBright-DemiItalic")
+Font is "Lucida Bright" and glyph count is 243
+Postscript name is Some("LucidaBright")
+Font is "Lucida Bright" and glyph count is 243
+Postscript name is Some("LucidaBright-Demi")
+Font is "Lucida Calligraphy" and glyph count is 243
+Postscript name is Some("LucidaCalligraphy-Italic")
+Font is "Lucida Calligraphy" and glyph count is 243
+Postscript name is Some("LucidaCalligraphy-Italic")
+Font is "Lucida Fax" and glyph count is 243
+Postscript name is Some("LucidaFax")
+Font is "Lucida Fax" and glyph count is 243
+Postscript name is Some("LucidaFax-Italic")
+Font is "Lucida Fax" and glyph count is 243
+Postscript name is Some("LucidaFax-Demi")
+Font is "Lucida Fax" and glyph count is 243
+Postscript name is Some("LucidaFax-DemiItalic")
+Font is "Lucida Fax" and glyph count is 243
+Postscript name is Some("LucidaFax")
+Font is "Lucida Fax" and glyph count is 243
+Postscript name is Some("LucidaFax-Demi")
+Font is "Lucida Handwriting" and glyph count is 243
+Postscript name is Some("LucidaHandwriting-Italic")
+Font is "Lucida Handwriting" and glyph count is 243
+Postscript name is Some("LucidaHandwriting-Italic")
+Font is "Lucida Sans" and glyph count is 243
+Postscript name is Some("LucidaSans")
+Font is "Lucida Sans" and glyph count is 243
+Postscript name is Some("LucidaSans-Italic")
+Font is "Lucida Sans" and glyph count is 243
+Postscript name is Some("LucidaSans-Demi")
+Font is "Lucida Sans" and glyph count is 243
+Postscript name is Some("LucidaSans-DemiItalic")
+Font is "Lucida Sans" and glyph count is 243
+Postscript name is Some("LucidaSans")
+Font is "Lucida Sans" and glyph count is 243
+Postscript name is Some("LucidaSans-Demi")
+Font is "Lucida Sans Typewriter" and glyph count is 243
+Postscript name is Some("LucidaSans-Typewriter")
+Font is "Lucida Sans Typewriter" and glyph count is 243
+Postscript name is Some("LucidaSans-TypewriterBold")
+Font is "Lucida Sans Typewriter" and glyph count is 243
+Postscript name is Some("LucidaSans-TypewriterBoldOblique")
+Font is "Palace Script MT" and glyph count is 243
+Postscript name is Some("PalaceScriptMT")
+Font is "Palace Script MT" and glyph count is 243
+Postscript name is Some("PalaceScriptMT")
+Font is "Rockwell" and glyph count is 243
+Postscript name is Some("Rockwell")
+Font is "Rockwell" and glyph count is 243
+Postscript name is Some("Rockwell-Italic")
+Font is "Rockwell" and glyph count is 243
+Postscript name is Some("Rockwell-Bold")
+Font is "Rockwell" and glyph count is 243
+Postscript name is Some("Rockwell-ExtraBold")
+Font is "Rockwell" and glyph count is 243
+Postscript name is Some("Rockwell")
+Font is "Rockwell" and glyph count is 243
+Postscript name is Some("Rockwell-Bold")
+Font is "Rockwell" and glyph count is 243
+Postscript name is Some("Rockwell-ExtraBold")
+Font is "Bernard MT" and glyph count is 244
+Postscript name is Some("BernardMT-Condensed")
+Font is "Bernard MT" and glyph count is 244
+Postscript name is Some("BernardMT-Condensed")
+Font is "Bernard MT" and glyph count is 244
+Postscript name is Some("BernardMT-Condensed")
+Font is "Bernard MT" and glyph count is 244
+Postscript name is Some("BernardMT-Condensed")
+Font is "Engravers MT" and glyph count is 244
+Postscript name is Some("EngraversMT")
+Font is "Engravers MT" and glyph count is 244
+Postscript name is Some("EngraversMT")
+Font is "Engravers MT" and glyph count is 244
+Postscript name is Some("EngraversMT")
+Font is "Engravers MT" and glyph count is 244
+Postscript name is Some("EngraversMT")
+Font is "Imprint MT Shadow" and glyph count is 244
+Postscript name is Some("ImprintMT-Shadow")
+Font is "Imprint MT Shadow" and glyph count is 244
+Postscript name is Some("ImprintMT-Shadow")
+Font is "Imprint MT Shadow" and glyph count is 244
+Postscript name is Some("ImprintMT-Shadow")
+Font is "Imprint MT Shadow" and glyph count is 244
+Postscript name is Some("ImprintMT-Shadow")
+Font is "Blackadder ITC" and glyph count is 244
+Postscript name is Some("BlackadderITC-Regular")
+Font is "Blackadder ITC" and glyph count is 244
+Postscript name is Some("BlackadderITC-Regular")
+Font is "Blackadder ITC" and glyph count is 244
+Postscript name is Some("BlackadderITC-Regular")
+Font is "Blackadder ITC" and glyph count is 244
+Postscript name is Some("BlackadderITC-Regular")
+Font is "Edwardian Script ITC" and glyph count is 244
+Postscript name is Some("EdwardianScriptITC")
+Font is "Edwardian Script ITC" and glyph count is 244
+Postscript name is Some("EdwardianScriptITC")
+Font is "Edwardian Script ITC" and glyph count is 244
+Postscript name is Some("EdwardianScriptITC")
+Font is "Edwardian Script ITC" and glyph count is 244
+Postscript name is Some("EdwardianScriptITC")
+Font is "Matura MT Script Capitals" and glyph count is 244
+Postscript name is Some("MaturaMTScriptCapitals")
+Font is "Matura MT Script Capitals" and glyph count is 244
+Postscript name is Some("MaturaMTScriptCapitals")
+Font is "Matura MT Script Capitals" and glyph count is 244
+Postscript name is Some("MaturaMTScriptCapitals")
+Font is "Matura MT Script Capitals" and glyph count is 244
+Postscript name is Some("MaturaMTScriptCapitals")
+Font is "Old English Text MT" and glyph count is 244
+Postscript name is Some("OldEnglishTextMT")
+Font is "Old English Text MT" and glyph count is 244
+Postscript name is Some("OldEnglishTextMT")
+Font is "Old English Text MT" and glyph count is 244
+Postscript name is Some("OldEnglishTextMT")
+Font is "Old English Text MT" and glyph count is 244
+Postscript name is Some("OldEnglishTextMT")
+Font is "Perpetua Titling MT" and glyph count is 244
+Postscript name is Some("PerpetuaTitlingMT-Light")
+Font is "Perpetua Titling MT" and glyph count is 244
+Postscript name is Some("PerpetuaTitlingMT-Light")
+Font is "Poor Richard" and glyph count is 244
+Postscript name is Some("PoorRichard-Regular")
+Font is "Poor Richard" and glyph count is 244
+Postscript name is Some("PoorRichard-Regular")
+Font is "Poor Richard" and glyph count is 244
+Postscript name is Some("PoorRichard-Regular")
+Font is "Poor Richard" and glyph count is 244
+Postscript name is Some("PoorRichard-Regular")
+Font is "Calisto MT" and glyph count is 245
+Postscript name is Some("CalistoMT")
+Font is "Calisto MT" and glyph count is 245
+Postscript name is Some("CalisMTBol")
+Font is "Calisto MT" and glyph count is 245
+Postscript name is Some("CalistoMT")
+Font is "Calisto MT" and glyph count is 245
+Postscript name is Some("CalisMTBol")
+Font is "Chiller" and glyph count is 245
+Postscript name is Some("Chiller-Regular")
+Font is "Chiller" and glyph count is 245
+Postscript name is Some("Chiller-Regular")
+Font is "Chiller" and glyph count is 245
+Postscript name is Some("Chiller-Regular")
+Font is "Chiller" and glyph count is 245
+Postscript name is Some("Chiller-Regular")
+Font is "Lucida Sans Typewriter" and glyph count is 245
+Postscript name is Some("LucidaSans-TypewriterOblique")
+Font is "Freestyle Script" and glyph count is 246
+Postscript name is Some("FreestyleScript-Regular")
+Font is "Freestyle Script" and glyph count is 246
+Postscript name is Some("FreestyleScript-Regular")
+Font is "Freestyle Script" and glyph count is 246
+Postscript name is Some("FreestyleScript-Regular")
+Font is "Freestyle Script" and glyph count is 246
+Postscript name is Some("FreestyleScript-Regular")
+Font is "Pristina" and glyph count is 247
+Postscript name is Some("Pristina-Regular")
+Font is "Pristina" and glyph count is 247
+Postscript name is Some("Pristina-Regular")
+Font is "Pristina" and glyph count is 247
+Postscript name is Some("Pristina-Regular")
+Font is "Pristina" and glyph count is 247
+Postscript name is Some("Pristina-Regular")
+Font is "Harrington" and glyph count is 248
+Postscript name is Some("Harrington")
+Font is "Harrington" and glyph count is 248
+Postscript name is Some("Harrington")
+Font is "Harrington" and glyph count is 248
+Postscript name is Some("Harrington")
+Font is "Harrington" and glyph count is 248
+Postscript name is Some("Harrington")
+Font is "Jokerman" and glyph count is 248
+Postscript name is Some("Jokerman-Regular")
+Font is "Jokerman" and glyph count is 248
+Postscript name is Some("Jokerman-Regular")
+Font is "Jokerman" and glyph count is 248
+Postscript name is Some("Jokerman-Regular")
+Font is "Jokerman" and glyph count is 248
+Postscript name is Some("Jokerman-Regular")
+Font is "Forte" and glyph count is 249
+Postscript name is Some("ForteMT")
+Font is "Forte" and glyph count is 249
+Postscript name is Some("ForteMT")
+Font is "Forte" and glyph count is 249
+Postscript name is Some("ForteMT")
+Font is "Forte" and glyph count is 249
+Postscript name is Some("ForteMT")
+Font is "Goudy Stout" and glyph count is 249
+Postscript name is Some("GoudyStout")
+Font is "Goudy Stout" and glyph count is 249
+Postscript name is Some("GoudyStout")
+Font is "Goudy Stout" and glyph count is 249
+Postscript name is Some("GoudyStout")
+Font is "Goudy Stout" and glyph count is 249
+Postscript name is Some("GoudyStout")
+Font is "Kristen ITC" and glyph count is 249
+Postscript name is Some("KristenITC-Regular")
+Font is "Kristen ITC" and glyph count is 249
+Postscript name is Some("KristenITC-Regular")
+Font is "Kristen ITC" and glyph count is 249
+Postscript name is Some("KristenITC-Regular")
+Font is "Kristen ITC" and glyph count is 249
+Postscript name is Some("KristenITC-Regular")
+Font is "Eras ITC" and glyph count is 250
+Postscript name is Some("ErasITC-Light")
+Font is "Eras ITC" and glyph count is 250
+Postscript name is Some("ErasITC-Medium")
+Font is "Eras ITC" and glyph count is 250
+Postscript name is Some("ErasITC-Demi")
+Font is "Eras ITC" and glyph count is 250
+Postscript name is Some("ErasITC-Bold")
+Font is "Eras ITC" and glyph count is 250
+Postscript name is Some("ErasITC-Light")
+Font is "Eras ITC" and glyph count is 250
+Postscript name is Some("ErasITC-Medium")
+Font is "Eras ITC" and glyph count is 250
+Postscript name is Some("ErasITC-Demi")
+Font is "Eras ITC" and glyph count is 250
+Postscript name is Some("ErasITC-Bold")
+Font is "Kunstler Script" and glyph count is 250
+Postscript name is Some("KunstlerScript")
+Font is "Kunstler Script" and glyph count is 250
+Postscript name is Some("KunstlerScript")
+Font is "Kunstler Script" and glyph count is 250
+Postscript name is Some("KunstlerScript")
+Font is "Kunstler Script" and glyph count is 250
+Postscript name is Some("KunstlerScript")
+Font is "Perpetua" and glyph count is 250
+Postscript name is Some("Perpetua")
+Font is "Perpetua" and glyph count is 250
+Postscript name is Some("Perpetua-Bold")
+Font is "Perpetua" and glyph count is 250
+Postscript name is Some("Perpetua")
+Font is "Perpetua" and glyph count is 250
+Postscript name is Some("Perpetua-Bold")
+Font is "Rage" and glyph count is 250
+Postscript name is Some("RageItalic")
+Font is "Rage" and glyph count is 250
+Postscript name is Some("RageItalic")
+Font is "Vladimir Script" and glyph count is 250
+Postscript name is Some("VladimirScript")
+Font is "Vladimir Script" and glyph count is 250
+Postscript name is Some("VladimirScript")
+Font is "Vladimir Script" and glyph count is 250
+Postscript name is Some("VladimirScript")
+Font is "Vladimir Script" and glyph count is 250
+Postscript name is Some("VladimirScript")
+Font is "Bodoni MT" and glyph count is 251
+Postscript name is Some("BodoniMT")
+Font is "Bodoni MT" and glyph count is 251
+Postscript name is Some("BodoniMT-Italic")
+Font is "Bodoni MT" and glyph count is 251
+Postscript name is Some("BodoniMT-Bold")
+Font is "Bodoni MT" and glyph count is 251
+Postscript name is Some("BodoniMTCondensed-Bold")
+Font is "Bodoni MT" and glyph count is 251
+Postscript name is Some("BodoniMT-BoldItalic")
+Font is "Bodoni MT" and glyph count is 251
+Postscript name is Some("BodoniMT")
+Font is "Bodoni MT" and glyph count is 251
+Postscript name is Some("BodoniMT-Bold")
+Font is "Bodoni MT" and glyph count is 251
+Postscript name is Some("BodoniMTCondensed-Bold")
+Font is "Bradley Hand ITC" and glyph count is 251
+Postscript name is Some("BradleyHandITC")
+Font is "Bradley Hand ITC" and glyph count is 251
+Postscript name is Some("BradleyHandITC")
+Font is "Bradley Hand ITC" and glyph count is 251
+Postscript name is Some("BradleyHandITC")
+Font is "Bradley Hand ITC" and glyph count is 251
+Postscript name is Some("BradleyHandITC")
+Font is "Calisto MT" and glyph count is 251
+Postscript name is Some("CalistoMT-BoldItalic")
+Font is "Curlz MT" and glyph count is 251
+Postscript name is Some("CurlzMT")
+Font is "Curlz MT" and glyph count is 251
+Postscript name is Some("CurlzMT")
+Font is "Curlz MT" and glyph count is 251
+Postscript name is Some("CurlzMT")
+Font is "Curlz MT" and glyph count is 251
+Postscript name is Some("CurlzMT")
+Font is "Felix Titling" and glyph count is 251
+Postscript name is Some("FelixTitlingMT")
+Font is "Felix Titling" and glyph count is 251
+Postscript name is Some("FelixTitlingMT")
+Font is "Felix Titling" and glyph count is 251
+Postscript name is Some("FelixTitlingMT")
+Font is "Felix Titling" and glyph count is 251
+Postscript name is Some("FelixTitlingMT")
+Font is "French Script MT" and glyph count is 251
+Postscript name is Some("FrenchScriptMT")
+Font is "French Script MT" and glyph count is 251
+Postscript name is Some("FrenchScriptMT")
+Font is "French Script MT" and glyph count is 251
+Postscript name is Some("FrenchScriptMT")
+Font is "French Script MT" and glyph count is 251
+Postscript name is Some("FrenchScriptMT")
+Font is "OCR A" and glyph count is 251
+Postscript name is Some("OCRAExtended")
+Font is "OCR A" and glyph count is 251
+Postscript name is Some("OCRAExtended")
+Font is "OCR A" and glyph count is 251
+Postscript name is Some("OCRAExtended")
+Font is "OCR A" and glyph count is 251
+Postscript name is Some("OCRAExtended")
+Font is "Perpetua" and glyph count is 251
+Postscript name is Some("Perpetua-Italic")
+Font is "Perpetua" and glyph count is 251
+Postscript name is Some("Perpetua-BoldItalic")
+Font is "Rockwell" and glyph count is 251
+Postscript name is Some("Rockwell-Condensed")
+Font is "Rockwell" and glyph count is 251
+Postscript name is Some("Rockwell-CondensedBold")
+Font is "Rockwell" and glyph count is 251
+Postscript name is Some("Rockwell-Condensed")
+Font is "Rockwell" and glyph count is 251
+Postscript name is Some("Rockwell-CondensedBold")
+Font is "Script MT" and glyph count is 251
+Postscript name is Some("ScriptMTBold")
+Font is "Script MT" and glyph count is 251
+Postscript name is Some("ScriptMTBold")
+Font is "Tempus Sans ITC" and glyph count is 251
+Postscript name is Some("TempusSansITC")
+Font is "Tempus Sans ITC" and glyph count is 251
+Postscript name is Some("TempusSansITC")
+Font is "Tempus Sans ITC" and glyph count is 251
+Postscript name is Some("TempusSansITC")
+Font is "Tempus Sans ITC" and glyph count is 251
+Postscript name is Some("TempusSansITC")
+Font is "Viner Hand ITC" and glyph count is 251
+Postscript name is Some("VinerHandITC")
+Font is "Viner Hand ITC" and glyph count is 251
+Postscript name is Some("VinerHandITC")
+Font is "Viner Hand ITC" and glyph count is 251
+Postscript name is Some("VinerHandITC")
+Font is "Viner Hand ITC" and glyph count is 251
+Postscript name is Some("VinerHandITC")
+Font is "Bodoni MT" and glyph count is 252
+Postscript name is Some("BodoniMTCondensed")
+Font is "Bodoni MT" and glyph count is 252
+Postscript name is Some("BodoniMTCondensed-Italic")
+Font is "Bodoni MT" and glyph count is 252
+Postscript name is Some("BodoniMTCondensed-BoldItalic")
+Font is "Bodoni MT" and glyph count is 252
+Postscript name is Some("BodoniMTBlack")
+Font is "Bodoni MT" and glyph count is 252
+Postscript name is Some("BodoniMTBlack-Italic")
+Font is "Bodoni MT" and glyph count is 252
+Postscript name is Some("BodoniMTCondensed")
+Font is "Bodoni MT" and glyph count is 252
+Postscript name is Some("BodoniMTBlack")
+Font is "Britannic" and glyph count is 252
+Postscript name is Some("BritannicBold")
+Font is "Britannic" and glyph count is 252
+Postscript name is Some("BritannicBold")
+Font is "Cooper" and glyph count is 252
+Postscript name is Some("CooperBlack")
+Font is "Cooper" and glyph count is 252
+Postscript name is Some("CooperBlack")
+Font is "Wide Latin" and glyph count is 252
+Postscript name is Some("LatinWide")
+Font is "Wide Latin" and glyph count is 252
+Postscript name is Some("LatinWide")
+Font is "Wide Latin" and glyph count is 252
+Postscript name is Some("LatinWide")
+Font is "Wide Latin" and glyph count is 252
+Postscript name is Some("LatinWide")
+Font is "Copperplate Gothic" and glyph count is 253
+Postscript name is Some("CopperplateGothic-Light")
+Font is "Copperplate Gothic" and glyph count is 253
+Postscript name is Some("CopperplateGothic-Bold")
+Font is "Copperplate Gothic" and glyph count is 253
+Postscript name is Some("CopperplateGothic-Light")
+Font is "Copperplate Gothic" and glyph count is 253
+Postscript name is Some("CopperplateGothic-Bold")
+Font is "Gigi" and glyph count is 253
+Postscript name is Some("Gigi-Regular")
+Font is "Gigi" and glyph count is 253
+Postscript name is Some("Gigi-Regular")
+Font is "Gigi" and glyph count is 253
+Postscript name is Some("Gigi-Regular")
+Font is "Gigi" and glyph count is 253
+Postscript name is Some("Gigi-Regular")
+Font is "Papyrus" and glyph count is 255
+Postscript name is Some("Papyrus-Regular")
+Font is "Papyrus" and glyph count is 255
+Postscript name is Some("Papyrus-Regular")
+Font is "Papyrus" and glyph count is 255
+Postscript name is Some("Papyrus-Regular")
+Font is "Papyrus" and glyph count is 255
+Postscript name is Some("Papyrus-Regular")
+Font is "Parchment" and glyph count is 255
+Postscript name is Some("Parchment-Regular")
+Font is "Parchment" and glyph count is 255
+Postscript name is Some("Parchment-Regular")
+Font is "Parchment" and glyph count is 255
+Postscript name is Some("Parchment-Regular")
+Font is "Parchment" and glyph count is 255
+Postscript name is Some("Parchment-Regular")
+Font is "Playbill" and glyph count is 258
+Postscript name is Some("Playbill")
+Font is "Playbill" and glyph count is 258
+Postscript name is Some("Playbill")
+Font is "Playbill" and glyph count is 258
+Postscript name is Some("Playbill")
+Font is "Playbill" and glyph count is 258
+Postscript name is Some("Playbill")
+Font is "Maiandra GD" and glyph count is 260
+Postscript name is Some("MaiandraGD-Regular")
+Font is "Maiandra GD" and glyph count is 260
+Postscript name is Some("MaiandraGD-Regular")
+Font is "Maiandra GD" and glyph count is 260
+Postscript name is Some("MaiandraGD-Regular")
+Font is "Maiandra GD" and glyph count is 260
+Postscript name is Some("MaiandraGD-Regular")
+Font is "Bodoni MT Poster" and glyph count is 261
+Postscript name is Some("BodoniMTPosterCompressed")
+Font is "Bodoni MT Poster" and glyph count is 261
+Postscript name is Some("BodoniMTPosterCompressed")
+Font is "Juice ITC" and glyph count is 261
+Postscript name is Some("JuiceITC-Regular")
+Font is "Juice ITC" and glyph count is 261
+Postscript name is Some("JuiceITC-Regular")
+Font is "Juice ITC" and glyph count is 261
+Postscript name is Some("JuiceITC-Regular")
+Font is "Juice ITC" and glyph count is 261
+Postscript name is Some("JuiceITC-Regular")
+Font is "Snap ITC" and glyph count is 261
+Postscript name is Some("SnapITC-Regular")
+Font is "Snap ITC" and glyph count is 261
+Postscript name is Some("SnapITC-Regular")
+Font is "Snap ITC" and glyph count is 261
+Postscript name is Some("SnapITC-Regular")
+Font is "Snap ITC" and glyph count is 261
+Postscript name is Some("SnapITC-Regular")
+Font is "Perpetua Titling MT" and glyph count is 263
+Postscript name is Some("PerpetuaTitlingMT-Bold")
+Font is "Perpetua Titling MT" and glyph count is 263
+Postscript name is Some("PerpetuaTitlingMT-Bold")
+Font is "Baskerville Old Face" and glyph count is 269
+Postscript name is Some("BaskOldFace")
+Font is "Baskerville Old Face" and glyph count is 269
+Postscript name is Some("BaskOldFace")
+Font is "Baskerville Old Face" and glyph count is 269
+Postscript name is Some("BaskOldFace")
+Font is "Baskerville Old Face" and glyph count is 269
+Postscript name is Some("BaskOldFace")
+Font is "Showcard Gothic" and glyph count is 269
+Postscript name is Some("ShowcardGothic-Reg")
+Font is "Showcard Gothic" and glyph count is 269
+Postscript name is Some("ShowcardGothic-Reg")
+Font is "Showcard Gothic" and glyph count is 269
+Postscript name is Some("ShowcardGothic-Reg")
+Font is "Showcard Gothic" and glyph count is 269
+Postscript name is Some("ShowcardGothic-Reg")
+Font is "Bauhaus 93" and glyph count is 270
+Postscript name is Some("Bauhaus93")
+Font is "Bauhaus 93" and glyph count is 270
+Postscript name is Some("Bauhaus93")
+Font is "Bauhaus 93" and glyph count is 270
+Postscript name is Some("Bauhaus93")
+Font is "Bauhaus 93" and glyph count is 270
+Postscript name is Some("Bauhaus93")
+Font is "Goudy Old Style" and glyph count is 270
+Postscript name is Some("GoudyOldStyleT-Regular")
+Font is "Goudy Old Style" and glyph count is 270
+Postscript name is Some("GoudyOldStyleT-Italic")
+Font is "Goudy Old Style" and glyph count is 270
+Postscript name is Some("GoudyOldStyleT-Bold")
+Font is "Goudy Old Style" and glyph count is 270
+Postscript name is Some("GoudyOldStyleT-Regular")
+Font is "Goudy Old Style" and glyph count is 270
+Postscript name is Some("GoudyOldStyleT-Bold")
+Font is "Goudy Old Style" and glyph count is 270
+Postscript name is Some("GoudyOldStyleT-Italic")
+Font is "Harlow Solid" and glyph count is 270
+Postscript name is Some("HarlowSolid")
+Font is "Harlow Solid" and glyph count is 270
+Postscript name is Some("HarlowSolid")
+Font is "Vivaldi" and glyph count is 270
+Postscript name is Some("Vivaldii")
+Font is "Vivaldi" and glyph count is 270
+Postscript name is Some("Vivaldii")
+Font is "Ravie" and glyph count is 274
+Postscript name is Some("Ravie")
+Font is "Ravie" and glyph count is 274
+Postscript name is Some("Ravie")
+Font is "Ravie" and glyph count is 274
+Postscript name is Some("Ravie")
+Font is "Ravie" and glyph count is 274
+Postscript name is Some("Ravie")
+Font is "Informal Roman" and glyph count is 275
+Postscript name is Some("InformalRoman-Regular")
+Font is "Informal Roman" and glyph count is 275
+Postscript name is Some("InformalRoman-Regular")
+Font is "Informal Roman" and glyph count is 275
+Postscript name is Some("InformalRoman-Regular")
+Font is "Informal Roman" and glyph count is 275
+Postscript name is Some("InformalRoman-Regular")
+Font is "Californian FB" and glyph count is 276
+Postscript name is Some("CalifornianFB-Bold")
+Font is "Californian FB" and glyph count is 276
+Postscript name is Some("CalifornianFB-Bold")
+Font is "High Tower Text" and glyph count is 277
+Postscript name is Some("HighTowerText-Italic")
+Font is "High Tower Text" and glyph count is 277
+Postscript name is Some("HighTowerText-Italic")
+Font is "Magneto" and glyph count is 291
+Postscript name is Some("Magneto-Bold")
+Font is "Magneto" and glyph count is 291
+Postscript name is Some("Magneto-Bold")
+Font is "Gill Sans" and glyph count is 295
+Postscript name is Some("GillSans-UltraBold")
+Font is "Gill Sans" and glyph count is 295
+Postscript name is Some("GillSans-UltraBold")
+Font is "Gill Sans MT" and glyph count is 296
+Postscript name is Some("GillSansMT-Condensed")
+Font is "Gill Sans MT" and glyph count is 296
+Postscript name is Some("GillSansMT-Condensed")
+Font is "Gill Sans MT" and glyph count is 296
+Postscript name is Some("GillSansMT-Condensed")
+Font is "Gill Sans MT" and glyph count is 296
+Postscript name is Some("GillSansMT-Condensed")
+Font is "Rockwell" and glyph count is 296
+Postscript name is Some("Rockwell-BoldItalic")
+Font is "Tw Cen MT" and glyph count is 296
+Postscript name is Some("TwCenMT-Italic")
+Font is "Gill Sans MT" and glyph count is 297
+Postscript name is Some("GillSansMT-ExtraCondensedBold")
+Font is "Gill Sans MT" and glyph count is 297
+Postscript name is Some("GillSansMT-ExtraCondensedBold")
+Font is "Gill Sans" and glyph count is 297
+Postscript name is Some("GillSans-UltraBoldCondensed")
+Font is "Gill Sans" and glyph count is 297
+Postscript name is Some("GillSans-UltraBoldCondensed")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-Regular")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-Condensed")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-Bold")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-CondensedBold")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-BoldItalic")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-CondensedExtraBold")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-Regular")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-Condensed")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-Bold")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-CondensedBold")
+Font is "Tw Cen MT" and glyph count is 297
+Postscript name is Some("TwCenMT-CondensedExtraBold")
+Font is "Agency FB" and glyph count is 298
+Postscript name is Some("AgencyFB-Reg")
+Font is "Agency FB" and glyph count is 298
+Postscript name is Some("AgencyFB-Bold")
+Font is "Agency FB" and glyph count is 298
+Postscript name is Some("AgencyFB-Reg")
+Font is "Agency FB" and glyph count is 298
+Postscript name is Some("AgencyFB-Bold")
+Font is "Gill Sans MT" and glyph count is 299
+Postscript name is Some("GillSansMT-Bold")
+Font is "Gill Sans MT" and glyph count is 299
+Postscript name is Some("GillSansMT-Bold")
+Font is "MV Boli" and glyph count is 300
+Postscript name is Some("MVBoli")
+Font is "MV Boli" and glyph count is 300
+Postscript name is Some("MVBoli")
+Font is "MV Boli" and glyph count is 300
+Postscript name is Some("MVBoli")
+Font is "MV Boli" and glyph count is 300
+Postscript name is Some("MVBoli")
+Font is "Gill Sans MT" and glyph count is 300
+Postscript name is Some("GillSansMT")
+Font is "Gill Sans MT" and glyph count is 300
+Postscript name is Some("GillSansMT-Italic")
+Font is "Gill Sans MT" and glyph count is 300
+Postscript name is Some("GillSansMT-BoldItalic")
+Font is "Gill Sans MT" and glyph count is 300
+Postscript name is Some("GillSansMT")
+Font is "Microsoft Tai Le" and glyph count is 324
+Postscript name is Some("MicrosoftTaiLe")
+Font is "Microsoft Tai Le" and glyph count is 324
+Postscript name is Some("MicrosoftTaiLe-Bold")
+Font is "Microsoft Tai Le" and glyph count is 324
+Postscript name is Some("MicrosoftTaiLe")
+Font is "Microsoft Tai Le" and glyph count is 324
+Postscript name is Some("MicrosoftTaiLe-Bold")
+Font is "Microsoft New Tai Lue" and glyph count is 349
+Postscript name is Some("MicrosoftNewTaiLue")
+Font is "Microsoft New Tai Lue" and glyph count is 349
+Postscript name is Some("MicrosoftNewTaiLue-Bold")
+Font is "Microsoft New Tai Lue" and glyph count is 349
+Postscript name is Some("MicrosoftNewTaiLue")
+Font is "Microsoft New Tai Lue" and glyph count is 349
+Postscript name is Some("MicrosoftNewTaiLue-Bold")
+Font is "Berlin Sans FB" and glyph count is 363
+Postscript name is Some("BerlinSansFB-Reg")
+Font is "Berlin Sans FB" and glyph count is 363
+Postscript name is Some("BerlinSansFB-Bold")
+Font is "Berlin Sans FB" and glyph count is 363
+Postscript name is Some("BerlinSansFB-Reg")
+Font is "Berlin Sans FB" and glyph count is 363
+Postscript name is Some("BerlinSansFB-Bold")
+Font is "Berlin Sans FB" and glyph count is 364
+Postscript name is Some("BerlinSansFBDemi-Bold")
+Font is "Berlin Sans FB" and glyph count is 364
+Postscript name is Some("BerlinSansFBDemi-Bold")
+Font is "Californian FB" and glyph count is 381
+Postscript name is Some("CalifornianFB-Reg")
+Font is "Californian FB" and glyph count is 381
+Postscript name is Some("CalifornianFB-Italic")
+Font is "Californian FB" and glyph count is 381
+Postscript name is Some("CalifornianFB-Reg")
+Font is "Californian FB" and glyph count is 381
+Postscript name is Some("CalifornianFB-Italic")
+Font is "High Tower Text" and glyph count is 385
+Postscript name is Some("HighTowerText-Reg")
+Font is "High Tower Text" and glyph count is 385
+Postscript name is Some("HighTowerText-Reg")
+Font is "High Tower Text" and glyph count is 385
+Postscript name is Some("HighTowerText-Reg")
+Font is "High Tower Text" and glyph count is 385
+Postscript name is Some("HighTowerText-Reg")
+Font is "Niagara Engraved" and glyph count is 397
+Postscript name is Some("NiagaraEngraved-Reg")
+Font is "Niagara Engraved" and glyph count is 397
+Postscript name is Some("NiagaraEngraved-Reg")
+Font is "Niagara Engraved" and glyph count is 397
+Postscript name is Some("NiagaraEngraved-Reg")
+Font is "Niagara Engraved" and glyph count is 397
+Postscript name is Some("NiagaraEngraved-Reg")
+Font is "Niagara Solid" and glyph count is 397
+Postscript name is Some("NiagaraSolid-Reg")
+Font is "Niagara Solid" and glyph count is 397
+Postscript name is Some("NiagaraSolid-Reg")
+Font is "Niagara Solid" and glyph count is 397
+Postscript name is Some("NiagaraSolid-Reg")
+Font is "Niagara Solid" and glyph count is 397
+Postscript name is Some("NiagaraSolid-Reg")
+Font is "Candara" and glyph count is 625
+Postscript name is Some("Candara-Light")
+Font is "Candara" and glyph count is 625
+Postscript name is Some("Candara-LightItalic")
+Font is "Candara" and glyph count is 625
+Postscript name is Some("Candara-Light")
+Font is "Haettenschweiler" and glyph count is 654
+Postscript name is Some("Haettenschweiler")
+Font is "Haettenschweiler" and glyph count is 654
+Postscript name is Some("Haettenschweiler")
+Font is "Haettenschweiler" and glyph count is 654
+Postscript name is Some("Haettenschweiler")
+Font is "Haettenschweiler" and glyph count is 654
+Postscript name is Some("Haettenschweiler")
+Font is "Franklin Gothic" and glyph count is 660
+Postscript name is Some("FranklinGothic-MediumItalic")
+Font is "Franklin Gothic" and glyph count is 660
+Postscript name is Some("FranklinGothic-Heavy")
+Font is "Franklin Gothic" and glyph count is 660
+Postscript name is Some("FranklinGothic-HeavyItalic")
+Font is "Franklin Gothic" and glyph count is 660
+Postscript name is Some("FranklinGothic-Heavy")
+Font is "Franklin Gothic Book" and glyph count is 660
+Postscript name is Some("FranklinGothic-Book")
+Font is "Franklin Gothic Book" and glyph count is 660
+Postscript name is Some("FranklinGothic-BookItalic")
+Font is "Franklin Gothic Book" and glyph count is 660
+Postscript name is Some("FranklinGothic-Book")
+Font is "Franklin Gothic Book" and glyph count is 660
+Postscript name is Some("FranklinGothic-Book")
+Font is "Franklin Gothic Book" and glyph count is 660
+Postscript name is Some("FranklinGothic-Book")
+Font is "Franklin Gothic Book" and glyph count is 660
+Postscript name is Some("FranklinGothic-BookItalic")
+Font is "Arial" and glyph count is 663
+Postscript name is Some("ArialNarrow")
+Font is "Arial" and glyph count is 663
+Postscript name is Some("ArialNarrow-Italic")
+Font is "Arial" and glyph count is 663
+Postscript name is Some("ArialNarrow-BoldItalic")
+Font is "Arial" and glyph count is 663
+Postscript name is Some("ArialNarrow")
+Font is "Franklin Gothic" and glyph count is 663
+Postscript name is Some("FranklinGothic-MediumCond")
+Font is "Franklin Gothic" and glyph count is 663
+Postscript name is Some("FranklinGothic-Demi")
+Font is "Franklin Gothic" and glyph count is 663
+Postscript name is Some("FranklinGothic-DemiCond")
+Font is "Franklin Gothic" and glyph count is 663
+Postscript name is Some("FranklinGothic-MediumCond")
+Font is "Franklin Gothic" and glyph count is 663
+Postscript name is Some("FranklinGothic-Demi")
+Font is "Franklin Gothic" and glyph count is 663
+Postscript name is Some("FranklinGothic-DemiCond")
+Font is "Garamond" and glyph count is 663
+Postscript name is Some("Garamond")
+Font is "Garamond" and glyph count is 663
+Postscript name is Some("Garamond-Italic")
+Font is "Garamond" and glyph count is 663
+Postscript name is Some("Garamond-Bold")
+Font is "Garamond" and glyph count is 663
+Postscript name is Some("Garamond")
+Font is "Garamond" and glyph count is 663
+Postscript name is Some("Garamond-Bold")
+Font is "Garamond" and glyph count is 663
+Postscript name is Some("Garamond-Italic")
+Font is "Arial" and glyph count is 664
+Postscript name is Some("ArialNarrow-Bold")
+Font is "Arial" and glyph count is 664
+Postscript name is Some("ArialNarrow-Bold")
+Font is "Franklin Gothic" and glyph count is 664
+Postscript name is Some("FranklinGothic-DemiItalic")
+Font is "Franklin Gothic" and glyph count is 665
+Postscript name is Some("FranklinGothic-Medium")
+Font is "Franklin Gothic" and glyph count is 665
+Postscript name is Some("FranklinGothic-Medium")
+Font is "Century Gothic" and glyph count is 666
+Postscript name is Some("CenturyGothic")
+Font is "Century Gothic" and glyph count is 666
+Postscript name is Some("CenturyGothic-Italic")
+Font is "Century Gothic" and glyph count is 666
+Postscript name is Some("CenturyGothic-Bold")
+Font is "Century Gothic" and glyph count is 666
+Postscript name is Some("CenturyGothic-BoldItalic")
+Font is "Century Gothic" and glyph count is 666
+Postscript name is Some("CenturyGothic")
+Font is "Century Gothic" and glyph count is 666
+Postscript name is Some("CenturyGothic-Bold")
+Font is "Mistral" and glyph count is 666
+Postscript name is Some("Mistral")
+Font is "Mistral" and glyph count is 666
+Postscript name is Some("Mistral")
+Font is "Mistral" and glyph count is 666
+Postscript name is Some("Mistral")
+Font is "Mistral" and glyph count is 666
+Postscript name is Some("Mistral")
+Font is "Lucida Console" and glyph count is 667
+Postscript name is Some("LucidaConsole")
+Font is "Lucida Console" and glyph count is 667
+Postscript name is Some("LucidaConsole")
+Font is "Lucida Console" and glyph count is 667
+Postscript name is Some("LucidaConsole")
+Font is "Lucida Console" and glyph count is 667
+Postscript name is Some("LucidaConsole")
+Font is "Book Antiqua" and glyph count is 669
+Postscript name is Some("BookAntiqua")
+Font is "Book Antiqua" and glyph count is 669
+Postscript name is Some("BookAntiqua-Italic")
+Font is "Book Antiqua" and glyph count is 669
+Postscript name is Some("BookAntiqua-Bold")
+Font is "Book Antiqua" and glyph count is 669
+Postscript name is Some("BookAntiqua-BoldItalic")
+Font is "Book Antiqua" and glyph count is 669
+Postscript name is Some("BookAntiqua")
+Font is "Book Antiqua" and glyph count is 669
+Postscript name is Some("BookAntiqua-Bold")
+Font is "Bookman Old Style" and glyph count is 669
+Postscript name is Some("BookmanOldStyle")
+Font is "Bookman Old Style" and glyph count is 669
+Postscript name is Some("BookmanOldStyle-Italic")
+Font is "Bookman Old Style" and glyph count is 669
+Postscript name is Some("BookmanOldStyle-BoldItalic")
+Font is "Bookman Old Style" and glyph count is 669
+Postscript name is Some("BookmanOldStyle")
+Font is "Century Schoolbook" and glyph count is 669
+Postscript name is Some("CenturySchoolbook")
+Font is "Century Schoolbook" and glyph count is 669
+Postscript name is Some("CenturySchoolbook-Italic")
+Font is "Century Schoolbook" and glyph count is 669
+Postscript name is Some("CenturySchoolbook-Bold")
+Font is "Century Schoolbook" and glyph count is 669
+Postscript name is Some("CenturySchoolbook-BoldItalic")
+Font is "Century Schoolbook" and glyph count is 669
+Postscript name is Some("CenturySchoolbook")
+Font is "Century Schoolbook" and glyph count is 669
+Postscript name is Some("CenturySchoolbook-Bold")
+Font is "Monotype Corsiva" and glyph count is 669
+Postscript name is Some("MonotypeCorsiva")
+Font is "Monotype Corsiva" and glyph count is 669
+Postscript name is Some("MonotypeCorsiva")
+Font is "Bookman Old Style" and glyph count is 670
+Postscript name is Some("BookmanOldStyle-Bold")
+Font is "Bookman Old Style" and glyph count is 670
+Postscript name is Some("BookmanOldStyle-Bold")
+Font is "Century" and glyph count is 670
+Postscript name is Some("Century")
+Font is "Century" and glyph count is 670
+Postscript name is Some("Century")
+Font is "Century" and glyph count is 670
+Postscript name is Some("Century")
+Font is "Century" and glyph count is 670
+Postscript name is Some("Century")
+Font is "Dubai" and glyph count is 677
+Postscript name is Some("Dubai-Light")
+Font is "Dubai" and glyph count is 677
+Postscript name is Some("Dubai-Regular")
+Font is "Dubai" and glyph count is 677
+Postscript name is Some("Dubai-Medium")
+Font is "Dubai" and glyph count is 677
+Postscript name is Some("Dubai-Bold")
+Font is "Dubai" and glyph count is 677
+Postscript name is Some("Dubai-Light")
+Font is "Dubai" and glyph count is 677
+Postscript name is Some("Dubai-Regular")
+Font is "Dubai" and glyph count is 677
+Postscript name is Some("Dubai-Medium")
+Font is "Dubai" and glyph count is 677
+Postscript name is Some("Dubai-Bold")
+Font is "Javanese Text" and glyph count is 687
+Postscript name is Some("JavaneseText")
+Font is "Javanese Text" and glyph count is 687
+Postscript name is Some("JavaneseText")
+Font is "Javanese Text" and glyph count is 687
+Postscript name is Some("JavaneseText")
+Font is "Javanese Text" and glyph count is 687
+Postscript name is Some("JavaneseText")
+Font is "Segoe Print" and glyph count is 688
+Postscript name is Some("SegoePrint-Bold")
+Font is "Segoe Print" and glyph count is 688
+Postscript name is Some("SegoePrint-Bold")
+Font is "Segoe Print" and glyph count is 690
+Postscript name is Some("SegoePrint")
+Font is "Segoe Print" and glyph count is 690
+Postscript name is Some("SegoePrint")
+Font is "Sylfaen" and glyph count is 821
+Postscript name is Some("Sylfaen")
+Font is "Sylfaen" and glyph count is 821
+Postscript name is Some("Sylfaen")
+Font is "Sylfaen" and glyph count is 821
+Postscript name is Some("Sylfaen")
+Font is "Sylfaen" and glyph count is 821
+Postscript name is Some("Sylfaen")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Bahnschrift" and glyph count is 859
+Postscript name is Some("Bahnschrift")
+Font is "Georgia" and glyph count is 864
+Postscript name is Some("Georgia")
+Font is "Georgia" and glyph count is 864
+Postscript name is Some("Georgia-Italic")
+Font is "Georgia" and glyph count is 864
+Postscript name is Some("Georgia-Bold")
+Font is "Georgia" and glyph count is 864
+Postscript name is Some("Georgia-BoldItalic")
+Font is "Georgia" and glyph count is 864
+Postscript name is Some("Georgia")
+Font is "Georgia" and glyph count is 864
+Postscript name is Some("Georgia-Bold")
+Font is "Corbel" and glyph count is 921
+Postscript name is Some("CorbelLight")
+Font is "Corbel" and glyph count is 921
+Postscript name is Some("CorbelLight-Italic")
+Font is "Corbel" and glyph count is 921
+Postscript name is Some("CorbelLight")
+Font is "Myanmar Text" and glyph count is 1003
+Postscript name is Some("MyanmarText")
+Font is "Myanmar Text" and glyph count is 1003
+Postscript name is Some("MyanmarText-Bold")
+Font is "Myanmar Text" and glyph count is 1003
+Postscript name is Some("MyanmarText")
+Font is "Myanmar Text" and glyph count is 1003
+Postscript name is Some("MyanmarText-Bold")
+Font is "Impact" and glyph count is 1019
+Postscript name is Some("Impact")
+Font is "Impact" and glyph count is 1019
+Postscript name is Some("Impact")
+Font is "Impact" and glyph count is 1019
+Postscript name is Some("Impact")
+Font is "Impact" and glyph count is 1019
+Postscript name is Some("Impact")
+Font is "Leelawadee UI" and glyph count is 1023
+Postscript name is Some("LeelawadeeUI-Semilight")
+Font is "Leelawadee UI" and glyph count is 1023
+Postscript name is Some("LeelawadeeUI")
+Font is "Leelawadee UI" and glyph count is 1023
+Postscript name is Some("LeelawadeeUI-Bold")
+Font is "Leelawadee UI" and glyph count is 1023
+Postscript name is Some("LeelawadeeUI-Semilight")
+Font is "Leelawadee UI" and glyph count is 1023
+Postscript name is Some("LeelawadeeUI")
+Font is "Leelawadee UI" and glyph count is 1023
+Postscript name is Some("LeelawadeeUI-Bold")
+Font is "Arial" and glyph count is 1030
+Postscript name is Some("Arial-Black")
+Font is "Arial" and glyph count is 1030
+Postscript name is Some("Arial-Black")
+Font is "Comic Sans MS" and glyph count is 1106
+Postscript name is Some("ComicSansMS")
+Font is "Comic Sans MS" and glyph count is 1106
+Postscript name is Some("ComicSansMS-Bold")
+Font is "Comic Sans MS" and glyph count is 1106
+Postscript name is Some("ComicSansMS")
+Font is "Comic Sans MS" and glyph count is 1106
+Postscript name is Some("ComicSansMS-Bold")
+Font is "Comic Sans MS" and glyph count is 1141
+Postscript name is Some("ComicSansMS-Italic")
+Font is "Comic Sans MS" and glyph count is 1141
+Postscript name is Some("ComicSansMS-BoldItalic")
+Font is "Trebuchet MS" and glyph count is 1168
+Postscript name is Some("TrebuchetMS-Italic")
+Font is "Trebuchet MS" and glyph count is 1168
+Postscript name is Some("Trebuchet-BoldItalic")
+Font is "Trebuchet MS" and glyph count is 1179
+Postscript name is Some("TrebuchetMS")
+Font is "Trebuchet MS" and glyph count is 1179
+Postscript name is Some("TrebuchetMS-Bold")
+Font is "Trebuchet MS" and glyph count is 1179
+Postscript name is Some("TrebuchetMS")
+Font is "Trebuchet MS" and glyph count is 1179
+Postscript name is Some("TrebuchetMS-Bold")
+Font is "Candara" and glyph count is 1180
+Postscript name is Some("Candara")
+Font is "Candara" and glyph count is 1180
+Postscript name is Some("Candara-Bold")
+Font is "Candara" and glyph count is 1180
+Postscript name is Some("Candara")
+Font is "Candara" and glyph count is 1180
+Postscript name is Some("Candara-Bold")
+Font is "Candara" and glyph count is 1184
+Postscript name is Some("Candara-Italic")
+Font is "Candara" and glyph count is 1184
+Postscript name is Some("Candara-BoldItalic")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall-Bold")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall-Bold")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall-Bold")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall-Bold")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall")
+Font is "Sitka Text" and glyph count is 1185
+Postscript name is Some("SitkaText-Bold")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall")
+Font is "Sitka Text" and glyph count is 1185
+Postscript name is Some("SitkaText-Bold")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall")
+Font is "Sitka Text" and glyph count is 1185
+Postscript name is Some("SitkaText-Bold")
+Font is "Sitka Small" and glyph count is 1185
+Postscript name is Some("SitkaSmall")
+Font is "Sitka Text" and glyph count is 1185
+Postscript name is Some("SitkaText-Bold")
+Font is "Sitka Text" and glyph count is 1185
+Postscript name is Some("SitkaText")
+Font is "Sitka Subheading" and glyph count is 1185
+Postscript name is Some("SitkaSubheading-Bold")
+Font is "Sitka Text" and glyph count is 1185
+Postscript name is Some("SitkaText")
+Font is "Sitka Subheading" and glyph count is 1185
+Postscript name is Some("SitkaSubheading-Bold")
+Font is "Sitka Text" and glyph count is 1185
+Postscript name is Some("SitkaText")
+Font is "Sitka Subheading" and glyph count is 1185
+Postscript name is Some("SitkaSubheading-Bold")
+Font is "Sitka Text" and glyph count is 1185
+Postscript name is Some("SitkaText")
+Font is "Sitka Subheading" and glyph count is 1185
+Postscript name is Some("SitkaSubheading-Bold")
+Font is "Sitka Small" and glyph count is 1189
+Postscript name is Some("SitkaSmall-Italic")
+Font is "Sitka Small" and glyph count is 1189
+Postscript name is Some("SitkaSmall-BoldItalic")
+Font is "Sitka Small" and glyph count is 1189
+Postscript name is Some("SitkaSmall-Italic")
+Font is "Sitka Text" and glyph count is 1189
+Postscript name is Some("SitkaText-BoldItalic")
+Font is "Sitka Text" and glyph count is 1189
+Postscript name is Some("SitkaText-Italic")
+Font is "Sitka Subheading" and glyph count is 1189
+Postscript name is Some("SitkaSubheading-BoldItalic")
+Font is "Sitka Text" and glyph count is 1189
+Postscript name is Some("SitkaText-Italic")
+Font is "Sitka Heading" and glyph count is 1189
+Postscript name is Some("SitkaHeading-BoldItalic")
+Font is "Sitka Subheading" and glyph count is 1189
+Postscript name is Some("SitkaSubheading-Italic")
+Font is "Sitka Display" and glyph count is 1189
+Postscript name is Some("SitkaDisplay-BoldItalic")
+Font is "Sitka Subheading" and glyph count is 1189
+Postscript name is Some("SitkaSubheading-Italic")
+Font is "Sitka Banner" and glyph count is 1189
+Postscript name is Some("SitkaBanner-BoldItalic")
+Font is "MS Reference Sans Serif" and glyph count is 1193
+Postscript name is Some("MSReferenceSansSerif")
+Font is "MS Reference Sans Serif" and glyph count is 1193
+Postscript name is Some("MSReferenceSansSerif")
+Font is "MS Reference Sans Serif" and glyph count is 1193
+Postscript name is Some("MSReferenceSansSerif")
+Font is "MS Reference Sans Serif" and glyph count is 1193
+Postscript name is Some("MSReferenceSansSerif")
+Font is "Constantia" and glyph count is 1204
+Postscript name is Some("Constantia")
+Font is "Constantia" and glyph count is 1204
+Postscript name is Some("Constantia-Bold")
+Font is "Constantia" and glyph count is 1204
+Postscript name is Some("Constantia")
+Font is "Constantia" and glyph count is 1204
+Postscript name is Some("Constantia-Bold")
+Font is "Constantia" and glyph count is 1208
+Postscript name is Some("Constantia-Italic")
+Font is "Constantia" and glyph count is 1208
+Postscript name is Some("Constantia-BoldItalic")
+Font is "Gadugi" and glyph count is 1231
+Postscript name is Some("Gadugi")
+Font is "Gadugi" and glyph count is 1231
+Postscript name is Some("Gadugi-Bold")
+Font is "Gadugi" and glyph count is 1231
+Postscript name is Some("Gadugi")
+Font is "Gadugi" and glyph count is 1231
+Postscript name is Some("Gadugi-Bold")
+Font is "Corbel" and glyph count is 1286
+Postscript name is Some("Corbel")
+Font is "Corbel" and glyph count is 1286
+Postscript name is Some("Corbel-Italic")
+Font is "Corbel" and glyph count is 1286
+Postscript name is Some("Corbel-Bold")
+Font is "Corbel" and glyph count is 1286
+Postscript name is Some("Corbel-BoldItalic")
+Font is "Corbel" and glyph count is 1286
+Postscript name is Some("Corbel")
+Font is "Corbel" and glyph count is 1286
+Postscript name is Some("Corbel-Bold")
+Font is "Adobe Devanagari" and glyph count is 1327
+Postscript name is Some("AdobeDevanagari-Regular")
+Font is "Adobe Devanagari" and glyph count is 1327
+Postscript name is Some("AdobeDevanagari-Italic")
+Font is "Adobe Devanagari" and glyph count is 1327
+Postscript name is Some("AdobeDevanagari-Regular")
+Font is "Palatino Linotype" and glyph count is 1328
+Postscript name is Some("PalatinoLinotype-Roman")
+Font is "Palatino Linotype" and glyph count is 1328
+Postscript name is Some("PalatinoLinotype-Italic")
+Font is "Palatino Linotype" and glyph count is 1328
+Postscript name is Some("PalatinoLinotype-Bold")
+Font is "Palatino Linotype" and glyph count is 1328
+Postscript name is Some("PalatinoLinotype-BoldItalic")
+Font is "Palatino Linotype" and glyph count is 1328
+Postscript name is Some("PalatinoLinotype-Roman")
+Font is "Palatino Linotype" and glyph count is 1328
+Postscript name is Some("PalatinoLinotype-Bold")
+Font is "Microsoft PhagsPa" and glyph count is 1344
+Postscript name is Some("MicrosoftPhagsPa")
+Font is "Microsoft PhagsPa" and glyph count is 1344
+Postscript name is Some("MicrosoftPhagsPa-Bold")
+Font is "Microsoft PhagsPa" and glyph count is 1344
+Postscript name is Some("MicrosoftPhagsPa")
+Font is "Microsoft PhagsPa" and glyph count is 1344
+Postscript name is Some("MicrosoftPhagsPa-Bold")
+Font is "Adobe Devanagari" and glyph count is 1357
+Postscript name is Some("AdobeDevanagari-Bold")
+Font is "Adobe Devanagari" and glyph count is 1357
+Postscript name is Some("AdobeDevanagari-BoldItalic")
+Font is "Adobe Devanagari" and glyph count is 1357
+Postscript name is Some("AdobeDevanagari-Bold")
+Font is "Verdana" and glyph count is 1397
+Postscript name is Some("Verdana")
+Font is "Verdana" and glyph count is 1397
+Postscript name is Some("Verdana-Italic")
+Font is "Verdana" and glyph count is 1397
+Postscript name is Some("Verdana-Bold")
+Font is "Verdana" and glyph count is 1397
+Postscript name is Some("Verdana-BoldItalic")
+Font is "Verdana" and glyph count is 1397
+Postscript name is Some("Verdana")
+Font is "Verdana" and glyph count is 1397
+Postscript name is Some("Verdana-Bold")
+Font is "Segoe MDL2 Assets" and glyph count is 1405
+Postscript name is Some("SegoeMDL2Assets")
+Font is "Segoe MDL2 Assets" and glyph count is 1405
+Postscript name is Some("SegoeMDL2Assets")
+Font is "Segoe MDL2 Assets" and glyph count is 1405
+Postscript name is Some("SegoeMDL2Assets")
+Font is "Segoe MDL2 Assets" and glyph count is 1405
+Postscript name is Some("SegoeMDL2Assets")
+Font is "Microsoft Himalaya" and glyph count is 1522
+Postscript name is Some("Microsoft Himalaya")
+Font is "Microsoft Himalaya" and glyph count is 1522
+Postscript name is Some("Microsoft Himalaya")
+Font is "Microsoft Himalaya" and glyph count is 1522
+Postscript name is Some("Microsoft Himalaya")
+Font is "Microsoft Himalaya" and glyph count is 1522
+Postscript name is Some("Microsoft Himalaya")
+Font is "Microsoft Yi Baiti" and glyph count is 1565
+Postscript name is Some("Microsoft-Yi-Baiti")
+Font is "Microsoft Yi Baiti" and glyph count is 1565
+Postscript name is Some("Microsoft-Yi-Baiti")
+Font is "Microsoft Yi Baiti" and glyph count is 1565
+Postscript name is Some("Microsoft-Yi-Baiti")
+Font is "Microsoft Yi Baiti" and glyph count is 1565
+Postscript name is Some("Microsoft-Yi-Baiti")
+Font is "Lucida Sans Unicode" and glyph count is 1779
+Postscript name is Some("LucidaSansUnicode")
+Font is "Lucida Sans Unicode" and glyph count is 1779
+Postscript name is Some("LucidaSansUnicode")
+Font is "Lucida Sans Unicode" and glyph count is 1779
+Postscript name is Some("LucidaSansUnicode")
+Font is "Lucida Sans Unicode" and glyph count is 1779
+Postscript name is Some("LucidaSansUnicode")
+Font is "Mongolian Baiti" and glyph count is 1857
+Postscript name is Some("MongolianBaiti")
+Font is "Mongolian Baiti" and glyph count is 1857
+Postscript name is Some("MongolianBaiti")
+Font is "Mongolian Baiti" and glyph count is 1857
+Postscript name is Some("MongolianBaiti")
+Font is "Mongolian Baiti" and glyph count is 1857
+Postscript name is Some("MongolianBaiti")
+Font is "Segoe Script" and glyph count is 1940
+Postscript name is Some("SegoeScript")
+Font is "Segoe Script" and glyph count is 1940
+Postscript name is Some("SegoeScript")
+Font is "Segoe Script" and glyph count is 1942
+Postscript name is Some("SegoeScript-Bold")
+Font is "Segoe Script" and glyph count is 1942
+Postscript name is Some("SegoeScript-Bold")
+Font is "Ebrima" and glyph count is 2221
+Postscript name is Some("Ebrima")
+Font is "Ebrima" and glyph count is 2221
+Postscript name is Some("Ebrima-Bold")
+Font is "Ebrima" and glyph count is 2221
+Postscript name is Some("Ebrima")
+Font is "Ebrima" and glyph count is 2221
+Postscript name is Some("Ebrima-Bold")
+Font is "Segoe UI" and glyph count is 2443
+Postscript name is Some("SegoeUIBlack")
+Font is "Segoe UI" and glyph count is 2443
+Postscript name is Some("SegoeUIBlack")
+Font is "Courier New" and glyph count is 2544
+Postscript name is Some("CourierNewPS-BoldItalicMT")
+Font is "Segoe UI" and glyph count is 2544
+Postscript name is Some("SegoeUIBlack-Italic")
+Font is "Courier New" and glyph count is 2547
+Postscript name is Some("CourierNewPS-ItalicMT")
+Font is "Consolas" and glyph count is 2942
+Postscript name is Some("Consolas-Bold")
+Font is "Consolas" and glyph count is 2942
+Postscript name is Some("Consolas-Bold")
+Font is "Consolas" and glyph count is 2951
+Postscript name is Some("Consolas-BoldItalic")
+Font is "Consolas" and glyph count is 3030
+Postscript name is Some("Consolas")
+Font is "Consolas" and glyph count is 3030
+Postscript name is Some("Consolas")
+Font is "Consolas" and glyph count is 3039
+Postscript name is Some("Consolas-Italic")
+Font is "Arial" and glyph count is 3279
+Postscript name is Some("Arial-ItalicMT")
+Font is "Arial" and glyph count is 3279
+Postscript name is Some("Arial-BoldItalicMT")
+Font is "Segoe UI" and glyph count is 3425
+Postscript name is Some("SegoeUI-Italic")
+Font is "Segoe UI" and glyph count is 3425
+Postscript name is Some("SegoeUI-BoldItalic")
+Font is "Segoe UI" and glyph count is 3437
+Postscript name is Some("SegoeUI-LightItalic")
+Font is "Segoe UI" and glyph count is 3437
+Postscript name is Some("SegoeUI-SemilightItalic")
+Font is "Segoe UI" and glyph count is 3437
+Postscript name is Some("SegoeUI-SemiboldItalic")
+Font is "Times New Roman" and glyph count is 3578
+Postscript name is Some("TimesNewRomanPS-ItalicMT")
+Font is "Times New Roman" and glyph count is 3578
+Postscript name is Some("TimesNewRomanPS-BoldItalicMT")
+Font is "Cambria" and glyph count is 3584
+Postscript name is Some("Cambria-Bold")
+Font is "Cambria" and glyph count is 3584
+Postscript name is Some("Cambria-Bold")
+Font is "Cambria" and glyph count is 3592
+Postscript name is Some("Cambria-Italic")
+Font is "Cambria" and glyph count is 3592
+Postscript name is Some("Cambria-BoldItalic")
+Font is "Courier New" and glyph count is 3763
+Postscript name is Some("CourierNewPSMT")
+Font is "Courier New" and glyph count is 3763
+Postscript name is Some("CourierNewPS-BoldMT")
+Font is "Courier New" and glyph count is 3763
+Postscript name is Some("CourierNewPSMT")
+Font is "Courier New" and glyph count is 3763
+Postscript name is Some("CourierNewPS-BoldMT")
+Font is "Microsoft Sans Serif" and glyph count is 4192
+Postscript name is Some("MicrosoftSansSerif")
+Font is "Microsoft Sans Serif" and glyph count is 4192
+Postscript name is Some("MicrosoftSansSerif")
+Font is "Microsoft Sans Serif" and glyph count is 4192
+Postscript name is Some("MicrosoftSansSerif")
+Font is "Microsoft Sans Serif" and glyph count is 4192
+Postscript name is Some("MicrosoftSansSerif")
+Font is "Tahoma" and glyph count is 4451
+Postscript name is Some("Tahoma")
+Font is "Tahoma" and glyph count is 4451
+Postscript name is Some("Tahoma-Bold")
+Font is "Tahoma" and glyph count is 4451
+Postscript name is Some("Tahoma")
+Font is "Tahoma" and glyph count is 4451
+Postscript name is Some("Tahoma-Bold")
+Font is "Arial" and glyph count is 4503
+Postscript name is Some("ArialMT")
+Font is "Arial" and glyph count is 4503
+Postscript name is Some("Arial-BoldMT")
+Font is "Arial" and glyph count is 4503
+Postscript name is Some("ArialMT")
+Font is "Arial" and glyph count is 4503
+Postscript name is Some("Arial-BoldMT")
+Font is "Gabriola" and glyph count is 4517
+Postscript name is Some("Gabriola")
+Font is "Gabriola" and glyph count is 4517
+Postscript name is Some("Gabriola")
+Font is "Gabriola" and glyph count is 4517
+Postscript name is Some("Gabriola")
+Font is "Gabriola" and glyph count is 4517
+Postscript name is Some("Gabriola")
+Font is "Nirmala UI" and glyph count is 4658
+Postscript name is Some("NirmalaUI-Semilight")
+Font is "Nirmala UI" and glyph count is 4658
+Postscript name is Some("NirmalaUI")
+Font is "Nirmala UI" and glyph count is 4658
+Postscript name is Some("NirmalaUI-Bold")
+Font is "Nirmala UI" and glyph count is 4658
+Postscript name is Some("NirmalaUI-Semilight")
+Font is "Nirmala UI" and glyph count is 4658
+Postscript name is Some("NirmalaUI")
+Font is "Nirmala UI" and glyph count is 4658
+Postscript name is Some("NirmalaUI-Bold")
+Font is "Times New Roman" and glyph count is 4685
+Postscript name is Some("TimesNewRomanPSMT")
+Font is "Times New Roman" and glyph count is 4685
+Postscript name is Some("TimesNewRomanPS-BoldMT")
+Font is "Times New Roman" and glyph count is 4685
+Postscript name is Some("TimesNewRomanPSMT")
+Font is "Times New Roman" and glyph count is 4685
+Postscript name is Some("TimesNewRomanPS-BoldMT")
+Font is "Segoe UI Historic" and glyph count is 4737
+Postscript name is Some("SegoeUIHistoric")
+Font is "Segoe UI Historic" and glyph count is 4737
+Postscript name is Some("SegoeUIHistoric")
+Font is "Segoe UI Historic" and glyph count is 4737
+Postscript name is Some("SegoeUIHistoric")
+Font is "Segoe UI Historic" and glyph count is 4737
+Postscript name is Some("SegoeUIHistoric")
+Font is "Calibri" and glyph count is 4787
+Postscript name is Some("Calibri-Italic")
+Font is "Calibri" and glyph count is 4787
+Postscript name is Some("Calibri-BoldItalic")
+Font is "Calibri" and glyph count is 4872
+Postscript name is Some("Calibri-LightItalic")
+Font is "Segoe UI" and glyph count is 5219
+Postscript name is Some("SegoeUI-Semilight")
+Font is "Segoe UI" and glyph count is 5219
+Postscript name is Some("SegoeUI-Semilight")
+Font is "Segoe UI" and glyph count is 5270
+Postscript name is Some("SegoeUI-Bold")
+Font is "Segoe UI" and glyph count is 5270
+Postscript name is Some("SegoeUI-Bold")
+Font is "Segoe UI" and glyph count is 5271
+Postscript name is Some("SegoeUI-Semibold")
+Font is "Segoe UI" and glyph count is 5271
+Postscript name is Some("SegoeUI-Semibold")
+Font is "Segoe UI" and glyph count is 5282
+Postscript name is Some("SegoeUI-Light")
+Font is "Segoe UI" and glyph count is 5282
+Postscript name is Some("SegoeUI-Light")
+Font is "Segoe UI" and glyph count is 5344
+Postscript name is Some("SegoeUI")
+Font is "Segoe UI" and glyph count is 5344
+Postscript name is Some("SegoeUI")
+Font is "Calibri" and glyph count is 6954
+Postscript name is Some("Calibri")
+Font is "Calibri" and glyph count is 6954
+Postscript name is Some("Calibri-Bold")
+Font is "Calibri" and glyph count is 6954
+Postscript name is Some("Calibri")
+Font is "Calibri" and glyph count is 6954
+Postscript name is Some("Calibri-Bold")
+Font is "Calibri" and glyph count is 7059
+Postscript name is Some("Calibri-Light")
+Font is "Calibri" and glyph count is 7059
+Postscript name is Some("Calibri-Light")
+Font is "Cambria" and glyph count is 7614
+Postscript name is Some("Cambria")
+Font is "Cambria" and glyph count is 7614
+Postscript name is Some("Cambria")
+Font is "Cambria" and glyph count is 7614
+Postscript name is Some("Cambria")
+Font is "Cambria" and glyph count is 7614
+Postscript name is Some("Cambria")
+Font is "Cambria" and glyph count is 7614
+Postscript name is Some("Cambria")
+Font is "Cambria" and glyph count is 7614
+Postscript name is Some("Cambria")
+Font is "Segoe UI Symbol" and glyph count is 9209
+Postscript name is Some("SegoeUISymbol")
+Font is "Segoe UI Symbol" and glyph count is 9209
+Postscript name is Some("SegoeUISymbol")
+Font is "Segoe UI Symbol" and glyph count is 9209
+Postscript name is Some("SegoeUISymbol")
+Font is "Segoe UI Symbol" and glyph count is 9209
+Postscript name is Some("SegoeUISymbol")
+Font is "Segoe UI Emoji" and glyph count is 12189
+Postscript name is Some("SegoeUIEmoji")
+Font is "Segoe UI Emoji" and glyph count is 12189
+Postscript name is Some("SegoeUIEmoji")
+Font is "Segoe UI Emoji" and glyph count is 12189
+Postscript name is Some("SegoeUIEmoji")
+Font is "Segoe UI Emoji" and glyph count is 12189
+Postscript name is Some("SegoeUIEmoji")
+Font is "Malgun Gothic" and glyph count is 12765
+Postscript name is Some("MalgunGothic-Semilight")
+Font is "Malgun Gothic" and glyph count is 12765
+Postscript name is Some("MalgunGothic-Semilight")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "MS Gothic" and glyph count is 22291
+Postscript name is Some("MS-Gothic")
+Font is "Yu Gothic" and glyph count is 24395
+Postscript name is Some("YuGothic-Light")
+Font is "Yu Gothic" and glyph count is 24395
+Postscript name is Some("YuGothic-Light")
+Font is "Yu Gothic" and glyph count is 24395
+Postscript name is Some("YuGothic-Light")
+Font is "Yu Gothic" and glyph count is 24395
+Postscript name is Some("YuGothic-Light")
+Font is "Yu Gothic" and glyph count is 24399
+Postscript name is Some("YuGothic-Regular")
+Font is "Yu Gothic" and glyph count is 24399
+Postscript name is Some("YuGothic-Regular")
+Font is "Yu Gothic" and glyph count is 24399
+Postscript name is Some("YuGothic-Regular")
+Font is "Yu Gothic" and glyph count is 24399
+Postscript name is Some("YuGothic-Regular")
+Font is "Yu Gothic" and glyph count is 24401
+Postscript name is Some("YuGothic-Medium")
+Font is "Yu Gothic" and glyph count is 24401
+Postscript name is Some("YuGothic-Bold")
+Font is "Yu Gothic" and glyph count is 24401
+Postscript name is Some("YuGothic-Medium")
+Font is "Yu Gothic" and glyph count is 24401
+Postscript name is Some("YuGothic-Bold")
+Font is "Yu Gothic" and glyph count is 24401
+Postscript name is Some("YuGothic-Medium")
+Font is "Yu Gothic UI" and glyph count is 24401
+Postscript name is Some("YuGothicUI-Semibold")
+Font is "Yu Gothic" and glyph count is 24401
+Postscript name is Some("YuGothic-Bold")
+Font is "Yu Gothic" and glyph count is 24401
+Postscript name is Some("YuGothic-Medium")
+Font is "Yu Gothic UI" and glyph count is 24401
+Postscript name is Some("YuGothicUI-Semibold")
+Font is "Yu Gothic" and glyph count is 24401
+Postscript name is Some("YuGothic-Bold")
+Font is "Malgun Gothic" and glyph count is 28215
+Postscript name is Some("MalgunGothic")
+Font is "Malgun Gothic" and glyph count is 28215
+Postscript name is Some("MalgunGothicBold")
+Font is "Malgun Gothic" and glyph count is 28215
+Postscript name is Some("MalgunGothic")
+Font is "Malgun Gothic" and glyph count is 28215
+Postscript name is Some("MalgunGothicBold")
+Font is "SimSun" and glyph count is 28793
+Postscript name is Some("SimSun")
+Font is "SimSun" and glyph count is 28793
+Postscript name is Some("SimSun")
+Font is "SimSun" and glyph count is 28793
+Postscript name is Some("SimSun")
+Font is "SimSun" and glyph count is 28793
+Postscript name is Some("SimSun")
+Font is "SimSun" and glyph count is 28793
+Postscript name is Some("SimSun")
+Font is "SimSun" and glyph count is 28793
+Postscript name is Some("SimSun")
+Font is "SimSun" and glyph count is 28793
+Postscript name is Some("SimSun")
+Font is "SimSun" and glyph count is 28793
+Postscript name is Some("SimSun")
+Font is "Microsoft JhengHei" and glyph count is 29392
+Postscript name is Some("MicrosoftJhengHeiBold")
+Font is "Microsoft JhengHei" and glyph count is 29392
+Postscript name is Some("MicrosoftJhengHeiBold")
+Font is "Microsoft JhengHei" and glyph count is 29392
+Postscript name is Some("MicrosoftJhengHeiBold")
+Font is "Microsoft JhengHei" and glyph count is 29392
+Postscript name is Some("MicrosoftJhengHeiBold")
+Font is "Microsoft JhengHei" and glyph count is 29651
+Postscript name is Some("MicrosoftJhengHeiRegular")
+Font is "Microsoft JhengHei" and glyph count is 29651
+Postscript name is Some("MicrosoftJhengHeiRegular")
+Font is "Microsoft JhengHei" and glyph count is 29651
+Postscript name is Some("MicrosoftJhengHeiRegular")
+Font is "Microsoft JhengHei" and glyph count is 29651
+Postscript name is Some("MicrosoftJhengHeiRegular")
+Font is "Microsoft JhengHei" and glyph count is 29735
+Postscript name is Some("MicrosoftJhengHeiLight")
+Font is "Microsoft JhengHei" and glyph count is 29735
+Postscript name is Some("MicrosoftJhengHeiLight")
+Font is "Microsoft JhengHei" and glyph count is 29735
+Postscript name is Some("MicrosoftJhengHeiLight")
+Font is "Microsoft JhengHei" and glyph count is 29735
+Postscript name is Some("MicrosoftJhengHeiLight")
+Font is "Microsoft YaHei" and glyph count is 29747
+Postscript name is Some("MicrosoftYaHeiLight")
+Font is "Microsoft YaHei" and glyph count is 29747
+Postscript name is Some("MicrosoftYaHeiLight")
+Font is "Microsoft YaHei" and glyph count is 29747
+Postscript name is Some("MicrosoftYaHeiLight")
+Font is "Microsoft YaHei" and glyph count is 29747
+Postscript name is Some("MicrosoftYaHeiLight")
+Font is "Microsoft YaHei" and glyph count is 29880
+Postscript name is Some("MicrosoftYaHei-Bold")
+Font is "Microsoft YaHei" and glyph count is 29880
+Postscript name is Some("MicrosoftYaHei-Bold")
+Font is "Microsoft YaHei" and glyph count is 29880
+Postscript name is Some("MicrosoftYaHei-Bold")
+Font is "Microsoft YaHei" and glyph count is 29880
+Postscript name is Some("MicrosoftYaHei-Bold")
+Font is "Microsoft YaHei" and glyph count is 30133
+Postscript name is Some("MicrosoftYaHei")
+Font is "Microsoft YaHei" and glyph count is 30133
+Postscript name is Some("MicrosoftYaHei")
+Font is "Microsoft YaHei" and glyph count is 30133
+Postscript name is Some("MicrosoftYaHei")
+Font is "Microsoft YaHei" and glyph count is 30133
+Postscript name is Some("MicrosoftYaHei")
+Font is "SimSun-ExtB" and glyph count is 47298
+Postscript name is Some("SimSun-ExtB")
+Font is "SimSun-ExtB" and glyph count is 47298
+Postscript name is Some("SimSun-ExtB")
+Font is "SimSun-ExtB" and glyph count is 47298
+Postscript name is Some("SimSun-ExtB")
+Font is "SimSun-ExtB" and glyph count is 47298
+Postscript name is Some("SimSun-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")
+Font is "MingLiU-ExtB" and glyph count is 49246
+Postscript name is Some("MingLiU-ExtB")

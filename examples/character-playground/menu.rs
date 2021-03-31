@@ -85,7 +85,7 @@ fn create_shader(golem: &Context) -> Result<ShaderProgram, GolemError> {
 
 fn create_image() -> knukki::Texture {
     // 小组创建
-    let image = SystemFont::new().draw_grapheme("小", 70.0);
+    let image = SystemFont::new().draw_grapheme("a̐", 70.0);
     println!("Texture size is {}x{}", image.get_width(), image.get_height());
     image
 }
