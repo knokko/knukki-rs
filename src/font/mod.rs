@@ -26,7 +26,7 @@ impl SystemFont {
 
     pub fn test() {
         let system_font_source = SystemSource::new();
-        let mut all_fonts: Vec<font_kit::loaders::freetype::Font> = system_font_source.all_fonts()
+        let mut all_fonts: Vec<font_kit::font::Font> = system_font_source.all_fonts()
             .expect("Should be able to list fonts")
             .into_iter().map(|handle| handle.load().unwrap()).collect();
 
