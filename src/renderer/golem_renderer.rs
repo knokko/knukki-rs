@@ -106,6 +106,10 @@ impl Renderer {
             cpu_texture.get_height(),
             ColorFormat::RGBA,
         );
+        gpu_texture.set_wrap_h(TextureWrap::ClampToEdge)?;
+        gpu_texture.set_wrap_v(TextureWrap::ClampToEdge)?;
+        gpu_texture.set_magnification(TextureFilter::Linear)?;
+        gpu_texture.set_minification(TextureFilter::Linear)?;
 
         Ok(gpu_texture)
     }

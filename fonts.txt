@@ -1,0 +1,496 @@
+Families are:
+"Abyssinica SIL"
+"Ani"
+"AnjaliOldLipi"
+"Bitstream Charter"
+"C059"
+"Chandas"
+"Chilanka"
+"Courier 10 Pitch"
+"D050000L"
+"DejaVu Math TeX Gyre"
+"DejaVu Sans"
+"DejaVu Sans Mono"
+"DejaVu Serif"
+"Droid Sans Fallback"
+"Dyuthi"
+"FreeMono"
+"FreeSans"
+"FreeSerif"
+"Gargi"
+"Garuda"
+"Gayathri"
+"Gubbi"
+"Jamrul"
+"KacstArt"
+"KacstBook"
+"KacstDecorative"
+"KacstDigital"
+"KacstFarsi"
+"KacstLetter"
+"KacstNaskh"
+"KacstOffice"
+"KacstOne"
+"KacstPen"
+"KacstPoster"
+"KacstQurn"
+"KacstScreen"
+"KacstTitle"
+"KacstTitleL"
+"Kalapi"
+"Kalimati"
+"Karumbi"
+"Keraleeyam"
+"Khmer OS"
+"Khmer OS System"
+"Kinnari"
+"LKLUG"
+"Laksaman"
+"Lato"
+"Liberation Mono"
+"Liberation Sans"
+"Liberation Sans Narrow"
+"Liberation Serif"
+"Likhan"
+"Lohit Assamese"
+"Lohit Bengali"
+"Lohit Devanagari"
+"Lohit Gujarati"
+"Lohit Gurmukhi"
+"Lohit Kannada"
+"Lohit Malayalam"
+"Lohit Odia"
+"Lohit Tamil"
+"Lohit Tamil Classical"
+"Lohit Telugu"
+"Loma"
+"Manjari"
+"Meera"
+"Mitra Mono"
+"Mukti Narrow"
+"Nakula"
+"Navilu"
+"Nimbus Mono PS"
+"Nimbus Roman"
+"Nimbus Sans"
+"Nimbus Sans Narrow"
+"Norasi"
+"Noto Color Emoji"
+"Noto Mono"
+"Noto Sans CJK HK"
+"Noto Sans CJK JP"
+"Noto Sans CJK KR"
+"Noto Sans CJK SC"
+"Noto Sans CJK TC"
+"Noto Sans Mono CJK HK"
+"Noto Sans Mono CJK JP"
+"Noto Sans Mono CJK KR"
+"Noto Sans Mono CJK SC"
+"Noto Sans Mono CJK TC"
+"Noto Serif CJK JP"
+"Noto Serif CJK KR"
+"Noto Serif CJK SC"
+"Noto Serif CJK TC"
+"OpenSymbol"
+"P052"
+"Padauk"
+"Padauk Book"
+"Pagul"
+"Phetsarath OT"
+"Pothana2000"
+"Purisa"
+"Rachana"
+"RaghuMalayalamSans"
+"Rasa"
+"Rekha"
+"Saab"
+"Sahadeva"
+"Samanata"
+"Samyak Devanagari"
+"Samyak Gujarati"
+"Samyak Malayalam"
+"Samyak Tamil"
+"Sarai"
+"Sawasdee"
+"Standard Symbols PS"
+"Suruma"
+"Tibetan Machine Uni"
+"Tlwg Mono"
+"Tlwg Typewriter"
+"Tlwg Typist"
+"Tlwg Typo"
+"URW Bookman"
+"URW Gothic"
+"Ubuntu"
+"Ubuntu Condensed"
+"Ubuntu Mono"
+"Umpush"
+"Uroob"
+"Vemana2000"
+"Waree"
+"Yrsa"
+"Z003"
+"aakar"
+"mry_KacstQurn"
+"ori1Uni"
+"padmaa"
+"padmaa-Bold.1.1"
+
+Fonts are:
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/P052-Italic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Kinnari-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-devanagari/Lohit-Devanagari.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusSans-BoldItalic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeSansBoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/X11/Type1/c0648bt_.pfb", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusSansNarrow-Oblique.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Kinnari-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/C059-Italic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-punjabi/Lohit-Gurmukhi.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Purisa-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgMono-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/P052-Roman.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Waree-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstDigital.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Rasa-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Norasi-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 8 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 9 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 1 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 2 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 3 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 4 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 5 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 6 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", font_index: 7 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusSansNarrow-BoldOblique.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Purisa-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-Italic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/Gargi/Gargi.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Norasi-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/C059-Roman.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstTitle.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ttf-khmeros-core/KhmerOSsys.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-beng-extra/JamrulNormal.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgMono.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Purisa.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationSerif-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-gujr-extra/padmaa-Medium-0.5.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/UbuntuMono-B.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSerif-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeMono.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/URWBookman-DemiItalic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Yrsa-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Norasi-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstQurn.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/malayalam/Gayathri-Regular.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/URWBookman-Demi.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstTitleL.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lao/Phetsarath_OT.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/padauk/Padauk-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-Bold.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypist-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-beng-extra/mitra.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Sawasdee.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Garuda-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Norasi.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSansNarrow-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/X11/Type1/c0632bt_.pfb", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Sawasdee-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Umpush-LightOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/X11/Type1/c0582bt_.pfb", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/D050000L.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Purisa-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/C059-Bold.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc", font_index: 3 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusRoman-Bold.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc", font_index: 2 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc", font_index: 1 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/Uroob-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Yrsa-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/C059-BdIta.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ttf-khmeros-core/KhmerOS.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSansNarrow-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/pagul/Pagul.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Medium.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/X11/Type1/c0611bt_.pfb", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/URWGothic-DemiOblique.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/C059-Italic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusSans-Italic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Norasi-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Kinnari-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/Dyuthi-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeSerifBoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Thin.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusSans-BoldItalic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeSans.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-Regular.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst-one/KacstOne-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Rasa-Medium.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-BlackItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/URWBookman-LightItalic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-Bold.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSans-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-C.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/StandardSymbolsPS.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/URWGothic-Demi.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypo-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/X11/Type1/c0419bt_.pfb", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-HairlineItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/sinhala/lklug.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusSans-Bold.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-gujr-extra/padmaa.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstPoster.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/abyssinica/AbyssinicaSIL-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/Navilu/Navilu.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Kinnari.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-gujr-extra/Rekha.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-Regular.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-deva-extra/chandas1-2.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/malayalam/Manjari-Regular.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Regular.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-beng-extra/MuktiNarrowBold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/Z003-MediumItalic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/samyak-fonts/Samyak-Gujarati.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/Keraleeyam-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/URWGothic-BookOblique.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Loma.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/P052-Roman.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-deva-extra/kalimati.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSans-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-M.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusMonoPS-BoldItalic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/P052-Italic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-L.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-LightItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/X11/Type1/c0649bt_.pfb", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/Suruma.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationSerif-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationSerif-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Umpush-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationMono-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Italic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/Rachana-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/StandardSymbolsPS.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationMono-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-tamil-classical/Lohit-Tamil-Classical.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Umpush-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSansNarrow-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-MediumItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Light.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/URWBookman-Demi.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusRoman-Regular.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSerif-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSansNarrow-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Umpush.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/samyak/Samyak-Devanagari.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/URWBookman-Light.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypewriter-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeMonoBoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeSerif.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstArt.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationSans-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Garuda-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/C059-BdIta.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Waree.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc", font_index: 2 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc", font_index: 3 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc", font_index: 1 }
+Path { path: "/usr/share/fonts/truetype/fonts-deva-extra/samanata.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/Rachana-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/X11/Type1/c0633bt_.pfb", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Sawasdee-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Loma-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/X11/Type1/c0583bt_.pfb", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstOffice.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/mry_KacstQurn.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Laksaman-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Bold.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-gujr-extra/padmaa-Bold.1.1.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/Z003-MediumItalic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypist-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusRoman-Italic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationMono-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Kinnari-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/RaghuMalayalamSans-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypewriter-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/URWGothic-Book.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-telu-extra/Pothana2000.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Sawasdee-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Umpush-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusSans-Regular.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-kalapi/Kalapi.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/C059-Bold.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusSans-Bold.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Black.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/Sahadeva/sahadeva.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/Karumbi-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-telugu/Lohit-Telugu.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusMonoPS-Italic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Hairline.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusSans-Regular.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Loma-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-gujr-extra/aakar-medium.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuMathTeXGyre.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstPen.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-tamil/Lohit-Tamil.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Semibold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypist.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-HeavyItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypewriter.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypo-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-orya-extra/utkal.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/Gubbi/Gubbi.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/D050000L.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-BoldOblique.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/malayalam/Manjari-Thin.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Rasa-SemiBold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationMono-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusSansNarrow-Regular.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Laksaman-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeSansOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusSansNarrow-Bold.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tibetan-machine/TibetanMachineUni.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-beng-extra/LikhanNormal.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst-one/KacstOne.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgMono-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Laksaman-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/UbuntuMono-BI.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/URWGothic-Book.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusSans-Italic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationSans-BoldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Kinnari-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-malayalam/Lohit-Malayalam.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/padauk/Padauk-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/URWGothic-DemiOblique.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/URWGothic-BookOblique.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Waree-Oblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-BoldItalic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-kannada/Lohit-Kannada.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/P052-BoldItalic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-ThinItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 5 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 4 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 7 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 6 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 1 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 3 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 2 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusMonoPS-Regular.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 9 }
+Path { path: "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", font_index: 8 }
+Path { path: "/usr/share/fonts/opentype/malayalam/Chilanka-Regular.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-BI.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Rasa-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-assamese/Lohit-Assamese.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/openoffice/opens___.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/URWBookman-LightItalic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-beng-extra/MuktiNarrow.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstNaskh.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-MI.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Waree-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Garuda.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusRoman-BoldItalic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-beng-extra/ani.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypist-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-LI.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeSerifItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypo-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Yrsa-SemiBold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-Oblique.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Garuda-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-Th.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/padauk/PadaukBook-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusMonoPS-Bold.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypewriter-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/malayalam/Manjari-Bold.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationSerif-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationMono-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgMono-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/freefont/FreeMonoOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-oriya/Lohit-Odia.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/URWBookman-DemiItalic.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/NimbusRoman-BoldItalic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/Ubuntu-RI.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/ubuntu/UbuntuMono-RI.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/URWBookman-Light.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Laksaman.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/Sarai/Sarai.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-gujarati/Lohit-Gujarati.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/C059-Roman.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstDecorative.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Yrsa-Medium.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Rasa-Light.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/URWGothic-Demi.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-yrsa-rasa/Yrsa-Light.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstFarsi.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/P052-BoldItalic.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstScreen.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/samyak-fonts/Samyak-Malayalam.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-telu-extra/vemana2000.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstBook.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/type1/urw-base35/P052-Bold.t1", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSans-ExtraLight.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/samyak-fonts/Samyak-Tamil.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-SemiboldItalic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Umpush-Light.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/Meera-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lohit-bengali/Lohit-Bengali.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Loma-Bold.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/malayalam/Gayathri-Bold.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/Nakula/nakula.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/fonts-guru-extra/Saab.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/lato/Lato-Heavy.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/Norasi-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/tlwg/TlwgTypo.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/kacst/KacstLetter.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/padauk/PadaukBook-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/urw-base35/P052-Bold.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/malayalam/AnjaliOldLipi-Regular.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-BoldOblique.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/opentype/malayalam/Gayathri-Thin.otf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation/LiberationSerif-Italic.ttf", font_index: 0 }
+Path { path: "/usr/share/fonts/truetype/liberation2/LiberationMono-BoldItalic.ttf", font_index: 0 }

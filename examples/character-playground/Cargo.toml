@@ -1,5 +1,5 @@
 [package]
-name = "texture-playground"
+name = "character-playground"
 version = "0.1.0"
 authors = ["knokko <knokogator@hotmail.com>"]
 edition = "2018"

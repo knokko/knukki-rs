@@ -2,9 +2,10 @@ use knukki::*;
 use golem::*;
 use std::num::NonZeroU32;
 
-pub const EXAMPLE_NAME: &'static str = "texture-playground";
+pub const EXAMPLE_NAME: &'static str = "character-playground";
 
 pub fn create_app() -> Application {
+    SystemFont::test();
     let mut menu = SimpleFlatMenu::new(Some(Color::rgb(100, 200, 50)));
 
     menu.add_component(Box::new(TextureTestComponent::new()), ComponentDomain::between(0.1, 0.1, 0.5, 0.5));
@@ -24,6 +25,7 @@ impl TextureTestComponent {
 
 impl Component for TextureTestComponent {
     fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {
+
     }
 
     fn render(
@@ -82,15 +84,8 @@ fn create_shader(golem: &Context) -> Result<ShaderProgram, GolemError> {
 }
 
 fn create_image() -> knukki::Texture {
-    let width = 8;
-    let height = 8;
-    let mut image = knukki::Texture::new(width, height, Color::rgb(0, 0, 0));
-
-    for x in 0 .. width {
-        for y in 0 .. height {
-            image[x][y as usize] = Color::rgb((255 * x / width) as u8, (255 * y / height) as u8, 0);
-        }
-    }
-
+    // 小组创建
+    let image = SystemFont::new().draw_grapheme("小", 70.0);
+    println!("Texture size is {}x{}", image.get_width(), image.get_height());
     image
 }
