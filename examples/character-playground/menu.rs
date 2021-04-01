@@ -5,7 +5,6 @@ use std::num::NonZeroU32;
 pub const EXAMPLE_NAME: &'static str = "character-playground";
 
 pub fn create_app() -> Application {
-    SystemFont::test();
     let mut menu = SimpleFlatMenu::new(Some(Color::rgb(100, 200, 50)));
 
     menu.add_component(Box::new(TextureTestComponent::new()), ComponentDomain::between(0.1, 0.1, 0.5, 0.5));
@@ -14,18 +13,20 @@ pub fn create_app() -> Application {
 }
 
 struct TextureTestComponent {
-
+    font: Box<dyn knukki::Font>
 }
 
 impl TextureTestComponent {
     fn new() -> Self {
-        Self {}
+        Self {
+            font: Box::new(knukki::create_default_font())
+        }
     }
 }
 
 impl Component for TextureTestComponent {
     fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {
-
+        knukki::test();
     }
 
     fn render(
@@ -36,7 +37,7 @@ impl Component for TextureTestComponent {
     ) -> RenderResult {
         renderer.clear(Color::rgb(200, 0, 0));
 
-        let texture = renderer.load_texture(&create_image())?;
+        let texture = renderer.load_texture(&create_image(self.font.as_ref()))?;
         texture.set_active(NonZeroU32::new(1).unwrap());
 
         let shader_id = ShaderId::from_strs("knukki", "Test.SimpleTexture");
@@ -83,9 +84,10 @@ fn create_shader(golem: &Context) -> Result<ShaderProgram, GolemError> {
     ShaderProgram::new(golem, description)
 }
 
-fn create_image() -> knukki::Texture {
+fn create_image(font: &dyn knukki::Font) -> knukki::Texture {
     // 小组创建
-    let image = SystemFont::new().draw_grapheme("a̐", 70.0);
+    let image = font.draw_grapheme("ö̲", 270.0);
+    //let image = font.draw_grapheme("ab", 70.0);
     println!("Texture size is {}x{}", image.get_width(), image.get_height());
     image
 }
