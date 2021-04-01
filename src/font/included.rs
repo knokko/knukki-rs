@@ -1,25 +1,19 @@
 use ab_glyph::{FontRef, Font, InvalidFont, OutlinedGlyph};
 use crate::Texture;
 
-pub fn test() {
-    let test_font = FontRef::try_from_slice(
-        include_bytes!("unifont-13.0.06.ttf")
-    ).expect("The included unifont is valid");
-
-    let test_char = 'A';
-    let test_glyph = test_font.glyph_id(test_char).with_scale(30.0);
-    println!("The id is {:?}", test_glyph);
-
-    // let test_bounds = test_font.glyph_bounds(&test_glyph);
-    //
-    // println!("The bounds are {:?}", test_bounds);
-    let test_outline = test_font.outline_glyph(test_glyph)
-        .expect("Should be able to outline the test glyph");
-
-    println!("The outline bounds are {:?}", test_outline.px_bounds());
-}
-
-#[cfg(not(target = "wasm32-unknown-unknown"))]
+/*
+ * We COULD use this in WebAssembly as well, but it would add ~12MB to the wasm file. Without this,
+ * the wasm file would be ~150KB. Since loading time is crucial for webpages, this would be a
+ * disaster. Instead, I will use Canvas2D API on an offscreen canvas.
+ *
+ * Including this file in desktop targets will also increase the binary size of those desktop
+ * releases by ~12 MB. But, this is not a big problem because these releases are already 50+MB
+ * even without this file (the binary would increase by a factor of ~1.2, which is somewhat
+ * significant, but nothing like the factor of ~75 for WebAssembly. Besides, we don't have a
+ * Canvas2D API on desktop targets, so we don't have much choice. (We could try to work with
+ * system fonts, but these are not so nice to work with.)
+ */
+#[cfg(not(target_arch = "wasm32"))]
 pub fn create_default_font() -> IncludedStaticFont {
     IncludedStaticFont::new(include_bytes!("unifont-13.0.06.ttf")).expect("Unifont is valid")
 }
@@ -123,7 +117,7 @@ impl crate::Font for IncludedStaticFont {
         for index in 0 .. grayscale.len() {
             let width = width as usize;
             let x = (index % width) as u32;
-            let y = (height as usize - index / width - 1);
+            let y = height as usize - index / width - 1;
             let int_value = (grayscale[index] * 255.0) as u8;
             let color = crate::Color::rgb(int_value, 0, 0);
             texture[x][y] = color;

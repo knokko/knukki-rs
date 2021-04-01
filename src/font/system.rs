@@ -12,10 +12,6 @@ use unicode_segmentation::*;
 use ttf_parser::Face;
 use font_kit::family_handle::FamilyHandle;
 
-pub trait Font {
-    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Texture;
-}
-
 pub struct SystemFont {
 
 }

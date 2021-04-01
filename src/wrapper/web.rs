@@ -54,7 +54,9 @@ pub fn start(app: Application, title: &str) {
 
 fn bind_console() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-    console_log::init().expect("Should be able to bind to console.log");
+    console_log::init_with_level(log::Level::Info)
+        .expect("Should be able to bind the logger to the console");
+    log::info!("Logger works");
 }
 
 fn set_title(title: &str) {

@@ -26,7 +26,6 @@ impl TextureTestComponent {
 
 impl Component for TextureTestComponent {
     fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {
-        knukki::test();
     }
 
     fn render(
@@ -86,7 +85,7 @@ fn create_shader(golem: &Context) -> Result<ShaderProgram, GolemError> {
 
 fn create_image(font: &dyn knukki::Font) -> knukki::Texture {
     // 小组创建
-    let image = font.draw_grapheme("ö̲", 270.0);
+    let image = font.draw_grapheme("a̐éö̲y̆ ", 270.0);
     //let image = font.draw_grapheme("ab", 70.0);
     println!("Texture size is {}x{}", image.get_width(), image.get_height());
     image
