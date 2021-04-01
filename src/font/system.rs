@@ -81,7 +81,7 @@ impl SystemFont {
 }
 
 impl Font for SystemFont {
-    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Texture {
+    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<Texture> {
 
         let system_font_source = SystemSource::new();
         // let font_handle = system_font_source.select_best_match(&[
@@ -136,6 +136,6 @@ impl Font for SystemFont {
             }
         }
 
-        glyph_texture
+        Some(glyph_texture)
     }
 }

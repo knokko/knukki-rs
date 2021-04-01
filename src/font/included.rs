@@ -1,5 +1,6 @@
 use ab_glyph::{FontRef, Font, InvalidFont, OutlinedGlyph};
 use crate::Texture;
+use unicode_segmentation::UnicodeSegmentation;
 
 /*
  * We COULD use this in WebAssembly as well, but it would add ~12MB to the wasm file. Without this,
@@ -15,7 +16,7 @@ use crate::Texture;
  */
 #[cfg(not(target_arch = "wasm32"))]
 pub fn create_default_font() -> IncludedStaticFont {
-    IncludedStaticFont::new(include_bytes!("unifont-13.0.06.ttf")).expect("Unifont is valid")
+    IncludedStaticFont::new(include_bytes!("Code2003-W8nn.ttf")).expect("Unifont is valid")
 }
 
 pub struct IncludedStaticFont {
@@ -32,14 +33,19 @@ impl IncludedStaticFont {
 }
 
 impl crate::Font for IncludedStaticFont {
-    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Texture {
+    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<Texture> {
 
         let all_outlines: Vec<_> = grapheme.chars().map(|current_char| {
-            let current_glyph_id = self.internal_font.glyph_id(current_char);
-            let current_glyph = current_glyph_id.with_scale(point_size);
-            // TODO Supply fallback texture
-            self.internal_font.outline_glyph(current_glyph)
-                .expect("Should be able to outline the current glyph")
+            if !current_char.is_whitespace() {
+                let current_glyph_id = self.internal_font.glyph_id(current_char);
+                let current_glyph = current_glyph_id.with_scale(point_size);
+                // TODO Supply fallback texture
+                Some(self.internal_font.outline_glyph(current_glyph)
+                    .expect("Should be able to outline the current glyph"))
+            } else {
+                None
+            }
+
         }).collect();
 
         if all_outlines.is_empty() {
@@ -58,41 +64,52 @@ impl crate::Font for IncludedStaticFont {
         let mut combined_max_y = i32::min_value();
 
         let mut char_index = 0;
-        let detailed_outlines: Vec<_> = all_outlines.into_iter().map(|current_outline| {
+        let detailed_outlines: Vec<_> = all_outlines.into_iter().map(|maybe_current_outline| {
 
-            let mut min_x = i32::max_value();
-            let mut min_y = i32::max_value();
-            let mut max_x = i32::min_value();
-            let mut max_y = i32::min_value();
-            current_outline.draw(|x, y, _value| {
-                min_x = min_x.min(x as i32);
-                min_y = min_y.min(y as i32);
-                max_x = max_x.max(x as i32);
-                max_y = max_y.max(y as i32);
-            });
+            let mapped = if let Some(current_outline) = maybe_current_outline {
+                let mut min_x = i32::max_value();
+                let mut min_y = i32::max_value();
+                let mut max_x = i32::min_value();
+                let mut max_y = i32::min_value();
+                current_outline.draw(|x, y, _value| {
+                    min_x = min_x.min(x as i32);
+                    min_y = min_y.min(y as i32);
+                    max_x = max_x.max(x as i32);
+                    max_y = max_y.max(y as i32);
+                });
 
-            let offset_x = 0;
-            let offset_y = current_outline.px_bounds().min.y as i32;
+                let offset_x = 0;
+                let offset_y = current_outline.px_bounds().min.y as i32;
 
-            // Potential edge case for weird whitespace characters
-            if min_x != i32::max_value() {
-                min_x += offset_x;
-                min_y += offset_y;
-                max_x += offset_x;
-                max_y += offset_y;
-            }
+                // Potential edge case for weird whitespace characters
+                if min_x != i32::max_value() {
+                    min_x += offset_x;
+                    min_y += offset_y;
+                    max_x += offset_x;
+                    max_y += offset_y;
+                }
 
-            combined_min_x = combined_min_x.min(min_x);
-            combined_min_y = combined_min_y.min(min_y);
-            combined_max_x = combined_max_x.max(max_x);
-            combined_max_y = combined_max_y.max(max_y);
+                combined_min_x = combined_min_x.min(min_x);
+                combined_min_y = combined_min_y.min(min_y);
+                combined_max_x = combined_max_x.max(max_x);
+                combined_max_y = combined_max_y.max(max_y);
+
+                Some(CharOutline {
+                    outline: current_outline,
+                    offset_x, offset_y
+                })
+            } else {
+                None
+            };
 
             char_index += 1;
-            CharOutline {
-                outline: current_outline,
-                offset_x, offset_y
-            }
+            mapped
         }).collect();
+
+        // If we only got whitespace characters, we should return None
+        if combined_min_x == i32::max_value() {
+            return None;
+        }
 
         let combined_offset_x = -combined_min_x;
         let combined_offset_y = -combined_min_y;
@@ -101,16 +118,18 @@ impl crate::Font for IncludedStaticFont {
 
         let mut grayscale = vec![0.0; (width * height) as usize];
 
-        for detailed_outline in &detailed_outlines {
-            let current_outline = &detailed_outline.outline;
-            current_outline.draw(|relative_x, relative_y, value| {
-                let x = (relative_x as i32 + detailed_outline.offset_x + combined_offset_x) as u32;
-                let y = (relative_y as i32 + detailed_outline.offset_y + combined_offset_y) as u32;
-                let index = (x + y * width) as usize;
-                if value > grayscale[index] {
-                    grayscale[index] = value;
-                }
-            });
+        for maybe_detailed_outline in &detailed_outlines {
+            if let Some(detailed_outline) = maybe_detailed_outline {
+                let current_outline = &detailed_outline.outline;
+                current_outline.draw(|relative_x, relative_y, value| {
+                    let x = (relative_x as i32 + detailed_outline.offset_x + combined_offset_x) as u32;
+                    let y = (relative_y as i32 + detailed_outline.offset_y + combined_offset_y) as u32;
+                    let index = (x + y * width) as usize;
+                    if value > grayscale[index] {
+                        grayscale[index] = value;
+                    }
+                });
+            }
         }
 
         let mut texture = Texture::new(width, height, crate::Color::rgb(0, 0, 0));
@@ -123,6 +142,6 @@ impl crate::Font for IncludedStaticFont {
             texture[x][y] = color;
         }
 
-        texture
+        Some(texture)
     }
 }

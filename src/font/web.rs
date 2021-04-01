@@ -3,6 +3,7 @@ use crate::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{JsCast, Clamped};
 use web_sys::{window, CanvasRenderingContext2d, Document, Element, Window, HtmlCanvasElement};
+use unicode_segmentation::{Graphemes, UnicodeSegmentation};
 
 pub struct WebFont {
     buffer_canvas: HtmlCanvasElement,
@@ -28,7 +29,7 @@ impl WebFont {
 }
 
 impl Font for WebFont {
-    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Texture {
+    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<Texture> {
 
         let font = format!("{} {}px {}", self.pre_font, point_size as u32, self.post_font);
         let ctx: CanvasRenderingContext2d = self.buffer_canvas.get_context("2d")
@@ -45,6 +46,11 @@ impl Font for WebFont {
 
         let width = (metrics.actual_right() + metrics.actual_left()) as u32;
         let height = (metrics.actual_ascent() + metrics.actual_descent()) as u32;
+
+        // Handle whitespace characters
+        if width == 0 || height == 0 {
+            return None;
+        }
 
         let offset_x = metrics.actual_left();
         let offset_y = -metrics.actual_descent();
@@ -81,7 +87,7 @@ impl Font for WebFont {
             texture[x][height as usize - y - 1] = Color::rgb(value, 0, 0);
         }
 
-        texture
+        Some(texture)
     }
 }
 

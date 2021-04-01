@@ -15,5 +15,7 @@ pub use system::*;
 pub use web::*;
 
 pub trait Font {
-    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Texture;
+    /// Draws the given grapheme cluster using the given point size. If it is a whitespace
+    /// character, this will return None.
+    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<Texture>;
 }

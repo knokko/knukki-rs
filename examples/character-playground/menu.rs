@@ -36,22 +36,25 @@ impl Component for TextureTestComponent {
     ) -> RenderResult {
         renderer.clear(Color::rgb(200, 0, 0));
 
-        let texture = renderer.load_texture(&create_image(self.font.as_ref()))?;
-        texture.set_active(NonZeroU32::new(1).unwrap());
+        let maybe_image = create_image(self.font.as_ref());
+        if let Some(image) = maybe_image {
+            let texture = renderer.load_texture(&image)?;
+            texture.set_active(NonZeroU32::new(1).unwrap());
 
-        let shader_id = ShaderId::from_strs("knukki", "Test.SimpleTexture");
-        renderer.use_cached_shader(&shader_id, create_shader, |shader| {
+            let shader_id = ShaderId::from_strs("knukki", "Test.SimpleTexture");
+            renderer.use_cached_shader(&shader_id, create_shader, |shader| {
 
-            shader.set_uniform("image", UniformValue::Int(1))?;
-            unsafe {
-                shader.draw(
-                    renderer.get_quad_vertices(),
-                    renderer.get_quad_indices(),
-                    0..renderer.get_num_quad_indices(),
-                    GeometryMode::Triangles,
-                )
-            }
-        })?;
+                shader.set_uniform("image", UniformValue::Int(1))?;
+                unsafe {
+                    shader.draw(
+                        renderer.get_quad_vertices(),
+                        renderer.get_quad_indices(),
+                        0..renderer.get_num_quad_indices(),
+                        GeometryMode::Triangles,
+                    )
+                }
+            })?;
+        }
 
         entire_render_result()
     }
@@ -83,10 +86,6 @@ fn create_shader(golem: &Context) -> Result<ShaderProgram, GolemError> {
     ShaderProgram::new(golem, description)
 }
 
-fn create_image(font: &dyn knukki::Font) -> knukki::Texture {
-    // 小组创建
-    let image = font.draw_grapheme("a̐éö̲y̆ ", 270.0);
-    //let image = font.draw_grapheme("ab", 70.0);
-    println!("Texture size is {}x{}", image.get_width(), image.get_height());
-    image
+fn create_image(font: &dyn knukki::Font) -> Option<knukki::Texture> {
+    font.draw_grapheme("", 270.0)
 }
