@@ -75,6 +75,16 @@ impl crate::Font for IncludedStaticFont {
         let mut combined_max_x = i32::min_value();
         let mut combined_max_y = i32::min_value();
 
+        let mut global_offset_y = 1_000_000.0;
+        for maybe_outline in &all_outlines {
+            if let Some(outline) = maybe_outline {
+                let local_offset_y = self.get_max_descent(point_size) - outline.px_bounds().max.y;
+                if local_offset_y < global_offset_y {
+                    global_offset_y = local_offset_y;
+                }
+            }
+        }
+
         let mut char_index = 0;
         let detailed_outlines: Vec<_> = all_outlines.into_iter().map(|maybe_current_outline| {
 
@@ -154,11 +164,13 @@ impl crate::Font for IncludedStaticFont {
             texture[x][y] = color;
         }
 
-        Some(CharTexture { texture, offset_y: 0 })
+        let offset_y = (global_offset_y as i32).max(0) as u32;
+
+        Some(CharTexture { texture, offset_y })
     }
 
     fn get_max_descent(&self, point_size: f32) -> f32 {
-        self.internal_font.as_scaled(point_size).descent()
+        -self.internal_font.as_scaled(point_size).descent()
     }
 
     fn get_max_ascent(&self, point_size: f32) -> f32 {
