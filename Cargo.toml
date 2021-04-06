@@ -12,13 +12,14 @@ resolver = "2"
 [features]
 default = []
 golem_rendering = ["golem"]
-wrapper = ["glutin", "glow", "wasm-bindgen", "web-sys", "console_error_panic_hook", "console_log", "log", "serde", "serde_json"]
+wrapper = ["glutin", "glow", "wasm-bindgen", "web-sys", "console_error_panic_hook", "console_log", "serde", "serde_json"]
 
 [dependencies]
 golem = { git = "https://github.com/ryanisaacg/golem.git", optional = true }
 unicode-segmentation = "*"
 ttf-parser = "*"
 ab_glyph = "*"
+log = "*"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 glutin = { version = "0.22.0", optional = true }
@@ -29,11 +30,10 @@ pathfinder_geometry = "*"
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 glow = { version = "0.4.0", features = ["web-sys"], optional = true }
 wasm-bindgen = { version = "*", features = ["serde-serialize"], optional = true }
-console_error_panic_hook = { version = "0.1.6", optional = true }
-console_log = { version = "0.2.0", optional = true }
-log = { version = "*", optional = true }
-serde = { version = "1.0", features = ["derive"], optional = true }
-serde_json = { version = "1.0", optional = true }
+console_error_panic_hook = { version = "*", optional = true }
+console_log = { version = "*", optional = true }
+serde = { version = "*", features = ["derive"], optional = true }
+serde_json = { version = "*", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
 version = "*"

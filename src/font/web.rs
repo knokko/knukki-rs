@@ -1,4 +1,5 @@
 use crate::*;
+use log::info;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{JsCast, Clamped};
@@ -9,6 +10,10 @@ pub struct WebFont {
     buffer_canvas: HtmlCanvasElement,
     pre_font: String,
     post_font: String,
+
+    max_ascent: f32,
+    max_descent: f32,
+    whitespace_width: f32,
 }
 
 impl WebFont {
@@ -20,7 +25,23 @@ impl WebFont {
         let buffer_canvas: HtmlCanvasElement = buffer_canvas_element.dyn_into::<HtmlCanvasElement>()
             .expect("The canvas should be a canvas");
 
-        Self { buffer_canvas, pre_font, post_font }
+        // Determine max ascent and descent
+        let font = format!("{} {}px {}", pre_font, 100, post_font);
+        let high_ascent_string = "Ǘ";
+        let high_descent_string = "̘";
+        let whitespace_string = "n";
+
+        let high_ascent = compute_metrics(high_ascent_string, &font).actual_ascent();
+        let whitespace_metrics = compute_metrics(whitespace_string, &font);
+        let whitespace_width = whitespace_metrics.actual_left() + whitespace_metrics.actual_right();
+        let high_descent = compute_metrics(high_descent_string, &font).actual_descent();
+
+        Self {
+            buffer_canvas, pre_font, post_font,
+            max_descent: high_descent as f32 / 100.0,
+            max_ascent: high_ascent as f32 / 100.0,
+            whitespace_width: whitespace_width as f32 / 100.0
+        }
     }
 
     pub fn from_strs(pre_font: &str, post_font: &str) -> Self {
@@ -29,7 +50,7 @@ impl WebFont {
 }
 
 impl Font for WebFont {
-    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<Texture> {
+    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<CharTexture> {
 
         let font = format!("{} {}px {}", self.pre_font, point_size as u32, self.post_font);
         let ctx: CanvasRenderingContext2d = self.buffer_canvas.get_context("2d")
@@ -44,8 +65,8 @@ impl Font for WebFont {
         // So I will have to provide some javascript to do the job
         let metrics = compute_metrics(grapheme, &font);
 
-        let width = (metrics.actual_right() + metrics.actual_left()) as u32;
-        let height = (metrics.actual_ascent() + metrics.actual_descent()) as u32;
+        let width = (metrics.actual_right() + metrics.actual_left() + 1) as u32;
+        let height = (metrics.actual_ascent() + metrics.actual_descent() + 1) as u32;
 
         // Handle whitespace characters
         if width == 0 || height == 0 {
@@ -87,7 +108,20 @@ impl Font for WebFont {
             texture[x][height as usize - y - 1] = Color::rgb(value, 0, 0);
         }
 
-        Some(texture)
+        let offset_y = (self.get_max_descent(point_size) as i32 - metrics.actual_descent()).max(0);
+        Some(CharTexture { texture, offset_y: offset_y as u32 })
+    }
+
+    fn get_max_descent(&self, point_size: f32) -> f32 {
+        self.max_descent * point_size
+    }
+
+    fn get_max_ascent(&self, point_size: f32) -> f32 {
+        self.max_ascent * point_size
+    }
+
+    fn get_whitespace_width(&self, point_size: f32) -> f32 {
+        self.whitespace_width * point_size
     }
 }
 

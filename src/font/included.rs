@@ -1,5 +1,8 @@
 use ab_glyph::{FontRef, Font, InvalidFont, OutlinedGlyph};
-use crate::Texture;
+use crate::{
+    Texture,
+    CharTexture,
+};
 use unicode_segmentation::UnicodeSegmentation;
 
 /*
@@ -33,7 +36,7 @@ impl IncludedStaticFont {
 }
 
 impl crate::Font for IncludedStaticFont {
-    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<Texture> {
+    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<CharTexture> {
 
         let all_outlines: Vec<_> = grapheme.chars().map(|current_char| {
             if !current_char.is_whitespace() {
@@ -142,6 +145,19 @@ impl crate::Font for IncludedStaticFont {
             texture[x][y] = color;
         }
 
-        Some(texture)
+        //Some(texture)
+        todo!()
+    }
+
+    fn get_max_descent(&self, point_size: f32) -> f32 {
+        unimplemented!()
+    }
+
+    fn get_max_ascent(&self, point_size: f32) -> f32 {
+        unimplemented!()
+    }
+
+    fn get_whitespace_width(&self, point_size: f32) -> f32 {
+        unimplemented!()
     }
 }
