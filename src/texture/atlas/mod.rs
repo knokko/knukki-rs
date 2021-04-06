@@ -125,7 +125,6 @@ impl TextureAtlas {
         }
 
         let mut resulting_placements = Vec::with_capacity(placements.len());
-        println!("Placements are {:?}", placements);
         for index in 0 .. placements.len() {
             if let Some(position) = placements[index] {
                 let placement = Rc::new(PlacedTexture {
@@ -202,8 +201,6 @@ impl TextureAtlas {
         remaining_textures.sort_unstable_by_key(|texture| texture.texture.get_height());
         remaining_textures.reverse();
 
-        println!("There are {} remaining textures", remaining_textures.len());
-
         for indexed_texture in remaining_textures {
             let texture = indexed_texture.texture;
 
@@ -215,8 +212,6 @@ impl TextureAtlas {
                     ),
                 None => true
             };
-
-            println!("Add new row? {}", add_new_row);
 
             if add_new_row {
                 if rows_info.bound_y + texture.height <= rows_info.atlas_height {

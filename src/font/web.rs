@@ -69,7 +69,7 @@ impl Font for WebFont {
         let height = (metrics.actual_ascent() + metrics.actual_descent() + 1) as u32;
 
         // Handle whitespace characters
-        if width == 0 || height == 0 {
+        if width < 3 || height < 3 {
             return None;
         }
 

@@ -233,11 +233,7 @@ fn create_image(font: &dyn knukki::Font) -> (TextureAtlas, Vec<Option<PlacedChar
             let index = grapheme_map.len();
             let maybe_char_texture = font.draw_grapheme(grapheme, POINT_SIZE);
             if let Some(char_texture) = maybe_char_texture {
-
-                // Avoid including whitespace textures (that would have a very small width and/or height)
-                if char_texture.texture.get_width() > 2 && char_texture.texture.get_height() > 2 {
-                    grapheme_map.insert(grapheme, GraphemeValue { index, char_texture });
-                }
+                grapheme_map.insert(grapheme, GraphemeValue { index, char_texture });
             }
         }
     }

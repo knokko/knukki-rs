@@ -81,7 +81,7 @@ impl SystemFont {
 }
 
 impl Font for SystemFont {
-    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<Texture> {
+    fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<CharTexture> {
 
         let system_font_source = SystemSource::new();
         // let font_handle = system_font_source.select_best_match(&[
@@ -136,6 +136,19 @@ impl Font for SystemFont {
             }
         }
 
-        Some(glyph_texture)
+        //Some(glyph_texture)
+        todo!()
+    }
+
+    fn get_max_descent(&self, point_size: f32) -> f32 {
+        unimplemented!()
+    }
+
+    fn get_max_ascent(&self, point_size: f32) -> f32 {
+        unimplemented!()
+    }
+
+    fn get_whitespace_width(&self, point_size: f32) -> f32 {
+        unimplemented!()
     }
 }

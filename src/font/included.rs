@@ -1,4 +1,4 @@
-use ab_glyph::{FontRef, Font, InvalidFont, OutlinedGlyph};
+use ab_glyph::{FontRef, Font, InvalidFont, OutlinedGlyph, ScaleFont};
 use crate::{
     Texture,
     CharTexture,
@@ -23,14 +23,17 @@ pub fn create_default_font() -> IncludedStaticFont {
 }
 
 pub struct IncludedStaticFont {
-    internal_font: FontRef<'static>
+    internal_font: FontRef<'static>,
+    whitespace_width: f32,
 }
 
 impl IncludedStaticFont {
     pub fn new(raw_data: &'static [u8]) -> Result<Self, InvalidFont> {
         let internal_font = FontRef::try_from_slice(raw_data)?;
+        let whitespace_glyph = internal_font.glyph_id('n').with_scale(100.0);
+        let whitespace_width = internal_font.glyph_bounds(&whitespace_glyph).width() / 100.0;
         Ok(Self {
-            internal_font
+            internal_font, whitespace_width
         })
     }
 }
@@ -42,17 +45,23 @@ impl crate::Font for IncludedStaticFont {
             if !current_char.is_whitespace() {
                 let current_glyph_id = self.internal_font.glyph_id(current_char);
                 let current_glyph = current_glyph_id.with_scale(point_size);
-                // TODO Supply fallback texture
-                Some(self.internal_font.outline_glyph(current_glyph)
-                    .expect("Should be able to outline the current glyph"))
+                Some(self.internal_font.outline_glyph(current_glyph).or_else(
+                    || self.internal_font.outline_glyph(
+                        self.internal_font.glyph_id('?').with_scale(point_size)
+                    )
+                ).expect("Should support the question mark glyph"))
             } else {
                 None
             }
-
         }).collect();
 
         if all_outlines.is_empty() {
             panic!("Not a single character was supplied");
+        }
+
+        // If all characters are whitespace, we should return None
+        if all_outlines.iter().find(|maybe_outline| maybe_outline.is_some()).is_none() {
+            return None;
         }
 
         struct CharOutline {
@@ -145,19 +154,18 @@ impl crate::Font for IncludedStaticFont {
             texture[x][y] = color;
         }
 
-        //Some(texture)
-        todo!()
+        Some(CharTexture { texture, offset_y: 0 })
     }
 
     fn get_max_descent(&self, point_size: f32) -> f32 {
-        unimplemented!()
+        self.internal_font.as_scaled(point_size).descent()
     }
 
     fn get_max_ascent(&self, point_size: f32) -> f32 {
-        unimplemented!()
+        self.internal_font.as_scaled(point_size).ascent()
     }
 
     fn get_whitespace_width(&self, point_size: f32) -> f32 {
-        unimplemented!()
+        self.whitespace_width * point_size
     }
 }
