@@ -1,9 +1,7 @@
 mod group;
-mod id;
 mod position;
 
 pub use group::*;
-pub use id::*;
 pub use position::*;
 
 use crate::*;
@@ -350,7 +348,7 @@ mod tests {
 
     use super::*;
 
-    // TODO Test place_textures
+    // TODO Test place_textures removal behavior
 
     fn assert_filled(atlas: &TextureAtlas, x: u32, y: u32, width: u32, height: u32, color: Color) {
         for test_x in x .. x + width {
