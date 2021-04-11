@@ -21,6 +21,7 @@ pub struct GroupTextureID {
 
 /// Represents the placement of a `Texture` onto a `TextureAtlas` of a `TextureAtlasGroup`. See the
 /// documentation of the methods of this struct for more information.
+#[derive(Clone)]
 pub struct GroupTexturePlacement {
     cpu_atlas_index: u16,
     gpu_atlas_slot: u8,
@@ -174,66 +175,25 @@ impl TextureAtlasGroup {
         id
     }
 
-    pub fn place_textures(&mut self, textures: &[GroupTextureID]) -> Vec<GroupTexturePlacement> {
-
-        let mut texture_set = HashSet::with_capacity(textures.len());
-        for texture_id in textures {
-            texture_set.insert(texture_id);
-        }
-
-        #[derive(Eq, PartialEq)]
-        struct ExistingAtlasRating {
-            atlas_index: u16,
-            num_missing_textures: u32,
-            fits: bool,
-        }
-
-        impl PartialOrd for ExistingAtlasRating {
-            fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-                Some(self.cmp(other))
-            }
-        }
-
-        impl Ord for ExistingAtlasRating {
-            fn cmp(&self, other: &Self) -> Ordering {
-                // Most important is whether the textures fit
-                if self.fits && !other.fits {
-                    return Ordering::Greater;
-                }
-                if !self.fits && other.fits {
-                    return Ordering::Less;
-                }
-
-                // If the fit test results in a tie, the number of missing textures is checked
-                if self.num_missing_textures < other.num_missing_textures {
-                    return Ordering::Greater;
-                }
-                if self.num_missing_textures > other.num_missing_textures {
-                    return Ordering::Less;
-                }
-
-                // If the number of missing textures also result in a tie, the result doesn't really matter
-                return self.atlas_index.cmp(other.atlas_index)
-            }
-        }
-
+    fn rate_texture_atlases(&mut self, texture_set: &HashSet<GroupTextureID>) -> Vec<ExistingAtlasRating> {
         let mut existing_ratings = Vec::with_capacity(self.atlases.len());
         for atlas_index in 0 .. self.atlases.len() {
 
             // To rate the atlas, determine how many textures are still missing, and if they fit
-            let mut remaining_textures = Vec::with_capacity(textures.len());
-            for texture_id in &texture_set {
+            let mut remaining_textures = Vec::with_capacity(texture_set.len());
+            for texture_id in texture_set {
 
                 let texture_entry = &self.textures[texture_id];
                 if !texture_entry.placements.iter().any(|placement|
-                    placement.cpu_atlas_index == atlas_index && placement.is_still_valid()
+                    placement.cpu_atlas_index as usize == atlas_index && placement.is_still_valid()
                 ) {
                     remaining_textures.push(*texture_id);
                 }
             }
 
+            let my_textures = &self.textures;
             let textures_to_try: Vec<_> = remaining_textures.iter().map(
-                |texture_id| &self.textures[texture_id].texture
+                |texture_id| &my_textures[texture_id].texture
             ).collect();
             let test_place_result = self.atlases[atlas_index].add_textures(&textures_to_try, true);
             let test_placed_all = !test_place_result.placements.iter().any(|test_placement| {
@@ -252,13 +212,128 @@ impl TextureAtlasGroup {
         existing_ratings.sort_unstable();
         existing_ratings.reverse();
 
-        let create_new_atlas = match existing_ratings.is_empty() {
-            true => true,
+        existing_ratings
+    }
+
+    fn choose_texture_atlases(
+        &self, texture_set: &HashSet<GroupTextureID>, existing_ratings: &Vec<ExistingAtlasRating>
+    ) -> Option<Vec<usize>> {
+
+        match existing_ratings.is_empty() {
+            true => None,
             false => {
-                todo!()
+                if existing_ratings.first().unwrap().fits {
+                    // If all textures can fit on an existing atlas, use that atlas
+                    Some(vec![existing_ratings.first().unwrap().atlas_index as usize])
+                } else {
+                    // Try to place all textures on new texture atlases, and see how many we would
+                    // need...
+                    let mut num_needed_atlases = 0;
+                    let mut texture_ids: Vec<_> = texture_set.iter().map(
+                        |id| Some(*id)
+                    ).collect();
+
+                    let mut dummy_atlas = TextureAtlas::new(self.atlas_width, self.atlas_height);
+                    loop {
+
+                        let remaining_textures: Vec<_> = texture_ids.iter().filter_map(
+                            |maybe_id| maybe_id.map(|id| &self.textures[&id].texture)
+                        ).collect();
+
+                        if remaining_textures.is_empty() {
+                            break;
+                        }
+
+                        let test_result = dummy_atlas.add_textures(&remaining_textures, true);
+                        let mut made_progress = false;
+                        for index in 0 .. test_result.placements.len() {
+                            if test_result.placements[index].is_valid() {
+                                texture_ids[index] = None;
+                                made_progress = true;
+                            }
+                        }
+
+                        if !made_progress {
+                            todo!() // We need some kind of error handling for this edge case
+                        }
+                        num_needed_atlases += 1;
+                    }
+                    if self.atlases.len() + num_needed_atlases <= self.max_num_cpu_atlases as usize {
+                        None
+                    } else {
+                        // We will have to remove textures from an existing atlas...
+                        todo!()
+                    }
+                }
             }
+        }
+    }
+
+    fn place_textures_at(
+        &mut self, texture_set: &HashSet<GroupTextureID>, dest_atlas_indices: &Vec<usize>
+    ) -> HashMap<GroupTextureID, GroupTexturePlacement> {
+        todo!()
+    }
+
+    fn place_textures_in_new_atlases(
+        &mut self, texture_set: &HashSet<GroupTextureID>
+    ) -> HashMap<GroupTextureID, GroupTexturePlacement> {
+        todo!()
+    }
+
+    pub fn place_textures(&mut self, textures: &[GroupTextureID]) -> Vec<GroupTexturePlacement> {
+
+        let mut texture_set = HashSet::with_capacity(textures.len());
+        for texture_id in textures {
+            texture_set.insert(*texture_id);
+        }
+
+        let existing_ratings = self.rate_texture_atlases(&texture_set);
+
+        let maybe_dest_atlases = self.choose_texture_atlases(&texture_set, &existing_ratings);
+
+        let placement_map = match maybe_dest_atlases {
+            Some(dest_atlases) => self.place_textures_at(&texture_set, &dest_atlases),
+            None => self.place_textures_in_new_atlases(&texture_set)
         };
 
-        todo!()
+        textures.iter().map(|texture_id| placement_map[texture_id].clone()).collect()
+    }
+}
+
+// This is just a helper struct for determining which texture atlas(es) to use
+#[derive(Eq, PartialEq)]
+struct ExistingAtlasRating {
+    atlas_index: u16,
+    num_missing_textures: u32,
+    fits: bool,
+}
+
+impl PartialOrd for ExistingAtlasRating {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ExistingAtlasRating {
+    fn cmp(&self, other: &Self) -> Ordering {
+        // Most important is whether the textures fit
+        if self.fits && !other.fits {
+            return Ordering::Greater;
+        }
+        if !self.fits && other.fits {
+            return Ordering::Less;
+        }
+
+        // If the fit test results in a tie, the number of missing textures is checked
+        if self.num_missing_textures < other.num_missing_textures {
+            return Ordering::Greater;
+        }
+        if self.num_missing_textures > other.num_missing_textures {
+            return Ordering::Less;
+        }
+
+        // If the number of missing textures also result in a tie, the result doesn't really matter
+        return self.atlas_index.cmp(&other.atlas_index)
     }
 }
