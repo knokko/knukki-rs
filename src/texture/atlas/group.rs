@@ -167,12 +167,26 @@ impl TextureAtlasGroup {
     /// Adds the given texture to this group and returns its `GroupTextureID`. Note that this
     /// method only stores the texture; it doesn't put it on any atlas yet. The returned id is
     /// needed for the `place_textures` method.
-    pub fn add_texture(&mut self, texture: Texture) -> GroupTextureID {
+    pub fn add_texture(&mut self, texture: Texture) -> Result<GroupTextureID, TextureTooBigForAtlas> {
+
+        if texture.get_width() > self.atlas_width || texture.get_height() > self.atlas_height {
+            return Err(TextureTooBigForAtlas {
+                texture_width: texture.get_width(),
+                texture_height: texture.get_height(),
+                atlas_width: self.atlas_width,
+                atlas_height: self.atlas_height,
+            });
+        }
+
         let id = GroupTextureID { internal: self.next_texture_id };
         self.next_texture_id += 1;
 
         self.textures.insert(id, TextureEntry { texture, placements: Vec::new() });
-        id
+        Ok(id)
+    }
+
+    pub fn remove_texture(&mut self, id: GroupTextureID) -> Result<(), ()> {
+        todo!() // Also mark textures as removed, to improve debugging
     }
 
     fn rate_texture_atlases(&mut self, texture_set: &HashSet<GroupTextureID>) -> Vec<ExistingAtlasRating> {
@@ -253,9 +267,10 @@ impl TextureAtlasGroup {
                             }
                         }
 
-                        if !made_progress {
-                            todo!() // We need some kind of error handling for this edge case
-                        }
+                        // If made_progress were false, at least 1 texture would have to be too big
+                        // for the texture atlas. But, adding such a texture should not be possible.
+                        assert!(made_progress);
+
                         num_needed_atlases += 1;
                     }
                     if self.atlases.len() + num_needed_atlases <= self.max_num_cpu_atlases as usize {
@@ -278,7 +293,56 @@ impl TextureAtlasGroup {
     fn place_textures_in_new_atlases(
         &mut self, texture_set: &HashSet<GroupTextureID>
     ) -> HashMap<GroupTextureID, GroupTexturePlacement> {
-        todo!()
+
+        let mut placements = HashMap::new();
+        while placements.len() < texture_set.len() {
+
+            let mut next_atlas = TextureAtlas::new(self.atlas_width, self.atlas_height);
+            let remaining_texture_ids: Vec<_> = texture_set.iter().filter(
+                |id| !placements.contains_key(id)
+            ).collect();
+            let remaining_textures = remaining_texture_ids.iter().map(
+                |id| &self.textures[id].texture
+            ).collect();
+
+            let place_result = next_atlas.add_textures(&remaining_textures, false);
+            let mut made_progress = false;
+            for index in 0 .. place_result.placements.len() {
+                if let Some(position) = place_result.placements[index].get_position() {
+                    made_progress = true;
+
+                    // This atlas will be added to the list of atlases, so its index will be the
+                    // current length
+                    let cpu_atlas_index = self.atlases.len() as u16;
+                    let still_valid = Rc::new(Cell::new(true));
+
+                    placements[remaining_textures_ids[index]] = GroupTexturePlacement {
+
+                        cpu_atlas_index,
+                        gpu_atlas_slot: self.gpu_atlas_slot_for(cpu_atlas_index),
+
+                        position,
+                        still_valid
+                    };
+                }
+            }
+
+            // If made_progress were false, at least 1 texture would have to be too big
+            // for the texture atlas. But, adding such a texture should not be possible.
+            assert!(made_progress);
+
+            self.atlases.push(next_atlas);
+        }
+
+        placements
+    }
+
+    fn gpu_atlas_slot_for(&self, cpu_atlas_index: u16) -> u8 {
+        let num_gpu_atlas_slots = 1 + self.max_gpu_atlas_slot - self.min_gpu_atlas_slot;
+
+        // This is a very simple and powerful trick to map texture atlases evenly over gpu slots
+        let gpu_atlas_slot_offset = cpu_atlas_index % (num_gpu_atlas_slots as u16);
+        self.min_gpu_atlas_slot + gpu_atlas_slot_offset as u8
     }
 
     pub fn place_textures(&mut self, textures: &[GroupTextureID]) -> Vec<GroupTexturePlacement> {
@@ -296,6 +360,11 @@ impl TextureAtlasGroup {
             Some(dest_atlases) => self.place_textures_at(&texture_set, &dest_atlases),
             None => self.place_textures_in_new_atlases(&texture_set)
         };
+
+        // Update the textures map of this group
+        for (texture_id, placement) in &placement_map {
+            self.textures[texture_id].placements.push(placement.clone());
+        }
 
         textures.iter().map(|texture_id| placement_map[texture_id].clone()).collect()
     }

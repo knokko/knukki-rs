@@ -1,6 +1,8 @@
+mod error;
 mod group;
 mod position;
 
+pub use error::*;
 pub use group::*;
 pub use position::*;
 
