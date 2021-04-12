@@ -3,6 +3,7 @@ use crate::*;
 mod manager;
 mod included;
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(warnings)]
 mod system;
 #[cfg(target_arch = "wasm32")]
 mod web;

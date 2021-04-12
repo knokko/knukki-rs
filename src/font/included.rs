@@ -3,7 +3,6 @@ use crate::{
     Texture,
     CharTexture,
 };
-use unicode_segmentation::UnicodeSegmentation;
 
 /*
  * We COULD use this in WebAssembly as well, but it would add ~12MB to the wasm file. Without this,
