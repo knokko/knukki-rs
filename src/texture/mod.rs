@@ -207,7 +207,7 @@ mod tests {
         texture[1][1] = color4;
         texture[0][2] = color5;
 
-        let mut pixel_buffer = texture.create_pixel_buffer();
+        let pixel_buffer = texture.create_pixel_buffer();
         assert_eq!(vec![
             13, 87, 105, 255, 217, 185, 197, 255, 201, 140, 0, 200, 15, 97, 5, 0, 89, 58, 240, 255, 200, 100, 150, 255
         ], pixel_buffer);

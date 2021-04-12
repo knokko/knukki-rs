@@ -21,7 +21,7 @@ pub struct GroupTextureID {
 
 /// Represents the placement of a `Texture` onto a `TextureAtlas` of a `TextureAtlasGroup`. See the
 /// documentation of the methods of this struct for more information.
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct GroupTexturePlacement {
     cpu_atlas_index: u16,
     gpu_atlas_slot: u8,
@@ -287,7 +287,37 @@ impl TextureAtlasGroup {
     fn place_textures_at(
         &mut self, texture_set: &HashSet<GroupTextureID>, dest_atlas_indices: &Vec<usize>
     ) -> HashMap<GroupTextureID, GroupTexturePlacement> {
-        todo!()
+        let mut placements = HashMap::new();
+
+        for dest_atlas_index in dest_atlas_indices {
+            let own_textures = &self.textures;
+
+            let remaining_texture_ids: Vec<_> = texture_set.iter().filter(
+                |texture_id| !own_textures.contains_key(*texture_id)
+            ).collect();
+            let remaining_textures: Vec<_> = remaining_texture_ids.iter().map(
+                |texture_id| &own_textures[texture_id].texture
+            ).collect();
+
+            let place_result = self.atlases[*dest_atlas_index].add_textures(&remaining_textures, false);
+            for index in 0 .. place_result.placements.len() {
+                if let Some(placed_position) = place_result.placements[index].get_position() {
+
+                    let gpu_atlas_slot = self.gpu_atlas_slot_for(*dest_atlas_index as u16);
+                    placements.insert(*remaining_texture_ids[index], GroupTexturePlacement {
+                        cpu_atlas_index: *dest_atlas_index as u16,
+                        gpu_atlas_slot,
+                        position: placed_position,
+                        still_valid: Rc::new(Cell::new(true))
+                    });
+                }
+            }
+        }
+
+        // If the input parameters were correct, all textures in the set should have been placed
+        assert_eq!(placements.len(), texture_set.len());
+
+        placements
     }
 
     fn place_textures_in_new_atlases(
@@ -410,7 +440,6 @@ impl Ord for ExistingAtlasRating {
 #[cfg(test)]
 mod tests {
 
-    use crate::*;
     use super::*;
 
     use std::cell::Cell;
@@ -606,5 +635,101 @@ mod tests {
 
         let test_result1 = group.choose_texture_atlases(&texture_set, &ratings);
         assert!(test_result1.is_none());
+    }
+
+    #[test]
+    fn test_place_textures_in_new_atlases() {
+        let atlas_width = 10;
+        let atlas_height = 7;
+
+        let mut group = TextureAtlasGroup::new(
+            atlas_width, atlas_height, 5, 1, 1, 1
+        );
+
+        let color1 = Color::rgb(255, 0, 0);
+        let color2 = Color::rgb(0, 255, 0);
+        let color3 = Color::rgb(0, 0, 255);
+        let texture1 = Texture::new(6, 6, color1);
+        let texture2 = Texture::new(3, 3, color2);
+        let texture3 = Texture::new(5, 5, color3);
+        let id1 = group.add_texture(texture1).unwrap();
+        let id2 = group.add_texture(texture2).unwrap();
+        let id3 = group.add_texture(texture3).unwrap();
+
+        let mut texture_set1 = HashSet::new();
+        texture_set1.insert(id1);
+        texture_set1.insert(id2);
+
+        let mut texture_set2 = texture_set1.clone();
+        texture_set2.insert(id3);
+
+        let place_result1 = group.place_textures_in_new_atlases(&texture_set1);
+        assert_eq!(2, place_result1.len());
+        assert_eq!(GroupTexturePlacement {
+            cpu_atlas_index: 0,
+            gpu_atlas_slot: group.gpu_atlas_slot_for(0),
+            position: TextureAtlasPosition {
+                min_x: 0,
+                min_y: 0,
+                width: 6,
+                height: 6
+            },
+            still_valid: Rc::new(Cell::new(true))
+        }, place_result1[&id1]);
+        assert_eq!(GroupTexturePlacement {
+            cpu_atlas_index: 0,
+            gpu_atlas_slot: group.gpu_atlas_slot_for(0),
+            position: TextureAtlasPosition {
+                min_x: 6,
+                min_y: 0,
+                width: 3,
+                height: 3
+            },
+            still_valid: Rc::new(Cell::new(true))
+        }, place_result1[&id2]);
+        assert_eq!(color1, group.atlases[0].get_texture()[0][0]);
+        assert_eq!(color2, group.atlases[0].get_texture()[6][0]);
+
+        let place_result2 = group.place_textures_in_new_atlases(&texture_set2);
+        assert_eq!(3, place_result2.len());
+        assert_eq!(GroupTexturePlacement {
+            cpu_atlas_index: 1,
+            gpu_atlas_slot: group.gpu_atlas_slot_for(1),
+            position: TextureAtlasPosition {
+                min_x: 0,
+                min_y: 0,
+                width: 6,
+                height: 6
+            },
+            still_valid: Rc::new(Cell::new(true))
+        }, place_result2[&id1]);
+        assert_eq!(GroupTexturePlacement {
+            cpu_atlas_index: 1,
+            gpu_atlas_slot: group.gpu_atlas_slot_for(1),
+            position: TextureAtlasPosition {
+                min_x: 6,
+                min_y: 0,
+                width: 3,
+                height: 3
+            },
+            still_valid: Rc::new(Cell::new(true))
+        }, place_result2[&id2]);
+        assert_eq!(GroupTexturePlacement {
+            cpu_atlas_index: 2,
+            gpu_atlas_slot: group.gpu_atlas_slot_for(2),
+            position: TextureAtlasPosition {
+                min_x: 0,
+                min_y: 0,
+                width: 5,
+                height: 5
+            },
+            still_valid: Rc::new(Cell::new(true))
+        }, place_result2[&id3]);
+
+        assert_eq!(color1, group.atlases[0].get_texture()[0][0]);
+        assert_eq!(color2, group.atlases[0].get_texture()[6][0]);
+        assert_eq!(color1, group.atlases[1].get_texture()[0][0]);
+        assert_eq!(color2, group.atlases[1].get_texture()[6][0]);
+        assert_eq!(color3, group.atlases[2].get_texture()[0][0]);
     }
 }
