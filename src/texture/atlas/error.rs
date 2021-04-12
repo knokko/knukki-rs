@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt::{
     Display,
     Formatter,
@@ -10,7 +11,7 @@ use std::fmt::{
 ///
 /// In such cases, it would be impossible to place the texture on an atlas, even if all existing
 /// textures would be removed.
-#[derive(Copy, Clone, Debug, Error)]
+#[derive(Copy, Clone, Debug)]
 pub struct TextureTooBigForAtlas {
     pub texture_width: u32,
     pub texture_height: u32,
@@ -26,3 +27,5 @@ impl Display for TextureTooBigForAtlas {
         )
     }
 }
+
+impl Error for TextureTooBigForAtlas {}

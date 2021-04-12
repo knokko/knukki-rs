@@ -299,9 +299,9 @@ impl TextureAtlasGroup {
 
             let mut next_atlas = TextureAtlas::new(self.atlas_width, self.atlas_height);
             let remaining_texture_ids: Vec<_> = texture_set.iter().filter(
-                |id| !placements.contains_key(id)
+                |id| !placements.contains_key(*id)
             ).collect();
-            let remaining_textures = remaining_texture_ids.iter().map(
+            let remaining_textures: Vec<_> = remaining_texture_ids.iter().map(
                 |id| &self.textures[id].texture
             ).collect();
 
@@ -316,14 +316,14 @@ impl TextureAtlasGroup {
                     let cpu_atlas_index = self.atlases.len() as u16;
                     let still_valid = Rc::new(Cell::new(true));
 
-                    placements[remaining_textures_ids[index]] = GroupTexturePlacement {
+                    placements.insert(*remaining_texture_ids[index], GroupTexturePlacement {
 
                         cpu_atlas_index,
                         gpu_atlas_slot: self.gpu_atlas_slot_for(cpu_atlas_index),
 
                         position,
                         still_valid
-                    };
+                    });
                 }
             }
 
@@ -363,7 +363,7 @@ impl TextureAtlasGroup {
 
         // Update the textures map of this group
         for (texture_id, placement) in &placement_map {
-            self.textures[texture_id].placements.push(placement.clone());
+            self.textures.get_mut(texture_id).unwrap().placements.push(placement.clone());
         }
 
         textures.iter().map(|texture_id| placement_map[texture_id].clone()).collect()
@@ -371,7 +371,7 @@ impl TextureAtlasGroup {
 }
 
 // This is just a helper struct for determining which texture atlas(es) to use
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Debug)]
 struct ExistingAtlasRating {
     atlas_index: u16,
     num_missing_textures: u32,
@@ -404,5 +404,207 @@ impl Ord for ExistingAtlasRating {
 
         // If the number of missing textures also result in a tie, the result doesn't really matter
         return self.atlas_index.cmp(&other.atlas_index)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use crate::*;
+    use super::*;
+
+    use std::cell::Cell;
+    use std::collections::HashSet;
+    use std::rc::Rc;
+
+    #[test]
+    fn test_rate_texture_atlases() {
+        let atlas_width = 10;
+        let atlas_height = 10;
+        let mut group = TextureAtlasGroup::new(
+            atlas_width, atlas_height, 3,
+            1, 1, 1
+        );
+
+        let texture1 = Texture::new(5, 4, Color::rgb(0, 0, 0));
+        let texture2 = Texture::new(5, 4, Color::rgb(0, 0, 0));
+        let texture3 = Texture::new(10, 6, Color::rgb(0, 0, 0));
+        let texture4 = Texture::new(3, 3, Color::rgb(0, 0, 0));
+
+        let id1 = group.add_texture(texture1).unwrap();
+        let id2 = group.add_texture(texture2.clone()).unwrap();
+        let id3 = group.add_texture(texture3).unwrap();
+        let id4 = group.add_texture(texture4.clone()).unwrap();
+
+        // Preparation code: this abuses access to the private members of TextureAtlasGroup to forge
+        // a clear test case.
+        group.atlases.push(TextureAtlas::new(atlas_width, atlas_height));
+
+        // Preparation: put texture2 on atlas 2
+        let mut atlas2 = TextureAtlas::new(atlas_width, atlas_height);
+        let position2 = TextureAtlasPosition {
+            min_x: 0,
+            min_y: 0,
+            width: 5,
+            height: 4
+        };
+        let place2 = atlas2.add_textures(&[&texture2], false);
+        assert_eq!(Some(position2), place2.placements[0].get_position());
+        group.atlases.push(atlas2);
+        let gpu_slot_1 = group.gpu_atlas_slot_for(1);
+        group.textures.get_mut(&id2).unwrap().placements.push(GroupTexturePlacement {
+            cpu_atlas_index: 1,
+            gpu_atlas_slot: gpu_slot_1,
+            position: position2,
+            still_valid: Rc::new(Cell::new(true))
+        });
+
+        // Preparation: put texture 4 on atlas 3
+        let mut atlas3 = TextureAtlas::new(atlas_width, atlas_height);
+        let position3 = TextureAtlasPosition {
+            min_x: 0,
+            min_y: 0,
+            width: 3,
+            height: 3
+        };
+        let place3 = atlas3.add_textures(&[&texture4], false);
+        assert_eq!(Some(position3), place3.placements[0].get_position());
+        group.atlases.push(atlas3);
+        let gpu_atlas_slot2 = group.gpu_atlas_slot_for(2);
+        group.textures.get_mut(&id4).unwrap().placements.push(GroupTexturePlacement {
+            cpu_atlas_index: 2,
+            gpu_atlas_slot: gpu_atlas_slot2,
+            position: position3,
+            still_valid: Rc::new(Cell::new(true))
+        });
+
+        // Now onto the actual test
+        let mut texture_set = HashSet::new();
+        texture_set.insert(id1);
+        texture_set.insert(id2);
+        texture_set.insert(id3);
+
+        let ratings = group.rate_texture_atlases(&texture_set);
+
+        // Atlas 2 should be the best candidate because it fits and contains 1 texture already
+        assert!(ratings[0].fits);
+        assert_eq!(1, ratings[0].atlas_index);
+        assert_eq!(2, ratings[0].num_missing_textures);
+
+        // Atlas 1 should be second because everything fits, but it doesn't contain any yet
+        assert!(ratings[1].fits);
+        assert_eq!(0, ratings[1].atlas_index);
+        assert_eq!(3, ratings[1].num_missing_textures);
+
+        // Atlas 3 should be last because not everything fits and it doesn't contain any of the
+        // textures yet
+        assert!(!ratings[2].fits);
+        assert_eq!(2, ratings[2].atlas_index);
+        assert_eq!(3, ratings[2].num_missing_textures);
+    }
+
+    #[test]
+    fn test_choose_texture_atlases_empty() {
+        let atlas_width = 5;
+        let atlas_height = 9;
+        let mut group = TextureAtlasGroup::new(
+            atlas_width, atlas_height, 5, 2, 1, 1
+        );
+
+        let texture1 = Texture::new(3, 2, Color::rgb(0, 0, 0));
+        let texture2 = Texture::new(3, 2, Color::rgb(0, 0, 0));
+
+        let id1 = group.add_texture(texture1).unwrap();
+        let id2 = group.add_texture(texture2).unwrap();
+        let mut texture_set = HashSet::new();
+        texture_set.insert(id1);
+        texture_set.insert(id2);
+
+        let ratings = group.rate_texture_atlases(&texture_set);
+        assert!(ratings.is_empty());
+        let test_result = group.choose_texture_atlases(&texture_set, &ratings);
+        assert!(test_result.is_none());
+    }
+
+    #[test]
+    fn test_choose_texture_atlases_fits_existing() {
+        let atlas_width = 5;
+        let atlas_height = 9;
+        let mut group = TextureAtlasGroup::new(
+            atlas_width, atlas_height, 5, 2, 1, 1
+        );
+
+        let texture1 = Texture::new(5, 7, Color::rgb(0, 0, 0));
+        let texture2 = Texture::new(5, 7, Color::rgb(0, 0, 0));
+
+        let id1 = group.add_texture(texture1).unwrap();
+        let id2 = group.add_texture(texture2).unwrap();
+        let mut texture_set = HashSet::new();
+        texture_set.insert(id1);
+        texture_set.insert(id2);
+
+        // Let's prepare some fake data for the test
+        group.atlases.push(TextureAtlas::new(atlas_width, atlas_height));
+        group.atlases.push(TextureAtlas::new(atlas_width, atlas_height));
+
+        let ratings1 = vec![
+            ExistingAtlasRating {
+                atlas_index: 0,
+                num_missing_textures: 2,
+                fits: true
+            }, ExistingAtlasRating {
+                atlas_index: 1,
+                num_missing_textures: 2,
+                fits: true
+            }
+        ];
+
+        let test_result1 = group.choose_texture_atlases(&texture_set, &ratings1);
+        assert_eq!(Some(vec![0]), test_result1);
+
+        let ratings2 = vec![
+            ExistingAtlasRating {
+                atlas_index: 1,
+                num_missing_textures: 2,
+                fits: true
+            }, ExistingAtlasRating {
+                atlas_index: 0,
+                num_missing_textures: 2,
+                fits: false
+            }
+        ];
+
+        let test_result2 = group.choose_texture_atlases(&texture_set, &ratings2);
+        assert_eq!(Some(vec![1]), test_result2);
+    }
+
+    #[test]
+    fn test_choose_texture_atlases_fits_no_existing() {
+        let atlas_width = 5;
+        let atlas_height = 9;
+        let mut group = TextureAtlasGroup::new(
+            atlas_width, atlas_height, 5, 2, 1, 1
+        );
+
+        let texture1 = Texture::new(5, 7, Color::rgb(0, 0, 0));
+        let texture2 = Texture::new(5, 7, Color::rgb(0, 0, 0));
+
+        let id1 = group.add_texture(texture1).unwrap();
+        let id2 = group.add_texture(texture2).unwrap();
+        let mut texture_set = HashSet::new();
+        texture_set.insert(id1);
+        texture_set.insert(id2);
+
+        // Let's prepare some fake data for the test
+        group.atlases.push(TextureAtlas::new(atlas_width, atlas_height));
+
+        let ratings = vec![ExistingAtlasRating {
+            atlas_index: 0,
+            num_missing_textures: 2,
+            fits: false
+        }];
+
+        let test_result1 = group.choose_texture_atlases(&texture_set, &ratings);
+        assert!(test_result1.is_none());
     }
 }

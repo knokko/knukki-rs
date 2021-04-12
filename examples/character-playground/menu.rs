@@ -87,5 +87,5 @@ fn create_shader(golem: &Context) -> Result<ShaderProgram, GolemError> {
 }
 
 fn create_image(font: &dyn knukki::Font) -> Option<knukki::Texture> {
-    font.draw_grapheme("", 270.0)
+    font.draw_grapheme("", 270.0).map(|char_texture| char_texture.texture)
 }
