@@ -406,12 +406,13 @@ impl TextureAtlasGroup {
             None => self.place_textures_in_new_atlases(&texture_set)
         };
 
-        placement_map.extend(existing_placement_map.into_iter());
-
         // Update the textures map of this group
         for (texture_id, placement) in &placement_map {
             self.textures.get_mut(texture_id).unwrap().placements.push(placement.clone());
         }
+
+        // Also add the existing entries to the result
+        placement_map.extend(existing_placement_map.into_iter());
 
         textures.iter().map(|texture_id| placement_map[texture_id].clone()).collect()
     }
@@ -867,7 +868,7 @@ mod tests {
         let texture3 = Texture::new(13, 12, color3);
         let texture4 = Texture::new(16, 18, color4);
         let texture5 = Texture::new(10, 16, color5);
-        let texture6 = Texture::new(20, 5, color6);
+        let texture6 = Texture::new(15, 5, color6);
         let texture7 = Texture::new(17, 15, color7);
 
         let id1 = group.add_texture(texture1).unwrap();
@@ -999,9 +1000,93 @@ mod tests {
             height: 16
         }, test_result2[2].position);
 
-        // TODO I have 2 more tests in mind:
-        // (1) Add a single new texture that should fit on atlas 1
-        // (2) Add 1 new texture and 2 existing textures. They won't fit on atlas 1, so all of
-        // them should be put on atlas 2.
+        // This is the last texture that should fit on texture atlas 1
+        let texture_list_3 = [id6, id6, id6];
+        let test_result3 = group.place_textures(&texture_list_3);
+
+        assert_eq!(3, test_result3.len());
+        let position6 = TextureAtlasPosition {
+            min_x: 33,
+            min_y: 18,
+            width: 15,
+            height: 5
+        };
+        for index in 0 .. 3 {
+            assert_eq!(0, test_result3[index].cpu_atlas_index);
+            assert_eq!(group.gpu_atlas_slot_for(0), test_result3[index].gpu_atlas_slot);
+            assert_eq!(position6, test_result3[index].position);
+        }
+        assert_eq!(1, group.textures[&id6].placements.len());
+        assert_eq!(position6, group.textures[&id6].placements[0].position);
+        assert_eq!(color6, group.atlases[0].get_texture()[33][18]);
+
+        // The final test is to add 1 more texture, along with 2 existing textures. Due to the first
+        // 6 textures, there is no more space on atlas 1, so a new atlas will have to be created.
+        // The group should avoid splitting textures placed in the same call across multiple
+        // atlases. To avoid this, it will have to copy the 2 existing textures to atlas 2 as well,
+        // but without removing it from atlas 1.
+        let texture_list_4 = [id2, id7, id4];
+        let test_result4 = group.place_textures(&texture_list_4);
+        assert_eq!(3, test_result4.len());
+        assert_eq!(2, group.atlases.len());
+        for placement in &test_result4 {
+            assert_eq!(1, placement.cpu_atlas_index);
+            assert_eq!(group.gpu_atlas_slot_for(1), placement.gpu_atlas_slot);
+        }
+
+        assert_eq!(color2, group.atlases[1].get_texture()[16][0]);
+        assert_eq!(TextureAtlasPosition {
+            min_x: 16,
+            min_y: 0,
+            width: 15,
+            height: 17
+        }, test_result4[0].position);
+
+        assert_eq!(color7, group.atlases[1].get_texture()[31][0]);
+        assert_eq!(TextureAtlasPosition {
+            min_x: 31,
+            min_y: 0,
+            width: 17,
+            height: 15
+        }, test_result4[1].position);
+
+        assert_eq!(color4, group.atlases[1].get_texture()[0][0]);
+        assert_eq!(TextureAtlasPosition {
+            min_x: 0,
+            min_y: 0,
+            width: 16,
+            height: 18
+        }, test_result4[2].position);
+
+        // Time to check the final state
+        for test_result in &[&test_result1, &test_result2, &test_result3, &test_result4] {
+            for placement in *test_result {
+                assert!(placement.is_still_valid());
+            }
+        }
+
+        assert_eq!(color1, group.atlases[0].get_texture()[0][18]);
+        assert_eq!(color2, group.atlases[0].get_texture()[16][0]);
+        assert_eq!(color2, group.atlases[1].get_texture()[16][0]);
+        assert_eq!(color3, group.atlases[0].get_texture()[20][18]);
+        assert_eq!(color4, group.atlases[0].get_texture()[0][0]);
+        assert_eq!(color4, group.atlases[1].get_texture()[0][0]);
+        assert_eq!(color5, group.atlases[0].get_texture()[31][0]);
+        assert_eq!(color6, group.atlases[0].get_texture()[33][18]);
+        assert_eq!(color7, group.atlases[1].get_texture()[31][0]);
+
+        assert_eq!(1, group.textures[&id1].placements.len());
+        assert_eq!(2, group.textures[&id2].placements.len());
+        assert_eq!(1, group.textures[&id3].placements.len());
+        assert_eq!(2, group.textures[&id4].placements.len());
+        assert_eq!(1, group.textures[&id5].placements.len());
+        assert_eq!(1, group.textures[&id6].placements.len());
+        assert_eq!(1, group.textures[&id7].placements.len());
+
+        for texture_id in &[id1, id2, id3, id4, id5, id6, id7] {
+            for placement in &group.textures[texture_id].placements {
+                assert!(placement.is_still_valid());
+            }
+        }
     }
 }
