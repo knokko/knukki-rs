@@ -223,7 +223,6 @@ impl TextureAtlas {
                     rows_info.bound_y += texture.height;
                 } else {
                     // When this occurs, the current texture can't be placed in a new row
-                    println!("Texture height is too big");
                     continue;
                 }
             }
