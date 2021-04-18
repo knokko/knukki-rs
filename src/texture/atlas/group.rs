@@ -67,13 +67,18 @@ struct TextureEntry {
     placements: Vec<GroupTexturePlacement>,
 }
 
+struct AtlasEntry<GpuTexture> {
+    atlas: TextureAtlas,
+    gpu_texture: Option<(GpuTexture, u64)>,
+}
+
 /// Represents a group of texture atlases of limited size that work together to give the illusion of
 /// being a single texture atlas with much bigger size. Not all textures will be in GPU memory at
 /// any time, but this struct will make sure they are when they are needed there.
 ///
 /// This has struct methods to add textures to the group and methods to create models that refer to
 /// such textures.
-pub struct TextureAtlasGroup {
+pub struct TextureAtlasGroup<GpuTexture> {
     max_num_cpu_atlases: u16,
     max_num_gpu_atlases: u16,
     min_gpu_atlas_slot: u8,
@@ -83,12 +88,15 @@ pub struct TextureAtlasGroup {
     atlas_height: u32,
 
     textures: HashMap<GroupTextureID, TextureEntry>,
-    atlases: Vec<TextureAtlas>,
+    atlases: Vec<AtlasEntry<GpuTexture>>,
 
     next_texture_id: u64,
+
+    // This variable is used to keep track of which gpu atlas texture are recently used
+    current_time: u64,
 }
 
-impl TextureAtlasGroup {
+impl<GpuTexture> TextureAtlasGroup<GpuTexture> {
     /// Constructs a new `TextureAtlasGroup` with the given parameters:
     ///
     /// ### Atlas width
@@ -161,6 +169,7 @@ impl TextureAtlasGroup {
             atlases: Vec::with_capacity(max_num_cpu_atlases as usize),
 
             next_texture_id: 0,
+            current_time: 0
         }
     }
 
@@ -187,6 +196,49 @@ impl TextureAtlasGroup {
 
     pub fn remove_texture(&mut self, id: GroupTextureID) -> Result<(), ()> {
         todo!() // Also mark textures as removed, to improve debugging
+    }
+
+    pub fn get_texture(&self, id: GroupTextureID) -> &Texture {
+        &self.textures[&id].texture
+    }
+
+    pub fn get_gpu_texture<GpuError>(
+        &mut self, atlas_index: u16, load_texture: impl FnOnce(&Texture) -> Result<GpuTexture, GpuError>
+    ) -> Result<&GpuTexture, GpuError> {
+        self.current_time += 1;
+
+        let is_ready = self.atlases[atlas_index as usize].gpu_texture.is_some();
+        if !is_ready {
+
+            let mut num_gpu_atlases = 1; // We also count the atlas that is about to be sent to gpu
+            let mut least_recently_used_time = None;
+            let mut least_recently_used_index = None;
+
+            for current_index in 0 .. self.atlases.len() {
+                let atlas_entry = &self.atlases[current_index];
+                if let Some(gpu_entry) = &atlas_entry.gpu_texture {
+                    num_gpu_atlases += 1;
+                    if least_recently_used_time.is_none() || gpu_entry.1 < least_recently_used_time.unwrap() {
+                        least_recently_used_time = Some(gpu_entry.1);
+                        least_recently_used_index = Some(current_index);
+                    }
+                }
+            }
+
+            // Remove 1 gpu texture, if needed
+            if num_gpu_atlases > self.max_num_gpu_atlases {
+                self.atlases[least_recently_used_index.expect(
+                    "There were too many gpu atlas textures, so there must be at least 1"
+                )].gpu_texture = None;
+            }
+
+            self.atlases[atlas_index as usize].gpu_texture = Some((
+                load_texture(self.atlases[atlas_index as usize].atlas.get_texture())?,
+                self.current_time
+            ));
+        }
+
+        Ok(&self.atlases[atlas_index as usize].gpu_texture.as_ref().unwrap().0)
     }
 
     fn rate_texture_atlases(&mut self, texture_set: &HashSet<GroupTextureID>) -> Vec<ExistingAtlasRating> {
@@ -290,6 +342,10 @@ impl TextureAtlasGroup {
         let mut placements = HashMap::new();
 
         for dest_atlas_index in dest_atlas_indices {
+
+            // We need to invalidate the gpu textures of all atlases we modify
+            self.atlases[*dest_atlas_index].gpu_texture = None;
+
             let own_textures = &self.textures;
 
             let remaining_texture_ids: Vec<_> = texture_set.iter().filter(
@@ -361,7 +417,11 @@ impl TextureAtlasGroup {
             // for the texture atlas. But, adding such a texture should not be possible.
             assert!(made_progress);
 
-            self.atlases.push(next_atlas);
+            self.atlases.push(AtlasEntry {
+                atlas: next_atlas,
+                // Assigning GPU textures will be postponed until drawing
+                gpu_texture: None
+            });
         }
 
         placements
@@ -485,7 +545,10 @@ mod tests {
 
         // Preparation code: this abuses access to the private members of TextureAtlasGroup to forge
         // a clear test case.
-        group.atlases.push(TextureAtlas::new(atlas_width, atlas_height));
+        group.atlases.push(AtlasEntry {
+            atlas: TextureAtlas::new(atlas_width, atlas_height),
+            gpu_texture: None
+        });
 
         // Preparation: put texture2 on atlas 2
         let mut atlas2 = TextureAtlas::new(atlas_width, atlas_height);
@@ -497,7 +560,10 @@ mod tests {
         };
         let place2 = atlas2.add_textures(&[&texture2], false);
         assert_eq!(Some(position2), place2.placements[0].get_position());
-        group.atlases.push(atlas2);
+        group.atlases.push(AtlasEntry {
+            atlas: atlas2,
+            gpu_texture: None
+        });
         let gpu_slot_1 = group.gpu_atlas_slot_for(1);
         group.textures.get_mut(&id2).unwrap().placements.push(GroupTexturePlacement {
             cpu_atlas_index: 1,
@@ -516,7 +582,10 @@ mod tests {
         };
         let place3 = atlas3.add_textures(&[&texture4], false);
         assert_eq!(Some(position3), place3.placements[0].get_position());
-        group.atlases.push(atlas3);
+        group.atlases.push(AtlasEntry {
+            atlas: atlas3,
+            gpu_texture: None
+        });
         let gpu_atlas_slot2 = group.gpu_atlas_slot_for(2);
         group.textures.get_mut(&id4).unwrap().placements.push(GroupTexturePlacement {
             cpu_atlas_index: 2,
@@ -591,8 +660,14 @@ mod tests {
         texture_set.insert(id2);
 
         // Let's prepare some fake data for the test
-        group.atlases.push(TextureAtlas::new(atlas_width, atlas_height));
-        group.atlases.push(TextureAtlas::new(atlas_width, atlas_height));
+        group.atlases.push(AtlasEntry {
+            atlas: TextureAtlas::new(atlas_width, atlas_height),
+            gpu_texture: None
+        });
+        group.atlases.push(AtlasEntry {
+            atlas: TextureAtlas::new(atlas_width, atlas_height),
+            gpu_texture: None
+        });
 
         let ratings1 = vec![
             ExistingAtlasRating {
@@ -643,7 +718,10 @@ mod tests {
         texture_set.insert(id2);
 
         // Let's prepare some fake data for the test
-        group.atlases.push(TextureAtlas::new(atlas_width, atlas_height));
+        group.atlases.push(AtlasEntry {
+            atlas: TextureAtlas::new(atlas_width, atlas_height),
+            gpu_texture: None
+        });
 
         let ratings = vec![ExistingAtlasRating {
             atlas_index: 0,
@@ -774,7 +852,10 @@ mod tests {
 
         // Create empty atlases 1, 2, and 3
         for _ in 0 .. 3 {
-            group.atlases.push(TextureAtlas::new(atlas_width, atlas_height));
+            group.atlases.push(AtlasEntry {
+                atlas: TextureAtlas::new(atlas_width, atlas_height),
+                gpu_texture: None
+            });
         }
 
         let mut texture_set1 = HashSet::new();

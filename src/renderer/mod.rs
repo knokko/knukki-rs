@@ -4,8 +4,13 @@ use std::cell::RefCell;
 mod core;
 #[cfg(feature = "golem_rendering")]
 mod golem_renderer;
+
+mod text;
+
 #[cfg(feature = "golem_rendering")]
 pub use golem_renderer::ShaderId;
+
+pub use text::*;
 
 /// This struct is used to render `Component`s (and the `Application`). A reference to an instance
 /// of this struct will be passed as parameter to every `render` method.
