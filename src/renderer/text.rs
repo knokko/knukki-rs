@@ -6,7 +6,7 @@ use std::collections::{
     HashMap,
     HashSet,
 };
-use wasm_bindgen::__rt::std::num::NonZeroU32;
+use std::num::NonZeroU32;
 
 pub struct TextRenderer {
     fonts: HashMap<FontHandle, FontEntry>,
