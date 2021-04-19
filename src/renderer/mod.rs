@@ -53,6 +53,7 @@ pub struct Renderer {
     context: golem::Context,
     #[cfg(feature = "golem_rendering")]
     storage: golem_renderer::GolemRenderStorage,
+    text_renderer: TextRenderer,
     viewport_stack: RefCell<Vec<RenderRegion>>,
     scissor_stack: RefCell<Vec<RenderRegion>>,
 }
@@ -61,6 +62,7 @@ pub struct Renderer {
 #[cfg(not(feature = "golem_rendering"))]
 pub(crate) fn test_renderer(initial_viewport: RenderRegion) -> Renderer {
     Renderer {
+        text_renderer: TextRenderer::new(),
         viewport_stack: RefCell::new(vec![initial_viewport]),
         scissor_stack: RefCell::new(vec![initial_viewport]),
     }

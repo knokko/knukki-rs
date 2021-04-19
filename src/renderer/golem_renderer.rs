@@ -10,6 +10,7 @@ impl Renderer {
         Self {
             storage: GolemRenderStorage::new(&context).expect("Should be able to init storage"),
             context,
+            text_renderer: TextRenderer::new(),
             viewport_stack: RefCell::new(vec![initial_viewport]),
             scissor_stack: RefCell::new(vec![initial_viewport]),
         }

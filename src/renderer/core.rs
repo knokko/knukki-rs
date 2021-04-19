@@ -42,6 +42,10 @@ impl Renderer {
         *scissor_stack.last().expect("Scissor stack is never empty")
     }
 
+    pub fn get_text_renderer(&self) -> &TextRenderer {
+        &self.text_renderer
+    }
+
     /// Shrinks the viewport (and scissor) by the given amounts, calls the `render_function`, and
     /// thereafter restores the viewport and scissor.
     ///

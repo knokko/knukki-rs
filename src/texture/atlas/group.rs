@@ -202,8 +202,8 @@ impl<GpuTexture> TextureAtlasGroup<GpuTexture> {
         &self.textures[&id].texture
     }
 
-    pub fn get_gpu_texture<GpuError>(
-        &mut self, atlas_index: u16, load_texture: impl FnOnce(&Texture) -> Result<GpuTexture, GpuError>
+    pub fn get_gpu_texture<GpuError, F: FnOnce(&Texture) -> Result<GpuTexture, GpuError>>(
+        &mut self, atlas_index: u16, load_texture: F
     ) -> Result<&GpuTexture, GpuError> {
         self.current_time += 1;
 
@@ -261,7 +261,7 @@ impl<GpuTexture> TextureAtlasGroup<GpuTexture> {
             let textures_to_try: Vec<_> = remaining_textures.iter().map(
                 |texture_id| &my_textures[texture_id].texture
             ).collect();
-            let test_place_result = self.atlases[atlas_index].add_textures(&textures_to_try, true);
+            let test_place_result = self.atlases[atlas_index].atlas.add_textures(&textures_to_try, true);
             let test_placed_all = !test_place_result.placements.iter().any(|test_placement| {
                 !test_placement.is_valid()
             });
@@ -355,7 +355,7 @@ impl<GpuTexture> TextureAtlasGroup<GpuTexture> {
                 |texture_id| &own_textures[texture_id].texture
             ).collect();
 
-            let place_result = self.atlases[*dest_atlas_index].add_textures(&remaining_textures, false);
+            let place_result = self.atlases[*dest_atlas_index].atlas.add_textures(&remaining_textures, false);
             for index in 0 .. place_result.placements.len() {
                 if let Some(placed_position) = place_result.placements[index].get_position() {
 
@@ -523,6 +523,8 @@ mod tests {
     use std::cell::Cell;
     use std::collections::HashSet;
     use std::rc::Rc;
+
+    type TextureAtlasGroup = super::TextureAtlasGroup<()>;
 
     #[test]
     fn test_rate_texture_atlases() {
@@ -783,8 +785,8 @@ mod tests {
             },
             still_valid: Rc::new(Cell::new(true))
         }, place_result1[&id2]);
-        assert_eq!(color1, group.atlases[0].get_texture()[0][0]);
-        assert_eq!(color2, group.atlases[0].get_texture()[6][0]);
+        assert_eq!(color1, group.atlases[0].atlas.get_texture()[0][0]);
+        assert_eq!(color2, group.atlases[0].atlas.get_texture()[6][0]);
 
         let place_result2 = group.place_textures_in_new_atlases(&texture_set2);
         assert_eq!(3, place_result2.len());
@@ -822,11 +824,11 @@ mod tests {
             still_valid: Rc::new(Cell::new(true))
         }, place_result2[&id3]);
 
-        assert_eq!(color1, group.atlases[0].get_texture()[0][0]);
-        assert_eq!(color2, group.atlases[0].get_texture()[6][0]);
-        assert_eq!(color1, group.atlases[1].get_texture()[0][0]);
-        assert_eq!(color2, group.atlases[1].get_texture()[6][0]);
-        assert_eq!(color3, group.atlases[2].get_texture()[0][0]);
+        assert_eq!(color1, group.atlases[0].atlas.get_texture()[0][0]);
+        assert_eq!(color2, group.atlases[0].atlas.get_texture()[6][0]);
+        assert_eq!(color1, group.atlases[1].atlas.get_texture()[0][0]);
+        assert_eq!(color2, group.atlases[1].atlas.get_texture()[6][0]);
+        assert_eq!(color3, group.atlases[2].atlas.get_texture()[0][0]);
     }
 
     #[test]
@@ -875,7 +877,7 @@ mod tests {
             },
             still_valid: Rc::new(Cell::new(true))
         }, test_result1[&id1]);
-        assert_eq!(color1, group.atlases[2].get_texture()[0][0]);
+        assert_eq!(color1, group.atlases[2].atlas.get_texture()[0][0]);
 
         let mut texture_set2 = texture_set1.clone();
         texture_set2.insert(id2);
@@ -900,7 +902,7 @@ mod tests {
             },
             still_valid: Rc::new(Cell::new(true))
         }, test_result2[&id1]);
-        assert_eq!(color1, group.atlases[2].get_texture()[0][4]);
+        assert_eq!(color1, group.atlases[2].atlas.get_texture()[0][4]);
         assert_eq!(GroupTexturePlacement {
             cpu_atlas_index: 0,
             gpu_atlas_slot: group.gpu_atlas_slot_for(0),
@@ -912,7 +914,7 @@ mod tests {
             },
             still_valid: Rc::new(Cell::new(true))
         }, test_result2[&id3]);
-        assert_eq!(color3, group.atlases[0].get_texture()[0][0]);
+        assert_eq!(color3, group.atlases[0].atlas.get_texture()[0][0]);
         assert_eq!(GroupTexturePlacement {
             cpu_atlas_index: 0,
             gpu_atlas_slot: group.gpu_atlas_slot_for(0),
@@ -924,7 +926,7 @@ mod tests {
             },
             still_valid: Rc::new(Cell::new(true))
         }, test_result2[&id2]);
-        assert_eq!(color2, group.atlases[0].get_texture()[2][0]);
+        assert_eq!(color2, group.atlases[0].atlas.get_texture()[2][0]);
     }
 
     #[test]
@@ -982,7 +984,7 @@ mod tests {
         }
 
         // Now the specific tests
-        assert_eq!(color1, group.atlases[0].get_texture()[0][18]);
+        assert_eq!(color1, group.atlases[0].atlas.get_texture()[0][18]);
         assert_eq!(TextureAtlasPosition {
             min_x: 0,
             min_y: 18,
@@ -990,7 +992,7 @@ mod tests {
             height: 15
         }, test_result1[0].position);
 
-        assert_eq!(color2, group.atlases[0].get_texture()[16][0]);
+        assert_eq!(color2, group.atlases[0].atlas.get_texture()[16][0]);
         assert_eq!(TextureAtlasPosition {
             min_x: 16,
             min_y: 0,
@@ -998,7 +1000,7 @@ mod tests {
             height: 17
         }, test_result1[1].position);
 
-        assert_eq!(color3, group.atlases[0].get_texture()[20][18]);
+        assert_eq!(color3, group.atlases[0].atlas.get_texture()[20][18]);
         assert_eq!(TextureAtlasPosition {
             min_x: 20,
             min_y: 18,
@@ -1006,7 +1008,7 @@ mod tests {
             height: 12
         }, test_result1[3].position);
 
-        assert_eq!(color4, group.atlases[0].get_texture()[0][0]);
+        assert_eq!(color4, group.atlases[0].atlas.get_texture()[0][0]);
         assert_eq!(TextureAtlasPosition {
             min_x: 0,
             min_y: 0,
@@ -1041,7 +1043,7 @@ mod tests {
         }
 
         // Now the specific tests (note that the first 4 were mostly copied from test 1)
-        assert_eq!(color1, group.atlases[0].get_texture()[0][18]);
+        assert_eq!(color1, group.atlases[0].atlas.get_texture()[0][18]);
         assert_eq!(TextureAtlasPosition {
             min_x: 0,
             min_y: 18,
@@ -1049,7 +1051,7 @@ mod tests {
             height: 15
         }, test_result2[1].position);
 
-        assert_eq!(color2, group.atlases[0].get_texture()[16][0]);
+        assert_eq!(color2, group.atlases[0].atlas.get_texture()[16][0]);
         assert_eq!(TextureAtlasPosition {
             min_x: 16,
             min_y: 0,
@@ -1057,7 +1059,7 @@ mod tests {
             height: 17
         }, test_result2[4].position);
 
-        assert_eq!(color3, group.atlases[0].get_texture()[20][18]);
+        assert_eq!(color3, group.atlases[0].atlas.get_texture()[20][18]);
         assert_eq!(TextureAtlasPosition {
             min_x: 20,
             min_y: 18,
@@ -1065,7 +1067,7 @@ mod tests {
             height: 12
         }, test_result2[6].position);
 
-        assert_eq!(color4, group.atlases[0].get_texture()[0][0]);
+        assert_eq!(color4, group.atlases[0].atlas.get_texture()[0][0]);
         assert_eq!(TextureAtlasPosition {
             min_x: 0,
             min_y: 0,
@@ -1073,7 +1075,7 @@ mod tests {
             height: 18
         }, test_result2[0].position);
 
-        assert_eq!(color5, group.atlases[0].get_texture()[31][0]);
+        assert_eq!(color5, group.atlases[0].atlas.get_texture()[31][0]);
         assert_eq!(TextureAtlasPosition {
             min_x: 31,
             min_y: 0,
@@ -1099,7 +1101,7 @@ mod tests {
         }
         assert_eq!(1, group.textures[&id6].placements.len());
         assert_eq!(position6, group.textures[&id6].placements[0].position);
-        assert_eq!(color6, group.atlases[0].get_texture()[33][18]);
+        assert_eq!(color6, group.atlases[0].atlas.get_texture()[33][18]);
 
         // The final test is to add 1 more texture, along with 2 existing textures. Due to the first
         // 6 textures, there is no more space on atlas 1, so a new atlas will have to be created.
@@ -1115,7 +1117,7 @@ mod tests {
             assert_eq!(group.gpu_atlas_slot_for(1), placement.gpu_atlas_slot);
         }
 
-        assert_eq!(color2, group.atlases[1].get_texture()[16][0]);
+        assert_eq!(color2, group.atlases[1].atlas.get_texture()[16][0]);
         assert_eq!(TextureAtlasPosition {
             min_x: 16,
             min_y: 0,
@@ -1123,7 +1125,7 @@ mod tests {
             height: 17
         }, test_result4[0].position);
 
-        assert_eq!(color7, group.atlases[1].get_texture()[31][0]);
+        assert_eq!(color7, group.atlases[1].atlas.get_texture()[31][0]);
         assert_eq!(TextureAtlasPosition {
             min_x: 31,
             min_y: 0,
@@ -1131,7 +1133,7 @@ mod tests {
             height: 15
         }, test_result4[1].position);
 
-        assert_eq!(color4, group.atlases[1].get_texture()[0][0]);
+        assert_eq!(color4, group.atlases[1].atlas.get_texture()[0][0]);
         assert_eq!(TextureAtlasPosition {
             min_x: 0,
             min_y: 0,
@@ -1146,15 +1148,15 @@ mod tests {
             }
         }
 
-        assert_eq!(color1, group.atlases[0].get_texture()[0][18]);
-        assert_eq!(color2, group.atlases[0].get_texture()[16][0]);
-        assert_eq!(color2, group.atlases[1].get_texture()[16][0]);
-        assert_eq!(color3, group.atlases[0].get_texture()[20][18]);
-        assert_eq!(color4, group.atlases[0].get_texture()[0][0]);
-        assert_eq!(color4, group.atlases[1].get_texture()[0][0]);
-        assert_eq!(color5, group.atlases[0].get_texture()[31][0]);
-        assert_eq!(color6, group.atlases[0].get_texture()[33][18]);
-        assert_eq!(color7, group.atlases[1].get_texture()[31][0]);
+        assert_eq!(color1, group.atlases[0].atlas.get_texture()[0][18]);
+        assert_eq!(color2, group.atlases[0].atlas.get_texture()[16][0]);
+        assert_eq!(color2, group.atlases[1].atlas.get_texture()[16][0]);
+        assert_eq!(color3, group.atlases[0].atlas.get_texture()[20][18]);
+        assert_eq!(color4, group.atlases[0].atlas.get_texture()[0][0]);
+        assert_eq!(color4, group.atlases[1].atlas.get_texture()[0][0]);
+        assert_eq!(color5, group.atlases[0].atlas.get_texture()[31][0]);
+        assert_eq!(color6, group.atlases[0].atlas.get_texture()[33][18]);
+        assert_eq!(color7, group.atlases[1].atlas.get_texture()[31][0]);
 
         assert_eq!(1, group.textures[&id1].placements.len());
         assert_eq!(2, group.textures[&id2].placements.len());
