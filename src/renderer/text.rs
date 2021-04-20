@@ -79,6 +79,7 @@ impl InternalTextRenderer {
         Ok(self.draw_text_model(text, font, position, renderer))
     }
 
+    // TODO Write unit tests for this method
     fn create_text_model(
         &mut self,
         #[cfg(feature = "golem_rendering")]
@@ -227,6 +228,7 @@ impl InternalTextRenderer {
         ShaderProgram::new(golem, description)
     }
 
+    // TODO Write unit tests for this method
     fn compute_text_position(
         &self, model: &TextModel, position: TextDrawPosition, viewport: RenderRegion
     ) -> (UniformTextDrawPosition, DrawnTextPosition) {
@@ -323,7 +325,6 @@ impl InternalTextRenderer {
                     shader.set_uniform("textureSampler", UniformValue::Int(1))?;
 
                     for fragment in &model.fragments {
-                        // TODO Bind its atlas texture
                         let gpu_texture = atlas_group.get_gpu_texture::<GolemError, _>(fragment.atlas_index, |texture| {
                             let mut golem_texture = Texture::new(renderer.get_context())?;
                             golem_texture.set_image(
@@ -412,6 +413,7 @@ type TextRenderError = golem::GolemError;
 #[cfg(not(feature = "golem_rendering"))]
 type TextRenderError = ();
 
+// TODO Refactor this into a logical part and a golem part, and unit test the logical part
 #[cfg(feature = "golem_rendering")]
 fn create_text_model_fragments(
     ctx: &golem::Context,
@@ -518,24 +520,6 @@ impl TextModel {
         }
 
         true
-    }
-
-    #[cfg(feature = "golem_rendering")]
-    fn create_element_buffer(&self, ctx: &golem::Context) -> Result<golem::ElementBuffer, golem::GolemError> {
-        let mut element_data = Vec::with_capacity(6 * self.vertices.len());
-        for index in 0 .. self.vertices.len() {
-            let vertex_offset = 4 * index as u32;
-            element_data.push(vertex_offset);
-            element_data.push(vertex_offset + 1);
-            element_data.push(vertex_offset + 2);
-            element_data.push(vertex_offset + 2);
-            element_data.push(vertex_offset + 3);
-            element_data.push(vertex_offset);
-        }
-
-        let mut element_buffer = golem::ElementBuffer::new(ctx)?;
-        element_buffer.set_data(&element_data);
-        Ok(element_buffer)
     }
 }
 
