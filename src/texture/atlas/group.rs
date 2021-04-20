@@ -166,7 +166,7 @@ impl<GpuTexture> TextureAtlasGroup<GpuTexture> {
             max_gpu_atlas_slot,
 
             textures: HashMap::new(),
-            atlases: Vec::with_capacity(max_num_cpu_atlases as usize),
+            atlases: Vec::new(),
 
             next_texture_id: 0,
             current_time: 0
@@ -1171,5 +1171,70 @@ mod tests {
                 assert!(placement.is_still_valid());
             }
         }
+    }
+
+    #[test]
+    fn test_unload_gpu_texture_after_edit() {
+
+        let mut group = TextureAtlasGroup::new(
+            10, 10, 2, 2, 2, 2
+        );
+
+        let test_color = Color::rgb(0, 0, 0);
+        let texture1 = Texture::new(10, 5, test_color);
+        let texture2 = Texture::new(10, 5, test_color);
+
+        let id1 = group.add_texture(texture1).unwrap();
+        let id2 = group.add_texture(texture2).unwrap();
+
+        group.place_textures(&[id1]);
+
+        group.get_gpu_texture::<(), _>(0, |_texture| Ok(())).unwrap();
+        assert!(group.atlases[0].gpu_texture.is_some());
+
+        group.place_textures(&[id2]);
+        assert!(group.atlases[0].gpu_texture.is_none());
+    }
+
+    #[test]
+    fn test_unload_gpu_texture_lru() {
+        let test_color = Color::rgb(0, 0, 0);
+
+        let texture1 = Texture::new(10, 10, test_color);
+        let texture2 = Texture::new(10, 10, test_color);
+        let texture3 = Texture::new(10, 10, test_color);
+
+        let mut group = super::TextureAtlasGroup::new(
+            10, 10, 10, 2, 1, 2
+        );
+
+        let id1 = group.add_texture(texture1).unwrap();
+        let id2 = group.add_texture(texture2).unwrap();
+        let id3 = group.add_texture(texture3).unwrap();
+
+        group.place_textures(&[id1, id2, id3]);
+        assert_eq!(3, group.atlases.len());
+
+        group.get_gpu_texture::<(), _>(1, |_texture| Ok(1)).unwrap();
+        assert!(group.atlases[0].gpu_texture.is_none());
+        assert_eq!(1, group.atlases[1].gpu_texture.unwrap().0);
+        assert!(group.atlases[2].gpu_texture.is_none());
+
+        group.get_gpu_texture::<(), _>(0, |_texture| Ok(0)).unwrap();
+        assert_eq!(0, group.atlases[0].gpu_texture.unwrap().0);
+        assert_eq!(1, group.atlases[1].gpu_texture.unwrap().0);
+        assert!(group.atlases[2].gpu_texture.is_none());
+
+        // max_num_gpu_atlases is 2, so it will have to drop the oldest one (the second atlas)
+        group.get_gpu_texture::<(), _>(2, |_texture| Ok(2)).unwrap();
+        assert_eq!(0, group.atlases[0].gpu_texture.unwrap().0);
+        assert!(group.atlases[1].gpu_texture.is_none());
+        assert_eq!(2, group.atlases[2].gpu_texture.unwrap().0);
+
+        // Now it should drop the first one
+        group.get_gpu_texture::<(), _>(1, |_texture| Ok(3)).unwrap();
+        assert!(group.atlases[0].gpu_texture.is_none());
+        assert_eq!(3, group.atlases[1].gpu_texture.unwrap().0);
+        assert_eq!(2, group.atlases[2].gpu_texture.unwrap().0);
     }
 }
