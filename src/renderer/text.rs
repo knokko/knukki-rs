@@ -170,7 +170,7 @@ impl InternalTextRenderer {
             let placement = placements[index].clone();
             let position = grapheme_positions[index];
 
-            text_vertices.push(TextVertex {
+            text_vertices.push(TextQuad {
                 min_x: position.min_x,
                 min_y: position.min_y,
                 max_x: position.max_x,
@@ -179,15 +179,22 @@ impl InternalTextRenderer {
             });
         }
 
+        let fragment_builders = create_text_model_fragments(&text_vertices, width, height);
+        let mut fragments = Vec::with_capacity(fragment_builders.len());
+        for fragment_builder in fragment_builders {
+            fragments.push(fragment_builder.build(
+                #[cfg(feature = "golem_rendering")]
+                ctx
+            )?);
+        }
+
         Ok(TextModel {
             font,
             width,
             height,
 
-            #[cfg(feature = "golem_rendering")]
-            fragments: create_text_model_fragments(ctx, &text_vertices, width, height)?,
-
-            vertices: text_vertices,
+            fragments,
+            quads: text_vertices,
         })
     }
 
@@ -389,7 +396,7 @@ pub enum HorizontalTextAlignment {
     Right
 }
 
-struct TextVertex {
+struct TextQuad {
     min_x: f32,
     min_y: f32,
     max_x: f32,
@@ -398,12 +405,11 @@ struct TextVertex {
 }
 
 struct TextModel {
-    vertices: Vec<TextVertex>,
+    quads: Vec<TextQuad>,
     font: FontHandle,
     width: u32,
     height: u32,
 
-    #[cfg(feature = "golem_rendering")]
     fragments: Vec<TextModelFragment>,
 }
 
@@ -413,27 +419,24 @@ type TextRenderError = golem::GolemError;
 #[cfg(not(feature = "golem_rendering"))]
 type TextRenderError = ();
 
-// TODO Refactor this into a logical part and a golem part, and unit test the logical part
-#[cfg(feature = "golem_rendering")]
 fn create_text_model_fragments(
-    ctx: &golem::Context,
-    vertices: &[TextVertex],
+    quads: &[TextQuad],
     width: u32,
     height: u32
-) -> Result<Vec<TextModelFragment>, TextRenderError> {
+) -> Vec<TextModelFragmentBuilder> {
     let mut atlas_indices = HashSet::new();
-    for vertex in vertices {
+    for vertex in quads {
         atlas_indices.insert(vertex.placement.get_cpu_atlas_index());
     }
 
-    let result_fragments: Vec<Result<_, TextRenderError>> = atlas_indices.into_iter().map(|atlas_index| {
+    atlas_indices.into_iter().map(|atlas_index| {
 
-        let num_vertices = vertices.iter().filter(
+        let num_vertices = quads.iter().filter(
             |vertex| vertex.placement.get_cpu_atlas_index() == atlas_index
         ).count();
 
-        let mut vertex_data = Vec::with_capacity(4 * 4 * num_vertices);
-        for vertex in vertices.iter().filter(
+        let mut vertex_vec = Vec::with_capacity(4 * 4 * num_vertices);
+        for vertex in quads.iter().filter(
             |vertex| vertex.placement.get_cpu_atlas_index() == atlas_index
         ) {
 
@@ -451,54 +454,65 @@ fn create_text_model_fragments(
             ];
 
             for (pos_x, pos_y, tex_x, tex_y) in &coordinates {
-                vertex_data.push(*pos_x);
-                vertex_data.push(*pos_y);
-                vertex_data.push(*tex_x);
-                vertex_data.push(*tex_y);
+                vertex_vec.push(*pos_x);
+                vertex_vec.push(*pos_y);
+                vertex_vec.push(*tex_x);
+                vertex_vec.push(*tex_y);
             }
         }
 
-        // TODO This could be optimized by only creating the element buffer for the largest group,
-        // and using only the first N of its elements during drawing. That having said, having more
-        // than 1 fragment should be uncommon anyway.
-        let mut vertex_buffer = golem::VertexBuffer::new(ctx)?;
-        vertex_buffer.set_data(&vertex_data);
-
-        let mut element_data = Vec::with_capacity(6 * num_vertices);
+        let mut elements_vec = Vec::with_capacity(6 * num_vertices);
         for index in 0 .. num_vertices {
             let vertex_offset = 4 * index as u32;
-            element_data.push(vertex_offset);
-            element_data.push(vertex_offset + 1);
-            element_data.push(vertex_offset + 2);
-            element_data.push(vertex_offset + 2);
-            element_data.push(vertex_offset + 3);
-            element_data.push(vertex_offset);
+            elements_vec.push(vertex_offset);
+            elements_vec.push(vertex_offset + 1);
+            elements_vec.push(vertex_offset + 2);
+            elements_vec.push(vertex_offset + 2);
+            elements_vec.push(vertex_offset + 3);
+            elements_vec.push(vertex_offset);
         }
+
+        TextModelFragmentBuilder {
+            atlas_index,
+            vertex_vec,
+            elements_vec,
+        }
+    }).collect()
+}
+
+struct TextModelFragmentBuilder {
+    atlas_index: u16,
+
+    vertex_vec: Vec<f32>,
+    elements_vec: Vec<u32>,
+}
+
+impl TextModelFragmentBuilder {
+
+    #[cfg(feature = "golem_rendering")]
+    fn build(
+        self,
+        ctx: &golem::Context,
+    ) -> Result<TextModelFragment, TextRenderError> {
+        let mut vertex_buffer = golem::VertexBuffer::new(ctx)?;
+        vertex_buffer.set_data(&self.vertex_vec);
 
         let mut element_buffer = golem::ElementBuffer::new(ctx)?;
-        element_buffer.set_data(&element_data);
+        element_buffer.set_data(&self.elements_vec);
 
         Ok(TextModelFragment {
-            atlas_index,
-            vertex_buffer,
-            element_buffer,
+            atlas_index: self.atlas_index,
+
+            vertex_buffer, element_buffer
         })
-    }).collect();
-
-    let has_errors = result_fragments.iter().any(|result_fragment| result_fragment.is_err());
-    if has_errors {
-        for result_fragment in result_fragments {
-            if let Err(the_error) = result_fragment {
-                return Err(the_error);
-            }
-        }
-
-        unreachable!()
     }
 
-    Ok(result_fragments.into_iter().map(
-        |result_fragment| result_fragment.unwrap()
-    ).collect())
+    #[cfg(not(feature = "golem_rendering"))]
+    fn build(self) -> Result<TextModelFragment, TextRenderError> {
+        Ok(TextModelFragment {
+            atlas_index: self.atlas_index
+        })
+    }
 }
 
 struct TextModelFragment {
@@ -513,7 +527,7 @@ struct TextModelFragment {
 
 impl TextModel {
     fn is_still_valid(&self) -> bool {
-        for vertex in &self.vertices {
+        for vertex in &self.quads {
             if !vertex.placement.is_still_valid() {
                 return false;
             }
@@ -552,4 +566,146 @@ struct GraphemeTextureEntry {
     texture_id: Option<GroupTextureID>,
     width: u32,
     offset_y: u32
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    use std::cell::Cell;
+    use std::rc::Rc;
+
+    #[test]
+    fn test_create_text_model_fragments() {
+        fn text_quad(
+            min_x: f32, min_y: f32, max_x: f32, max_y: f32,
+            tex_x: u32, tex_y: u32, tex_width: u32, tex_height: u32,
+            cpu_atlas_index: u16
+        ) -> TextQuad {
+            TextQuad {
+                min_x, min_y, max_x, max_y,
+                placement: GroupTexturePlacement::new(
+                    cpu_atlas_index,
+                    2,
+                    TextureAtlasPosition {
+                        min_x: tex_x,
+                        min_y: tex_y,
+                        width: tex_width,
+                        height: tex_height
+                    },
+                    Rc::new(Cell::new(true))
+                )
+            }
+        }
+
+        let text_quads = vec![
+            text_quad(
+                2.0, 41.0, 20.0, 57.0,
+                0, 0, 25, 25, 2
+            ),
+            text_quad(
+                70.0, 0.0, 80.0, 20.0,
+                0, 0, 25, 25, 4
+            ),
+            text_quad(
+                32.0, 19.0, 40.0, 23.0,
+                75, 10, 25, 40, 5
+            ),
+            text_quad(
+                10.0, 20.0, 30.0, 40.0,
+                10, 20, 30, 20, 2
+            )
+        ];
+
+        let mut result = create_text_model_fragments(
+            &text_quads, 100, 50
+        );
+
+        assert_eq!(3, result.len());
+        result.sort_by_key(|builder| builder.atlas_index);
+
+        // The model for atlas index 2 should have 2 text quads
+        assert_eq!(8 * 4, result[0].vertex_vec.len());
+        assert_eq!(12, result[0].elements_vec.len());
+
+        // The model for atlas index 5 and 6 should have 1 text quad
+        assert_eq!(4 * 4, result[1].vertex_vec.len());
+        assert_eq!(6, result[1].elements_vec.len());
+
+        assert_eq!(4 * 4, result[2].vertex_vec.len());
+        assert_eq!(6, result[2].elements_vec.len());
+
+        // The element buffers are simple
+        assert_eq!(vec![0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4], result[0].elements_vec);
+        assert_eq!(vec![0, 1, 2, 2, 3, 0], result[1].elements_vec);
+        assert_eq!(vec![0, 1, 2, 2, 3, 0], result[2].elements_vec);
+
+        let tex_min_x1 = 0.005;
+        let tex_min_y1 = 0.01;
+        let tex_max_x1 = 0.245;
+        let tex_max_y1 = 0.49;
+
+        let tex_min_x2 = 0.755;
+        let tex_min_y2 = 0.21;
+        let tex_max_x2 = 0.995;
+        let tex_max_y2 = 0.99;
+
+        let tex_min_x3 = 0.105;
+        let tex_min_y3 = 0.41;
+        let tex_max_x3 = 0.395;
+        let tex_max_y3 = 0.79;
+
+        fn assert_nearly_eq(expected: &[f32], actual: &[f32]) {
+            assert_eq!(expected.len(), actual.len());
+            for index in 0 .. expected.len() {
+                assert!((expected[index] - actual[index]).abs() < 0.001);
+            }
+        }
+
+        assert_nearly_eq(&[
+            2.0, 41.0, tex_min_x1, tex_min_y1,
+            20.0, 41.0, tex_max_x1, tex_min_y1,
+            20.0, 57.0, tex_max_x1, tex_max_y1,
+            2.0, 57.0, tex_min_x1, tex_max_y1,
+
+            10.0, 20.0, tex_min_x3, tex_min_y3,
+            30.0, 20.0, tex_max_x3, tex_min_y3,
+            30.0, 40.0, tex_max_x3, tex_max_y3,
+            10.0, 40.0, tex_min_x3, tex_max_y3
+        ], &result[0].vertex_vec);
+
+        assert_nearly_eq(&[
+            70.0, 0.0, tex_min_x1, tex_min_y1,
+            80.0, 0.0, tex_max_x1, tex_min_y1,
+            80.0, 20.0, tex_max_x1, tex_max_y1,
+            70.0, 20.0, tex_min_x1, tex_max_y1
+        ], &result[1].vertex_vec);
+
+        assert_nearly_eq(&[
+            32.0, 19.0, tex_min_x2, tex_min_y2,
+            40.0, 19.0, tex_max_x2, tex_min_y2,
+            40.0, 23.0, tex_max_x2, tex_max_y2,
+            32.0, 23.0, tex_min_x2, tex_max_y2
+        ], &result[2].vertex_vec);
+
+        let text_quads = vec![
+            text_quad(
+                2.0, 41.0, 20.0, 57.0,
+                0, 0, 25, 25, 2
+            ),
+            text_quad(
+                70.0, 0.0, 80.0, 20.0,
+                0, 0, 25, 25, 4
+            ),
+            text_quad(
+                32.0, 19.0, 40.0, 23.0,
+                75, 10, 25, 40, 5
+            ),
+            text_quad(
+                10.0, 20.0, 30.0, 40.0,
+                10, 20, 30, 20, 2
+            )
+        ];
+    }
 }

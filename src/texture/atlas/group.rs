@@ -30,6 +30,14 @@ pub struct GroupTexturePlacement {
 }
 
 impl GroupTexturePlacement {
+    #[cfg(test)]
+    pub(crate) fn new(
+        cpu_atlas_index: u16, gpu_atlas_slot: u8,
+        position: TextureAtlasPosition, still_valid: Rc<Cell<bool>>
+    ) -> Self {
+        Self { cpu_atlas_index, gpu_atlas_slot, position, still_valid }
+    }
+
     /// Gets the index/id of the texture atlas in a `TextureAtlasGroup` on which the corresponding
     /// texture is stored.
     pub fn get_cpu_atlas_index(&self) -> u16 {
