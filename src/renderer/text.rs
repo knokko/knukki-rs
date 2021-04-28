@@ -235,65 +235,7 @@ impl InternalTextRenderer {
         ShaderProgram::new(golem, description)
     }
 
-    // TODO Write unit tests for this method
-    fn compute_text_position(
-        &self, model: &TextModel, position: TextDrawPosition, viewport: RenderRegion
-    ) -> (UniformTextDrawPosition, DrawnTextPosition) {
 
-        let local_max_width = position.max_x - position.min_x;
-        let local_max_height = position.max_y - position.min_y;
-
-        // Exceeding the max scale would cause the text to be rendered outside the given bounds
-        let max_scale_x = local_max_width / model.width as f32;
-        let max_scale_y = local_max_height / model.height as f32;
-
-        // The adapted scales take the viewport into account
-        let adapted_scale_x = max_scale_y * viewport.get_aspect_ratio();
-        let adapted_scale_y = max_scale_x / viewport.get_aspect_ratio();
-
-        // The width of the text should be equal to the max width or the height of the text should
-        // be equal to the max height (or both if the aspect ratio is perfect)
-        let (scale_x, scale_y) = if adapted_scale_x <= max_scale_x {
-            (adapted_scale_x, max_scale_y)
-        } else {
-            (max_scale_x, adapted_scale_y)
-        };
-
-        // The actual width and height that the drawn text will occupy
-        let draw_width = scale_x * model.width as f32;
-        let draw_height = scale_y * model.height as f32;
-
-        let margin_x = local_max_width - draw_width;
-        let margin_y = local_max_height - draw_height;
-
-        let offset_x = match position.horizontal_alignment {
-            Left => position.min_x,
-            Center => position.min_x + margin_x / 2.0,
-            Right => position.max_x - draw_width
-        };
-
-        let offset_y = match position.vertical_alignment {
-            Bottom=> position.min_y,
-            Center => position.min_y + margin_y / 2.0,
-            Right => position.max_y - draw_height
-        };
-
-        let uniform_position = UniformTextDrawPosition {
-            offset_x,
-            offset_y,
-            scale_x,
-            scale_y
-        };
-
-        let drawn_position = DrawnTextPosition {
-            min_x: offset_x,
-            min_y: offset_y,
-            max_x: offset_x + draw_width,
-            max_y: offset_y + draw_height,
-        };
-
-        (uniform_position, drawn_position)
-    }
 
     fn draw_text_model(
         &mut self, text: &str, font: FontHandle, position: TextDrawPosition, renderer: &Renderer
@@ -301,7 +243,10 @@ impl InternalTextRenderer {
         let model = &self.fonts[&font].string_models[text];
         debug_assert!(model.is_still_valid());
 
-        let (uniform_position, drawn_position) = self.compute_text_position(model, position, renderer.get_viewport());
+        let (uniform_position, drawn_position) = compute_text_position(
+            model.width as f32, model.height as f32,
+            position, renderer.get_viewport()
+        );
 
         let mut my_fonts = &mut self.fonts;
         let font_entry = my_fonts.get_mut(&font).expect("Valid model font handle");
@@ -359,6 +304,7 @@ impl InternalTextRenderer {
     }
 }
 
+#[derive(Debug)]
 struct UniformTextDrawPosition {
     offset_x: f32,
     offset_y: f32,
@@ -380,6 +326,65 @@ pub struct TextDrawPosition {
     pub max_y: f32,
     pub horizontal_alignment: HorizontalTextAlignment,
     pub vertical_alignment: VerticalTextAlignment,
+}
+
+fn compute_text_position(
+    model_width: f32, model_height: f32, position: TextDrawPosition, viewport: RenderRegion
+) -> (UniformTextDrawPosition, DrawnTextPosition) {
+
+    let local_max_width = position.max_x - position.min_x;
+    let local_max_height = position.max_y - position.min_y;
+
+    // Exceeding the max scale would cause the text to be rendered outside the given bounds
+    let max_scale_x = local_max_width / model_width;
+    let max_scale_y = local_max_height / model_height;
+
+    // The adapted scales take the viewport into account
+    let adapted_scale_x = max_scale_y / viewport.get_aspect_ratio();
+    let adapted_scale_y = max_scale_x * viewport.get_aspect_ratio();
+
+    // The width of the text should be equal to the max width or the height of the text should
+    // be equal to the max height (or both if the aspect ratio is perfect)
+    let (scale_x, scale_y) = if adapted_scale_x <= max_scale_x {
+        (adapted_scale_x, max_scale_y)
+    } else {
+        (max_scale_x, adapted_scale_y)
+    };
+
+    // The actual width and height that the drawn text will occupy
+    let draw_width = scale_x * model_width;
+    let draw_height = scale_y * model_height;
+
+    let margin_x = local_max_width - draw_width;
+    let margin_y = local_max_height - draw_height;
+
+    let offset_x = match position.horizontal_alignment {
+        HorizontalTextAlignment::Left => position.min_x,
+        HorizontalTextAlignment::Center => position.min_x + margin_x / 2.0,
+        HorizontalTextAlignment::Right => position.max_x - draw_width
+    };
+
+    let offset_y = match position.vertical_alignment {
+        VerticalTextAlignment::Bottom => position.min_y,
+        VerticalTextAlignment::Center => position.min_y + margin_y / 2.0,
+        VerticalTextAlignment::Top => position.max_y - draw_height
+    };
+
+    let uniform_position = UniformTextDrawPosition {
+        offset_x,
+        offset_y,
+        scale_x,
+        scale_y
+    };
+
+    let drawn_position = DrawnTextPosition {
+        min_x: offset_x,
+        min_y: offset_y,
+        max_x: offset_x + draw_width,
+        max_y: offset_y + draw_height,
+    };
+
+    (uniform_position, drawn_position)
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -707,5 +712,117 @@ mod tests {
                 10, 20, 30, 20, 2
             )
         ];
+    }
+
+    fn assert_uniform_nearly_equal(expected: UniformTextDrawPosition, actual: UniformTextDrawPosition) {
+        let threshold = 0.0001;
+        assert!((expected.offset_x - actual.offset_x).abs() < threshold);
+        assert!((expected.offset_y - actual.offset_y).abs() < threshold);
+        assert!((expected.scale_x - actual.scale_x).abs() < threshold);
+        assert!((expected.scale_y - actual.scale_y).abs() < threshold);
+    }
+
+    fn assert_drawn_nearly_equal(expected: DrawnTextPosition, actual: DrawnTextPosition) {
+        let threshold = 0.0001;
+        assert!((expected.min_x - actual.min_x).abs() < threshold);
+        assert!((expected.min_y - actual.min_y).abs() < threshold);
+        assert!((expected.max_x - actual.max_x).abs() < threshold);
+        assert!((expected.max_y - actual.max_y).abs() < threshold);
+    }
+
+    #[test]
+    fn test_compute_text_position_bottom_left() {
+        let draw_position = TextDrawPosition {
+            min_x: -0.5,
+            min_y: -0.75,
+            max_x: 0.75,
+            max_y: 1.0,
+            horizontal_alignment: HorizontalTextAlignment::Left,
+            vertical_alignment: VerticalTextAlignment::Bottom
+        };
+        let viewport = RenderRegion::with_size(12, 13, 200, 400);
+        let model_width = 15.0;
+        let model_height = 10.0;
+
+        let (uniform_position, drawn_position) = compute_text_position(
+            model_width, model_height, draw_position, viewport
+        );
+
+        assert_uniform_nearly_equal(UniformTextDrawPosition {
+            offset_x: -0.5,
+            offset_y: -0.75,
+            scale_x: 0.08333333,
+            scale_y: 0.04166667,
+        }, uniform_position);
+        assert_drawn_nearly_equal(DrawnTextPosition {
+            min_x: -0.5,
+            min_y: -0.75,
+            max_x: 0.75,
+            max_y: -0.333333
+        }, drawn_position);
+    }
+
+    #[test]
+    fn test_compute_text_position_centered() {
+        let draw_position = TextDrawPosition {
+            min_x: -0.5,
+            min_y: -0.75,
+            max_x: 0.75,
+            max_y: 1.0,
+            horizontal_alignment: HorizontalTextAlignment::Center,
+            vertical_alignment: VerticalTextAlignment::Center
+        };
+        let viewport = RenderRegion::with_size(12, 13, 400, 100);
+        let model_width = 15.0;
+        let model_height = 10.0;
+
+        let (uniform_position, drawn_position) = compute_text_position(
+            model_width, model_height, draw_position, viewport
+        );
+
+        assert_uniform_nearly_equal(UniformTextDrawPosition {
+            offset_x: -0.203125,
+            offset_y: -0.75,
+            scale_x: 0.04375,
+            scale_y: 0.175,
+        }, uniform_position);
+        assert_drawn_nearly_equal(DrawnTextPosition {
+            min_x: -0.203125,
+            min_y: -0.75,
+            max_x: 0.453125,
+            max_y: 1.0
+        }, drawn_position);
+    }
+
+    #[test]
+    fn test_compute_text_position_top_right() {
+        let draw_position = TextDrawPosition {
+            min_x: -0.5,
+            min_y: -0.75,
+            max_x: 0.75,
+            max_y: 1.0,
+            horizontal_alignment: HorizontalTextAlignment::Right,
+            vertical_alignment: VerticalTextAlignment::Top
+        };
+        let viewport = RenderRegion::with_size(12, 13, 400, 400);
+        let model_width = 15.0;
+        let model_height = 25.0;
+
+        let (uniform_position, drawn_position) = compute_text_position(
+            model_width, model_height, draw_position, viewport
+        );
+
+        assert_uniform_nearly_equal(UniformTextDrawPosition {
+            offset_x: -0.3,
+            offset_y: -0.75,
+            scale_x: 0.07,
+            scale_y: 0.07,
+        }, uniform_position);
+        assert_drawn_nearly_equal(DrawnTextPosition {
+            min_x: -0.3,
+            min_y: -0.75,
+            max_x: 0.75,
+            max_y: 1.0
+        }, drawn_position);
     }
 }
