@@ -44,11 +44,17 @@ impl TextRenderer {
 
 struct InternalTextRenderer {
     fonts: HashMap<FontHandle, FontEntry>,
+    #[cfg(feature = "golem_rendering")]
+    texture_unit: std::num::NonZeroU32
 }
 
 impl InternalTextRenderer {
     pub fn new() -> Self {
-        Self { fonts: HashMap::new() }
+        Self {
+            fonts: HashMap::new(),
+            #[cfg(feature = "golem_rendering")]
+            texture_unit: std::num::NonZeroU32::new(1).unwrap()
+        }
     }
 
     pub fn register_font(&mut self, font: Box<dyn Font>) -> FontHandle {
@@ -266,6 +272,7 @@ impl InternalTextRenderer {
             {
                 use golem::*;
 
+                let texture_unit = self.texture_unit;
                 let my_fonts = &mut self.fonts;
                 let font_entry = my_fonts.get_mut(&font).expect("Valid model font handle");
                 let atlas_group = &mut font_entry.atlas_group;
@@ -286,8 +293,7 @@ impl InternalTextRenderer {
                     shader.set_uniform("textColor", UniformValue::Vector3([
                         1.0, 1.0, 0.0
                     ]))?;
-                    // TODO Perhaps, I shouldn't hardcode 1 like this
-                    shader.set_uniform("textureSampler", UniformValue::Int(1))?;
+                    shader.set_uniform("textureSampler", UniformValue::Int(texture_unit.get() as i32))?;
 
                     for fragment in &model.fragments {
                         let gpu_texture = atlas_group.get_gpu_texture::<GolemError, _>(fragment.atlas_index, |texture| {
@@ -300,7 +306,7 @@ impl InternalTextRenderer {
                             );
                             Ok(golem_texture)
                         })?;
-                        gpu_texture.set_active(std::num::NonZeroU32::new(1).unwrap()); // TODO Perhaps don't hardcode 1
+                        gpu_texture.set_active(texture_unit);
                         unsafe {
                             shader.draw(
                                 &fragment.vertex_buffer,
