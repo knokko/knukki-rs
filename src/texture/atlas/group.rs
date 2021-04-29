@@ -181,6 +181,16 @@ impl<GpuTexture> TextureAtlasGroup<GpuTexture> {
         }
     }
 
+    /// Gets the width of the texture atlases of this group
+    pub fn get_width(&self) -> u32 {
+        self.atlas_width
+    }
+
+    /// Gets the height of the texture atlases of this group
+    pub fn get_height(&self) -> u32 {
+        self.atlas_height
+    }
+
     /// Adds the given texture to this group and returns its `GroupTextureID`. Note that this
     /// method only stores the texture; it doesn't put it on any atlas yet. The returned id is
     /// needed for the `place_textures` method.
@@ -206,10 +216,21 @@ impl<GpuTexture> TextureAtlasGroup<GpuTexture> {
         todo!() // Also mark textures as removed, to improve debugging
     }
 
+    /// Gets a reference to the texture with the given *id*
     pub fn get_texture(&self, id: GroupTextureID) -> &Texture {
         &self.textures[&id].texture
     }
 
+    /// Gets a reference to a texture atlas of this `TextureAtlasGroup` (or panics if *index* is
+    /// out of bounds).
+    pub fn get_big_texture(&self, index: usize) -> &Texture {
+        self.atlases[index].atlas.get_texture()
+    }
+
+    /// Ensures that the texture atlas with the given *atlas_index* is present on the GPU and
+    /// returns a GPU handle to it. If needed, this method will remove an existing texture atlas
+    /// from GPU memory. If the texture atlas has been modified since the last render, it will be
+    /// updated on the GPU.
     pub fn get_gpu_texture<GpuError, F: FnOnce(&Texture) -> Result<GpuTexture, GpuError>>(
         &mut self, atlas_index: u16, load_texture: F
     ) -> Result<&GpuTexture, GpuError> {

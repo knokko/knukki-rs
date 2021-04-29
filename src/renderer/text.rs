@@ -10,17 +10,25 @@ use std::collections::{
 use std::num::NonZeroU32;
 
 pub struct TextRenderer {
-    internal: RefCell<InternalTextRenderer>
+    internal: RefCell<InternalTextRenderer>,
+    default_font_handle: FontHandle,
 }
 
 impl TextRenderer {
     pub fn new() -> Self {
-        Self { internal: RefCell::new(InternalTextRenderer::new()) }
+        let mut internal = InternalTextRenderer::new();
+        let default_font_handle = internal.register_font(Box::new(create_default_font()));
+
+        Self { internal: RefCell::new(internal), default_font_handle }
     }
 
     pub fn register_font(&mut self, font: Box<dyn Font>) -> FontHandle {
         let mut internal = self.internal.borrow_mut();
         internal.register_font(font)
+    }
+
+    pub fn get_default_font(&self) -> FontHandle {
+        self.default_font_handle
     }
 
     pub fn draw_text(
@@ -76,8 +84,11 @@ impl InternalTextRenderer {
             self.fonts.get_mut(&font).expect("Font handle is valid").string_models.insert(text.to_string(), text_model);
         }
 
-        Ok(self.draw_text_model(text, font, position, renderer))
+        self.draw_text_model(text, font, position, renderer)
     }
+
+    // This seems to be a reasonable value. Perhaps, I could improve it later
+    const POINT_SIZE: f32 = 100.0;
 
     // TODO Write unit tests for this method
     fn create_text_model(
@@ -90,15 +101,15 @@ impl InternalTextRenderer {
 
         let entry = self.fonts.get_mut(&font).expect("font handle is invalid");
 
-        // This seems to be a reasonable value. Perhaps, I could improve it later
-        let point_size = 100.0;
+        let point_size = Self::POINT_SIZE;
 
-        #[derive(Copy, Clone)]
+        #[derive(Copy, Clone, Debug)]
         struct GraphemePosition {
             min_x: f32,
             min_y: f32,
             max_x: f32,
             max_y: f32,
+            first_grapheme: char,
             texture_id: GroupTextureID
         }
 
@@ -144,6 +155,7 @@ impl InternalTextRenderer {
                     min_y: group_grapheme_texture.offset_y as f32,
                     max_x: (offset_x + group_grapheme_texture.width) as f32,
                     max_y: (group_grapheme_texture.offset_y + group_grapheme_texture.height) as f32,
+                    first_grapheme: grapheme.chars().next().expect("Grapheme has at least 1 char"),
                     texture_id: group_grapheme_texture.texture_id
                 };
                 offset_x += group_grapheme_texture.width;
@@ -157,7 +169,7 @@ impl InternalTextRenderer {
         let width = offset_x;
 
         // TODO Improve this for multi-line models
-        let height = (entry.font.get_max_ascent(point_size) + entry.font.get_max_descent(point_size).ceil()) as u32;
+        let height = (entry.font.get_max_ascent(point_size) + entry.font.get_max_descent(point_size)).ceil() as u32;
 
         let group_texture_ids: Vec<_> = grapheme_positions.iter().map(
             |grapheme_position| grapheme_position.texture_id
@@ -179,7 +191,11 @@ impl InternalTextRenderer {
             });
         }
 
-        let fragment_builders = create_text_model_fragments(&text_vertices, width, height);
+        let fragment_builders = create_text_model_fragments(
+            &text_vertices,
+            entry.atlas_group.get_width(),
+            entry.atlas_group.get_height()
+        );
         let mut fragments = Vec::with_capacity(fragment_builders.len());
         for fragment_builder in fragment_builders {
             fragments.push(fragment_builder.build(
@@ -222,11 +238,10 @@ impl InternalTextRenderer {
             void main() {
                 gl_Position = vec4(offset + scale * position, 0.0, 1.0);
                 passTextureCoordinates = textureCoordinates;
-                passTextureIndex = textureIndex;
             }",
             fragment_shader: "
             void main() {
-                float intensity = texture(textureSampler, passTextureCoordinates).r;
+                float intensity = 0.99 * texture(textureSampler, vec2(passTextureCoordinates.x, passTextureCoordinates.y)).r + 0.01 * passTextureCoordinates.x;
                 vec3 color3d = intensity * textColor + (1.0 - intensity) * backgroundColor;
                 gl_FragColor = vec4(color3d, 1.0);
             }",
@@ -239,7 +254,7 @@ impl InternalTextRenderer {
 
     fn draw_text_model(
         &mut self, text: &str, font: FontHandle, position: TextDrawPosition, renderer: &Renderer
-    ) -> DrawnTextPosition {
+    ) -> Result<DrawnTextPosition, TextRenderError> {
         let model = &self.fonts[&font].string_models[text];
         debug_assert!(model.is_still_valid());
 
@@ -256,8 +271,6 @@ impl InternalTextRenderer {
         #[cfg(feature = "golem_rendering")]
             {
                 use golem::*;
-
-
 
                 let shader_id = ShaderId::from_strs("knukki", "DefaultTextShader");
                 renderer.use_cached_shader(&shader_id, Self::create_default_shader, |shader| {
@@ -292,15 +305,15 @@ impl InternalTextRenderer {
                             shader.draw(
                                 &fragment.vertex_buffer,
                                 &fragment.element_buffer,
-                                0..fragment.element_buffer.size() / 4, // TODO Test that this is correct
+                                0..fragment.element_buffer.size() / 8,
                                 GeometryMode::Triangles,
                             )?;
                         }
                     }
                     Ok(())
-                });
+                })?;
             }
-        drawn_position
+        Ok(drawn_position)
     }
 }
 
@@ -312,6 +325,7 @@ struct UniformTextDrawPosition {
     scale_y: f32,
 }
 
+#[derive(Copy, Clone, Debug)]
 pub struct DrawnTextPosition {
     pub min_x: f32,
     pub min_y: f32,
@@ -401,6 +415,7 @@ pub enum HorizontalTextAlignment {
     Right
 }
 
+#[derive(Debug)]
 struct TextQuad {
     min_x: f32,
     min_y: f32,
@@ -426,8 +441,8 @@ type TextRenderError = ();
 
 fn create_text_model_fragments(
     quads: &[TextQuad],
-    width: u32,
-    height: u32
+    texture_width: u32,
+    texture_height: u32
 ) -> Vec<TextModelFragmentBuilder> {
     let mut atlas_indices = HashSet::new();
     for vertex in quads {
@@ -446,10 +461,10 @@ fn create_text_model_fragments(
         ) {
 
             let atlas_pos = vertex.placement.get_position();
-            let min_tex_x = (atlas_pos.min_x as f32 + 0.5) / width as f32;
-            let min_tex_y = (atlas_pos.min_y as f32 + 0.5) / height as f32;
-            let max_tex_x = (atlas_pos.min_x as f32 + atlas_pos.width as f32 - 0.5) / width as f32;
-            let max_tex_y = (atlas_pos.min_y as f32 + atlas_pos.height as f32 - 0.5) / height as f32;
+            let min_tex_x = (atlas_pos.min_x as f32 + 0.5) / texture_width as f32;
+            let min_tex_y = (atlas_pos.min_y as f32 + 0.5) / texture_height as f32;
+            let max_tex_x = (atlas_pos.min_x as f32 + atlas_pos.width as f32 - 0.5) / texture_width as f32;
+            let max_tex_y = (atlas_pos.min_y as f32 + atlas_pos.height as f32 - 0.5) / texture_height as f32;
 
             let coordinates = [
                 (vertex.min_x, vertex.min_y, min_tex_x, min_tex_y),
@@ -485,6 +500,7 @@ fn create_text_model_fragments(
     }).collect()
 }
 
+#[derive(Debug)]
 struct TextModelFragmentBuilder {
     atlas_index: u16,
 
@@ -824,5 +840,73 @@ mod tests {
             max_x: 0.75,
             max_y: 1.0
         }, drawn_position);
+    }
+
+    #[test]
+    #[cfg(not(feature = "golem_rendering"))]
+    fn test_create_text_model_single_line() {
+        let mut text_renderer = TextRenderer::new();
+        let test_font_handle = text_renderer.register_font(Box::new(TestFont {}));
+
+        let mut actual_text_renderer = text_renderer.internal.borrow_mut();
+        let text_model = actual_text_renderer.create_text_model(test_font_handle, "a b ").unwrap();
+
+        let point_size = InternalTextRenderer::POINT_SIZE;
+        assert_eq!((3.6 * point_size) as u32, text_model.width);
+        assert_eq!((1.0 * point_size) as u32, text_model.height);
+        assert_eq!(test_font_handle, text_model.font);
+
+        assert_eq!(2, text_model.quads.len());
+        assert_eq!(0.0, text_model.quads[0].min_x);
+        assert_eq!(0.4 * point_size, text_model.quads[0].min_y);
+        assert_eq!(1.0 * point_size, text_model.quads[0].max_x);
+        assert_eq!(1.0 * point_size, text_model.quads[0].max_y);
+        assert_eq!(1.8 * point_size, text_model.quads[1].min_x);
+        assert_eq!(0.0, text_model.quads[1].min_y);
+        assert_eq!(2.8 * point_size, text_model.quads[1].max_x);
+        assert_eq!(1.0 * point_size, text_model.quads[1].max_y);
+
+        // TODO Test the texture coordinates as well
+
+        assert_eq!(1, text_model.fragments.len());
+        assert_eq!(0, text_model.fragments[0].atlas_index);
+    }
+
+    struct TestFont {}
+
+    impl Font for TestFont {
+        fn draw_grapheme(&self, grapheme: &str, point_size: f32) -> Option<CharTexture> {
+            match grapheme {
+                "a" => Some(CharTexture {
+                    texture: Texture::new(
+                        (1.0 * point_size) as u32,
+                        (0.6 * point_size) as u32,
+                        Color::rgb(100, 0, 0)
+                    ),
+                    offset_y: (0.4 * point_size) as u32
+                }),
+                "b" => Some(CharTexture {
+                    texture: Texture::new(
+                        (1.0 * point_size) as u32,
+                        (1.0 * point_size) as u32,
+                        Color::rgb(0, 100, 0)
+                    ),
+                    offset_y: 0
+                }),
+                _ => None
+            }
+        }
+
+        fn get_max_descent(&self, point_size: f32) -> f32 {
+            0.3 * point_size
+        }
+
+        fn get_max_ascent(&self, point_size: f32) -> f32 {
+            0.7 * point_size
+        }
+
+        fn get_whitespace_width(&self, point_size: f32) -> f32 {
+            point_size * 0.8
+        }
     }
 }
