@@ -96,6 +96,18 @@ impl Texture {
         self.copy_to_pixel_buffer(&mut pixel_buffer);
         pixel_buffer
     }
+
+    pub fn debug_dump(&self, file_path: &str) {
+        let file = std::fs::File::create(std::path::Path::new(file_path)).unwrap();
+        let mut w = std::io::BufWriter::new(file);
+        let mut encoder = png::Encoder::new(&mut w, self.width, self.height);
+        encoder.set_color(png::ColorType::RGBA);
+        encoder.set_depth(png::BitDepth::Eight);
+
+        let mut writer = encoder.write_header().unwrap();
+        let pixels = self.create_pixel_buffer();
+        writer.write_image_data(&pixels).unwrap();
+    }
 }
 
 impl Index<u32> for Texture {
