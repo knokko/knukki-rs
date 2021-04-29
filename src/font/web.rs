@@ -1,10 +1,8 @@
 use crate::*;
-use log::info;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{JsCast, Clamped};
 use web_sys::{window, CanvasRenderingContext2d, Document, Element, Window, HtmlCanvasElement};
-use unicode_segmentation::{Graphemes, UnicodeSegmentation};
 
 pub struct WebFont {
     buffer_canvas: HtmlCanvasElement,
