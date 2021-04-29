@@ -90,7 +90,6 @@ impl InternalTextRenderer {
     // This seems to be a reasonable value. Perhaps, I could improve it later
     const POINT_SIZE: f32 = 100.0;
 
-    // TODO Write unit tests for this method
     fn create_text_model(
         &mut self,
         #[cfg(feature = "golem_rendering")]
@@ -866,7 +865,10 @@ mod tests {
         assert_eq!(2.8 * point_size, text_model.quads[1].max_x);
         assert_eq!(1.0 * point_size, text_model.quads[1].max_y);
 
-        // TODO Test the texture coordinates as well
+        assert_eq!(point_size as u32, text_model.quads[0].placement.get_position().min_x);
+        assert_eq!(0, text_model.quads[0].placement.get_position().min_y);
+        assert_eq!(point_size as u32, text_model.quads[0].placement.get_position().width);
+        assert_eq!((0.6 * point_size) as u32, text_model.quads[0].placement.get_position().height);
 
         assert_eq!(1, text_model.fragments.len());
         assert_eq!(0, text_model.fragments[0].atlas_index);
