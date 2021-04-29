@@ -235,7 +235,7 @@ impl InternalTextRenderer {
                 Uniform::new("scale", UniformType::Vector(NumberType::Float, Dimension::D2)),
                 Uniform::new("backgroundColor", UniformType::Vector(NumberType::Float, Dimension::D3)),
                 Uniform::new("textColor", UniformType::Vector(NumberType::Float, Dimension::D3)),
-                Uniform::new("textureSampler", UniformType::Sampler2D),
+                Uniform::new("image", UniformType::Sampler2D),
             ],
             vertex_shader: "
             void main() {
@@ -244,7 +244,7 @@ impl InternalTextRenderer {
             }",
             fragment_shader: "
             void main() {
-                float intensity = 0.99 * texture(textureSampler, vec2(passTextureCoordinates.x, passTextureCoordinates.y)).r + 0.01 * passTextureCoordinates.x;
+                float intensity = texture(image, passTextureCoordinates).r;
                 vec3 color3d = intensity * textColor + (1.0 - intensity) * backgroundColor;
                 gl_FragColor = vec4(color3d, 1.0);
             }",
@@ -293,7 +293,7 @@ impl InternalTextRenderer {
                     shader.set_uniform("textColor", UniformValue::Vector3([
                         1.0, 1.0, 0.0
                     ]))?;
-                    shader.set_uniform("textureSampler", UniformValue::Int(texture_unit.get() as i32))?;
+                    shader.set_uniform("image", UniformValue::Int(texture_unit.get() as i32))?;
 
                     for fragment in &model.fragments {
                         let gpu_texture = atlas_group.get_gpu_texture::<GolemError, _>(fragment.atlas_index, |texture| {
