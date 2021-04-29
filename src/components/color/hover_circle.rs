@@ -9,7 +9,9 @@ use golem::*;
 /// This is clearly not a useful component in a real application, but it is a nice example because
 /// it demonstrates how to avoid distortion and how to use hover mechanics correctly.
 pub struct HoverColorCircleComponent {
+    #[allow(dead_code)] // Only used when golem rendering is enabled
     base_color: Color,
+    #[allow(dead_code)] // Only used when golem rendering is enabled
     hover_color: Color,
 }
 
@@ -65,6 +67,7 @@ impl Component for HoverColorCircleComponent {
     fn render(
         &mut self,
         renderer: &Renderer,
+        #[allow(unused_variables)] // The buddy parameter is only used when golem_rendering is enabled
         buddy: &mut dyn ComponentBuddy,
         _force: bool,
     ) -> RenderResult {
@@ -77,22 +80,22 @@ impl Component for HoverColorCircleComponent {
         let drawn_region =
             OvalDrawnRegion::new(Point::new(0.5, 0.5), used_width * 0.5, used_height * 0.5);
 
-        // Now that we know the exact region in which we render, we can determine whether any mouse
-        // is hovering over that region
-        let is_hovering = buddy.get_local_mouses().iter().any(|mouse| {
-            match buddy.get_mouse_position(*mouse) {
-                Some(position) => drawn_region.is_inside(position),
-                None => {
-                    // Weird and shouldn't happen, but not a critical problem
-                    debug_assert!(false);
-                    false
-                }
-            }
-        });
-
         // If the golem rendering feature is enabled, we should also draw the circle
         #[cfg(feature = "golem_rendering")]
         {
+            // Now that we know the exact region in which we render, we can determine whether any mouse
+            // is hovering over that region
+            let is_hovering = buddy.get_local_mouses().iter().any(|mouse| {
+                match buddy.get_mouse_position(*mouse) {
+                    Some(position) => drawn_region.is_inside(position),
+                    None => {
+                        // Weird and shouldn't happen, but not a critical problem
+                        debug_assert!(false);
+                        false
+                    }
+                }
+            });
+
             let color = match is_hovering {
                 true => self.hover_color,
                 false => self.base_color,

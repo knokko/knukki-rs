@@ -1,7 +1,7 @@
 use crate::*;
 
 use std::cell::RefCell;
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 
 mod buddy;
 mod domain;
@@ -10,7 +10,7 @@ use buddy::*;
 pub use domain::*;
 
 type RR<T> = Rc<RefCell<T>>;
-type WR<T> = Weak<RefCell<T>>;
+//type WR<T> = Weak<RefCell<T>>;
 
 pub struct SimpleFlatMenu {
     components: Vec<RR<ComponentEntry>>,

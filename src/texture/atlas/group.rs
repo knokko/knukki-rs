@@ -212,7 +212,7 @@ impl<GpuTexture> TextureAtlasGroup<GpuTexture> {
         Ok(id)
     }
 
-    pub fn remove_texture(&mut self, id: GroupTextureID) -> Result<(), ()> {
+    pub fn remove_texture(&mut self, _id: GroupTextureID) -> Result<(), ()> {
         todo!() // Also mark textures as removed, to improve debugging
     }
 

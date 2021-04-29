@@ -318,6 +318,7 @@ pub struct PlacedTexture {
 
     // TODO Manage the priority somehow (for instance, increment each time it is used, and
     // periodically divide all priorities by 2)
+    #[allow(dead_code)]
     priority: Cell<u32>,
 }
 

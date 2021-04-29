@@ -84,7 +84,7 @@ impl ComponentBuddy for SimpleFlatBuddy {
         self.has_changes = true;
     }
 
-    fn request_text_input(&self, start_text: String) -> Option<String> {
+    fn request_text_input(&self, _start_text: String) -> Option<String> {
         todo!()
     }
 

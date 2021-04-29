@@ -82,7 +82,7 @@ impl ComponentBuddy for RootComponentBuddy {
         self.create_next_menu = Some(create_new_menu);
     }
 
-    fn request_text_input(&self, start_text: String) -> Option<String> {
+    fn request_text_input(&self, _start_text: String) -> Option<String> {
         todo!()
     }
 

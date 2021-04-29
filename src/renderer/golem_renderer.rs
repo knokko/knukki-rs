@@ -99,7 +99,7 @@ impl Renderer {
 
     pub fn load_texture(&self, cpu_texture: &crate::Texture) -> Result<golem::Texture, GolemError> {
         let mut gpu_texture = golem::Texture::new(&self.context)?;
-        let mut pixel_buffer = cpu_texture.create_pixel_buffer();
+        let pixel_buffer = cpu_texture.create_pixel_buffer();
 
         gpu_texture.set_image(
             Some(&pixel_buffer),

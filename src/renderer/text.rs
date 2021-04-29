@@ -7,7 +7,6 @@ use std::collections::{
     HashMap,
     HashSet,
 };
-use std::num::NonZeroU32;
 
 pub struct TextRenderer {
     internal: RefCell<InternalTextRenderer>,
@@ -119,7 +118,7 @@ impl InternalTextRenderer {
         let grapheme_positions: Vec<_> = text.graphemes(true).filter_map(|grapheme| {
 
             let font = &entry.font;
-            let mut atlas_group = &mut entry.atlas_group;
+            let atlas_group = &mut entry.atlas_group;
             let maybe_grapheme_texture_id = entry.char_textures.entry(grapheme.to_string()).or_insert_with(
                 || {
                     let raw_grapheme_texture = font.draw_grapheme(grapheme, point_size);
@@ -204,7 +203,6 @@ impl InternalTextRenderer {
         }
 
         Ok(TextModel {
-            font,
             width,
             height,
 
@@ -257,19 +255,22 @@ impl InternalTextRenderer {
         let model = &self.fonts[&font].string_models[text];
         debug_assert!(model.is_still_valid());
 
-        let (uniform_position, drawn_position) = compute_text_position(
+        let text_position = compute_text_position(
             model.width as f32, model.height as f32,
             position, renderer.get_viewport()
         );
 
-        let mut my_fonts = &mut self.fonts;
-        let font_entry = my_fonts.get_mut(&font).expect("Valid model font handle");
-        let mut atlas_group = &mut font_entry.atlas_group;
-        let model = &font_entry.string_models[text];
+        let drawn_position = text_position.1;
 
         #[cfg(feature = "golem_rendering")]
             {
                 use golem::*;
+
+                let my_fonts = &mut self.fonts;
+                let font_entry = my_fonts.get_mut(&font).expect("Valid model font handle");
+                let atlas_group = &mut font_entry.atlas_group;
+                let uniform_position = text_position.0;
+                let model = &font_entry.string_models[text];
 
                 let shader_id = ShaderId::from_strs("knukki", "DefaultTextShader");
                 renderer.use_cached_shader(&shader_id, Self::create_default_shader, |shader| {
@@ -299,7 +300,7 @@ impl InternalTextRenderer {
                             );
                             Ok(golem_texture)
                         })?;
-                        gpu_texture.set_active(NonZeroU32::new(1).unwrap()); // TODO Perhaps don't hardcode 1
+                        gpu_texture.set_active(std::num::NonZeroU32::new(1).unwrap()); // TODO Perhaps don't hardcode 1
                         unsafe {
                             shader.draw(
                                 &fragment.vertex_buffer,
@@ -425,10 +426,10 @@ struct TextQuad {
 
 struct TextModel {
     quads: Vec<TextQuad>,
-    font: FontHandle,
     width: u32,
     height: u32,
 
+    #[allow(dead_code)] // This field is used in unit tests and when golem rendering is enabled
     fragments: Vec<TextModelFragment>,
 }
 
@@ -536,6 +537,7 @@ impl TextModelFragmentBuilder {
 }
 
 struct TextModelFragment {
+    #[allow(dead_code)] // This field is used during unit tests and when golem rendering is enabled
     atlas_index: u16,
 
     #[cfg(feature = "golem_rendering")]
@@ -580,12 +582,6 @@ struct FontEntry {
     char_textures: HashMap<String, Option<GroupGraphemeTexture>>,
     atlas_group: TextureAtlasGroup<GpuTexture>,
     string_models: HashMap<String, TextModel>,
-}
-
-struct GraphemeTextureEntry {
-    texture_id: Option<GroupTextureID>,
-    width: u32,
-    offset_y: u32
 }
 
 #[cfg(test)]
@@ -708,25 +704,6 @@ mod tests {
             40.0, 23.0, tex_max_x2, tex_max_y2,
             32.0, 23.0, tex_min_x2, tex_max_y2
         ], &result[2].vertex_vec);
-
-        let text_quads = vec![
-            text_quad(
-                2.0, 41.0, 20.0, 57.0,
-                0, 0, 25, 25, 2
-            ),
-            text_quad(
-                70.0, 0.0, 80.0, 20.0,
-                0, 0, 25, 25, 4
-            ),
-            text_quad(
-                32.0, 19.0, 40.0, 23.0,
-                75, 10, 25, 40, 5
-            ),
-            text_quad(
-                10.0, 20.0, 30.0, 40.0,
-                10, 20, 30, 20, 2
-            )
-        ];
     }
 
     fn assert_uniform_nearly_equal(expected: UniformTextDrawPosition, actual: UniformTextDrawPosition) {
@@ -853,7 +830,6 @@ mod tests {
         let point_size = InternalTextRenderer::POINT_SIZE;
         assert_eq!((3.6 * point_size) as u32, text_model.width);
         assert_eq!((1.0 * point_size) as u32, text_model.height);
-        assert_eq!(test_font_handle, text_model.font);
 
         assert_eq!(2, text_model.quads.len());
         assert_eq!(0.0, text_model.quads[0].min_x);
