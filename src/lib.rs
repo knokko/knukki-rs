@@ -9,6 +9,7 @@ mod point;
 
 #[cfg(feature = "wrapper")]
 mod wrapper;
+mod render;
 mod renderer;
 mod texture;
 
@@ -21,5 +22,6 @@ pub use point::*;
 
 #[cfg(feature = "wrapper")]
 pub use wrapper::*;
+pub use render::*;
 pub use renderer::*;
 pub use texture::*;

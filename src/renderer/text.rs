@@ -8,21 +8,6 @@ use std::collections::{
     HashSet,
 };
 
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub struct TextStyle {
-    pub font_id: Option<String>,
-    pub text_color: Color,
-    pub background_color: Color,
-    pub background_fill_mode: TextBackgroundFillMode
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum TextBackgroundFillMode {
-    DoNot,
-    DrawnRegion,
-    EntireDomain
-}
-
 pub struct TextRenderer {
     internal: RefCell<InternalTextRenderer>,
     default_font_handle: FontHandle,
@@ -285,8 +270,6 @@ impl InternalTextRenderer {
         ShaderProgram::new(golem, description)
     }
 
-
-
     fn draw_text_model(
         &mut self, text: &str, style: &TextStyle, font_handle: FontHandle, position: TextDrawPosition, renderer: &Renderer
     ) -> Result<DrawnTextPosition, TextRenderError> {
@@ -378,24 +361,6 @@ struct UniformTextDrawPosition {
     scale_y: f32,
 }
 
-#[derive(Copy, Clone, Debug)]
-pub struct DrawnTextPosition {
-    pub min_x: f32,
-    pub min_y: f32,
-    pub max_x: f32,
-    pub max_y: f32,
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct TextDrawPosition {
-    pub min_x: f32,
-    pub min_y: f32,
-    pub max_x: f32,
-    pub max_y: f32,
-    pub horizontal_alignment: HorizontalTextAlignment,
-    pub vertical_alignment: VerticalTextAlignment,
-}
-
 fn compute_text_position(
     model_width: f32, model_height: f32, position: TextDrawPosition, viewport: RenderRegion
 ) -> (UniformTextDrawPosition, DrawnTextPosition) {
@@ -457,20 +422,6 @@ fn compute_text_position(
     };
 
     (uniform_position, drawn_position)
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum VerticalTextAlignment {
-    Bottom,
-    Center,
-    Top,
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum HorizontalTextAlignment {
-    Left,
-    Center,
-    Right
 }
 
 #[derive(Debug)]
@@ -753,20 +704,20 @@ mod tests {
         assert_eq!(vec![0, 1, 2, 2, 3, 0], result[1].elements_vec);
         assert_eq!(vec![0, 1, 2, 2, 3, 0], result[2].elements_vec);
 
-        let tex_min_x1 = 0.005;
-        let tex_min_y1 = 0.01;
-        let tex_max_x1 = 0.245;
-        let tex_max_y1 = 0.49;
+        let tex_min_x1 = 0.025;
+        let tex_min_y1 = 0.05;
+        let tex_max_x1 = 0.225;
+        let tex_max_y1 = 0.45;
 
-        let tex_min_x2 = 0.755;
-        let tex_min_y2 = 0.21;
-        let tex_max_x2 = 0.995;
-        let tex_max_y2 = 0.99;
+        let tex_min_x2 = 0.775;
+        let tex_min_y2 = 0.25;
+        let tex_max_x2 = 0.975;
+        let tex_max_y2 = 0.95;
 
-        let tex_min_x3 = 0.105;
-        let tex_min_y3 = 0.41;
-        let tex_max_x3 = 0.395;
-        let tex_max_y3 = 0.79;
+        let tex_min_x3 = 0.125;
+        let tex_min_y3 = 0.45;
+        let tex_max_x3 = 0.375;
+        let tex_max_y3 = 0.75;
 
         fn assert_nearly_eq(expected: &[f32], actual: &[f32]) {
             assert_eq!(expected.len(), actual.len());
