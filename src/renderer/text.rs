@@ -811,10 +811,10 @@ mod tests {
             scale_y: 0.04166667,
         }, uniform_position);
         assert_drawn_nearly_equal(DrawnTextPosition {
-            min_x: -0.5,
-            min_y: -0.75,
-            max_x: 0.75,
-            max_y: -0.333333
+            min_x: 0.25,
+            min_y: 0.125,
+            max_x: 0.875,
+            max_y: 0.333333
         }, drawn_position);
     }
 
@@ -843,9 +843,9 @@ mod tests {
             scale_y: 0.175,
         }, uniform_position);
         assert_drawn_nearly_equal(DrawnTextPosition {
-            min_x: -0.203125,
-            min_y: -0.75,
-            max_x: 0.453125,
+            min_x: 0.3984375,
+            min_y: 0.125,
+            max_x: 0.7265625,
             max_y: 1.0
         }, drawn_position);
     }
@@ -875,9 +875,9 @@ mod tests {
             scale_y: 0.07,
         }, uniform_position);
         assert_drawn_nearly_equal(DrawnTextPosition {
-            min_x: -0.3,
-            min_y: -0.75,
-            max_x: 0.75,
+            min_x: 0.35,
+            min_y: 0.125,
+            max_x: 0.875,
             max_y: 1.0
         }, drawn_position);
     }
