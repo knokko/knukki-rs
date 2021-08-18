@@ -245,11 +245,11 @@ mod tests {
                         assert_eq!(inner_region, renderer.get_scissor());
 
                         // And push onto an empty viewport
-                        renderer
+                        assert!(renderer
                             .push_viewport(0.001, 0.001, 0.002, 0.002, || {
                                 unreachable!();
                             })
-                            .unwrap_none();
+                            .is_none());
                     })
                     .unwrap();
 
@@ -345,11 +345,11 @@ mod tests {
 
         renderer
             .push_scissor(0.0, 0.0, 0.6, 1.0, || {
-                renderer
+                assert!(renderer
                     .push_viewport(0.8, 0.8, 0.9, 0.9, || {
                         unreachable!();
                     })
-                    .unwrap_none();
+                    .is_none());
             })
             .unwrap();
     }

@@ -1,6 +1,7 @@
 use crate::*;
 
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 /// The `Application` is the 'highest' object that is cross-platform. It
@@ -32,6 +33,7 @@ pub struct Application {
     root_buddy: RootComponentBuddy,
 
     mouse_store: Rc<RefCell<MouseStore>>,
+    fonts_to_register: HashMap<String, Box<dyn Font>>
 }
 
 impl Application {
@@ -49,9 +51,14 @@ impl Application {
             root_buddy,
 
             mouse_store,
+            fonts_to_register: HashMap::new()
         };
         result.work_after_events();
         result
+    }
+
+    pub fn register_font(&mut self, font_id: &str, font: Box<dyn Font>) {
+        self.fonts_to_register.insert(font_id.to_string(), font);
     }
 
     fn work_after_events(&mut self) {
@@ -106,6 +113,11 @@ impl Application {
     pub fn render(&mut self, renderer: &Renderer, force: bool) -> bool {
         if force || self.root_buddy.did_request_render() {
             self.root_buddy.clear_render_request();
+
+            // If new fonts were registered to the Application, propagate them to the Renderer
+            for (font_id, font) in self.fonts_to_register.drain() {
+                renderer.get_text_renderer().register_font(&font_id, font);
+            }
 
             // Make sure we draw onto the right area
             renderer.start();
@@ -1385,6 +1397,61 @@ mod tests {
         next_check.set(MouseCheck::new(mouse1, button, None));
         application.render(&renderer, true);
         assert_eq!(8, render_counter.get());
+    }
+
+    #[test]
+    fn test_register_font() {
+        struct TestFontComponent {
+            render_flag: Rc<Cell<bool>>
+        }
+
+        impl Component for TestFontComponent {
+            fn on_attach(&mut self, _buddy: &mut dyn ComponentBuddy) {}
+
+            fn render(&mut self, renderer: &Renderer, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
+                let default_font_handle = renderer.get_text_renderer().get_default_font();
+                let font_handle1 = renderer.get_text_renderer().get_font("font1").unwrap();
+                let font_handle2 = renderer.get_text_renderer().get_font("font2").unwrap();
+
+                assert_ne!(default_font_handle, font_handle1);
+                assert_ne!(default_font_handle, font_handle2);
+                assert_ne!(font_handle1, font_handle2);
+
+                self.render_flag.set(true);
+                entire_render_result()
+            }
+        }
+
+        struct DummyFont {}
+
+        impl Font for DummyFont {
+            fn draw_grapheme(&self, _grapheme: &str, _point_size: f32) -> Option<CharTexture> {
+                unimplemented!()
+            }
+
+            fn get_max_descent(&self, _point_size: f32) -> f32 {
+                unimplemented!()
+            }
+
+            fn get_max_ascent(&self, _point_size: f32) -> f32 {
+                unimplemented!()
+            }
+
+            fn get_whitespace_width(&self, _point_size: f32) -> f32 {
+                unimplemented!()
+            }
+        }
+
+        let render_flag = Rc::new(Cell::new(false));
+
+        let mut app = Application::new(Box::new(TestFontComponent {
+            render_flag: Rc::clone(&render_flag)
+        }));
+        app.register_font("font1", Box::new(DummyFont { }));
+        app.register_font("font2", Box::new(DummyFont { }));
+
+        app.render(&test_renderer(RenderRegion::with_size(0, 0, 10, 20)), true);
+        assert!(render_flag.get());
     }
 
     #[test]

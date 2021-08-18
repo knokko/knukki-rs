@@ -16,14 +16,19 @@ pub struct TextRenderer {
 impl TextRenderer {
     pub fn new() -> Self {
         let mut internal = InternalTextRenderer::new();
-        let default_font_handle = internal.register_font(Box::new(create_default_font()));
+        let default_font_handle = internal.register_font("default", Box::new(create_default_font()));
 
         Self { internal: RefCell::new(internal), default_font_handle }
     }
 
-    pub fn register_font(&mut self, font: Box<dyn Font>) -> FontHandle {
+    pub fn register_font(&self, font_id: &str, font: Box<dyn Font>) -> FontHandle {
         let mut internal = self.internal.borrow_mut();
-        internal.register_font(font)
+        internal.register_font(font_id, font)
+    }
+
+    pub fn get_font(&self, font_id: &str) -> Option<FontHandle> {
+        let internal = self.internal.borrow();
+        internal.get_font(font_id)
     }
 
     pub fn get_default_font(&self) -> FontHandle {
@@ -43,6 +48,7 @@ impl TextRenderer {
 }
 
 struct InternalTextRenderer {
+    font_id_mapping: HashMap<String, FontHandle>,
     fonts: HashMap<FontHandle, FontEntry>,
     #[cfg(feature = "golem_rendering")]
     texture_unit: std::num::NonZeroU32
@@ -51,13 +57,14 @@ struct InternalTextRenderer {
 impl InternalTextRenderer {
     pub fn new() -> Self {
         Self {
+            font_id_mapping: HashMap::new(),
             fonts: HashMap::new(),
             #[cfg(feature = "golem_rendering")]
             texture_unit: std::num::NonZeroU32::new(1).unwrap()
         }
     }
 
-    pub fn register_font(&mut self, font: Box<dyn Font>) -> FontHandle {
+    pub fn register_font(&mut self, font_id: &str, font: Box<dyn Font>) -> FontHandle {
 
         let handle = FontHandle { internal: self.fonts.len() as u16 };
 
@@ -68,8 +75,13 @@ impl InternalTextRenderer {
         let char_textures = HashMap::new();
         let string_models = HashMap::new();
 
+        self.font_id_mapping.insert(font_id.to_string(), handle);
         self.fonts.insert(handle, FontEntry { font, atlas_group, char_textures, string_models });
         handle
+    }
+
+    pub fn get_font(&self, font_id: &str) -> Option<FontHandle> {
+        self.font_id_mapping.get(font_id).map(|handle_ref| *handle_ref)
     }
 
     pub fn draw_text(
@@ -599,6 +611,44 @@ mod tests {
     use std::rc::Rc;
 
     #[test]
+    fn test_register_font() {
+        struct TestFont {
+            max_ascent: f32
+        }
+
+        impl Font for TestFont {
+            fn draw_grapheme(&self, _grapheme: &str, _point_size: f32) -> Option<CharTexture> {
+                unimplemented!()
+            }
+
+            fn get_max_descent(&self, _point_size: f32) -> f32 {
+                unimplemented!()
+            }
+
+            fn get_max_ascent(&self, _point_size: f32) -> f32 {
+                self.max_ascent
+            }
+
+            fn get_whitespace_width(&self, _point_size: f32) -> f32 {
+                unimplemented!()
+            }
+        }
+
+        let text_renderer = TextRenderer::new();
+        text_renderer.register_font("test1", Box::new(TestFont { max_ascent: 1.23 }));
+        text_renderer.register_font("test2", Box::new(TestFont { max_ascent: 2.34 }));
+
+        let handle1 = text_renderer.get_font("test1").unwrap();
+        let handle2 = text_renderer.get_font("test2").unwrap();
+
+        let internal_text_renderer = text_renderer.internal.borrow();
+        let entry1 = &internal_text_renderer.fonts[&handle1];
+        let entry2 = &internal_text_renderer.fonts[&handle2];
+        assert_eq!(1.23, entry1.font.get_max_ascent(0.0));
+        assert_eq!(2.34, entry2.font.get_max_ascent(0.0));
+    }
+
+    #[test]
     fn test_create_text_model_fragments() {
         fn text_quad(
             min_x: f32, min_y: f32, max_x: f32, max_y: f32,
@@ -827,8 +877,8 @@ mod tests {
     #[test]
     #[cfg(not(feature = "golem_rendering"))]
     fn test_create_text_model_single_line() {
-        let mut text_renderer = TextRenderer::new();
-        let test_font_handle = text_renderer.register_font(Box::new(TestFont {}));
+        let text_renderer = TextRenderer::new();
+        let test_font_handle = text_renderer.register_font("test", Box::new(TestFont {}));
 
         let mut actual_text_renderer = text_renderer.internal.borrow_mut();
         let text_model = actual_text_renderer.create_text_model(test_font_handle, "a b ").unwrap();
