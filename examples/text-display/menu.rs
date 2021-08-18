@@ -9,7 +9,12 @@ pub fn create_app() -> Application {
         "ᄍᄎᄏʡʢʣʤମଯରיך⽉⽊⽋כלםמןנឝឞសסעףפ綾菱ץ".to_string(),
         HorizontalTextAlignment::Center,
         VerticalTextAlignment::Center,
-        None
+        TextStyle {
+            font_id: None,
+            text_color: Color::rgb(0, 0, 0),
+            background_color: Color::rgb(0, 0, 200),
+            background_fill_mode: TextBackgroundFillMode::DoNot
+        }
     )), ComponentDomain::between(0.0, 0.0, 1.0, 1.0));
 
     Application::new(Box::new(menu))

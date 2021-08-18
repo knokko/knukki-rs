@@ -4,7 +4,7 @@ pub struct SimpleTextComponent {
     text: String,
     horizontal_alignment: HorizontalTextAlignment,
     vertical_alignment: VerticalTextAlignment,
-    font: Option<FontHandle>,
+    style: TextStyle
 }
 
 impl SimpleTextComponent {
@@ -12,11 +12,10 @@ impl SimpleTextComponent {
         text: impl Into<String>,
         horizontal_alignment: HorizontalTextAlignment,
         vertical_alignment: VerticalTextAlignment,
-        // TODO Stabilize API for choosing a font
-        font: Option<FontHandle>
+        style: TextStyle
     ) -> Self {
         Self {
-            text: text.into(), horizontal_alignment, vertical_alignment, font
+            text: text.into(), horizontal_alignment, vertical_alignment, style
         }
     }
 }
@@ -35,12 +34,7 @@ impl Component for SimpleTextComponent {
             vertical_alignment: self.vertical_alignment,
         };
 
-        let font = if let Some(font) = self.font {
-            font
-        } else {
-            renderer.get_text_renderer().get_default_font()
-        };
-        let region = renderer.get_text_renderer().draw_text(&self.text, font, position, renderer)?;
+        let region = renderer.get_text_renderer().draw_text(&self.text, &self.style, position, renderer)?;
 
         Ok(RenderResultStruct {
             drawn_region: Box::new(RectangularDrawnRegion::new(

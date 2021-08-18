@@ -1,6 +1,6 @@
 mod menu;
 
-use knukki::start;
+use knukki::*;
 use menu::*;
 
 fn main() {
