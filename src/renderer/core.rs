@@ -99,8 +99,12 @@ impl Renderer {
                 // Pop the viewport and scissor
                 let mut viewport_stack = self.viewport_stack.borrow_mut();
                 viewport_stack.pop();
+                drop(viewport_stack);
                 let mut scissor_stack = self.scissor_stack.borrow_mut();
                 scissor_stack.pop();
+                drop(scissor_stack);
+
+                self.apply_viewport_and_scissor();
 
                 // Return the result
                 Some(result)
@@ -160,11 +164,15 @@ impl Renderer {
                 scissor_stack.push(combined_scissor);
                 drop(scissor_stack);
 
+                self.apply_viewport_and_scissor();
+
                 let result = render_function();
 
                 let mut scissor_stack = self.scissor_stack.borrow_mut();
                 scissor_stack.pop();
                 drop(scissor_stack);
+
+                self.apply_viewport_and_scissor();
 
                 return Some(result);
             }

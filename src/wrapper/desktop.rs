@@ -289,6 +289,11 @@ pub fn start(mut app: Application, title: &str) {
         force: bool,
         windowed_context: &ContextWrapper<PossiblyCurrent, Window>,
     ) -> Result<(), GolemError> {
+        // Don't attempt to draw on an empty window
+        if size.width == 0 || size.height == 0 {
+            return Ok(());
+        }
+
         let region = RenderRegion::with_size(0, 0, size.width, size.height);
 
         let mut created_surface = false;

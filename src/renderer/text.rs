@@ -8,6 +8,10 @@ use std::collections::{
     HashSet,
 };
 
+pub struct TextLook {
+
+}
+
 pub struct TextRenderer {
     internal: RefCell<InternalTextRenderer>,
     default_font_handle: FontHandle,
@@ -409,11 +413,15 @@ fn compute_text_position(
         scale_y
     };
 
+    fn from_gl(gl_coord: f32) -> f32 {
+        (gl_coord + 1.0) / 2.0
+    }
+
     let drawn_position = DrawnTextPosition {
-        min_x: offset_x,
-        min_y: offset_y,
-        max_x: offset_x + draw_width,
-        max_y: offset_y + draw_height,
+        min_x: from_gl(offset_x),
+        min_y: from_gl(offset_y),
+        max_x: from_gl(offset_x + draw_width),
+        max_y: from_gl(offset_y + draw_height)
     };
 
     (uniform_position, drawn_position)
