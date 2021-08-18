@@ -9,14 +9,14 @@ pub struct SimpleTextComponent {
 
 impl SimpleTextComponent {
     pub fn new(
-        text: String,
+        text: impl Into<String>,
         horizontal_alignment: HorizontalTextAlignment,
         vertical_alignment: VerticalTextAlignment,
         // TODO Stabilize API for choosing a font
         font: Option<FontHandle>
     ) -> Self {
         Self {
-            text, horizontal_alignment, vertical_alignment, font
+            text: text.into(), horizontal_alignment, vertical_alignment, font
         }
     }
 }
