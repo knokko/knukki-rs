@@ -101,7 +101,7 @@ impl Texture {
         let file = std::fs::File::create(std::path::Path::new(file_path)).unwrap();
         let mut w = std::io::BufWriter::new(file);
         let mut encoder = png::Encoder::new(&mut w, self.width, self.height);
-        encoder.set_color(png::ColorType::RGBA);
+        encoder.set_color(png::ColorType::Rgba);
         encoder.set_depth(png::BitDepth::Eight);
 
         let mut writer = encoder.write_header().unwrap();
