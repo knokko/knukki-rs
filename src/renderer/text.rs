@@ -8,8 +8,19 @@ use std::collections::{
     HashSet,
 };
 
-pub struct TextLook {
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct TextStyle {
+    pub font_id: Option<String>,
+    pub text_color: Color,
+    pub background_color: Color,
+    pub background_fill_mode: TextBackgroundFillMode
+}
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum TextBackgroundFillMode {
+    DoNot,
+    DrawnRegion,
+    EntireDomain
 }
 
 pub struct TextRenderer {
@@ -42,12 +53,16 @@ impl TextRenderer {
     pub fn draw_text(
         &self,
         text: &str,
-        font: FontHandle,
+        style: &TextStyle,
         position: TextDrawPosition,
         renderer: &Renderer,
     ) -> Result<DrawnTextPosition, TextRenderError> {
+        let font_handle = match &style.font_id {
+            Some(font_id) => self.get_font(font_id).expect(&format!("Should be able to find font {}", font_id)),
+            None => self.get_default_font()
+        };
         let mut internal = self.internal.borrow_mut();
-        internal.draw_text(text, font, position, renderer)
+        internal.draw_text(text, style, font_handle, position, renderer)
     }
 }
 
@@ -91,21 +106,22 @@ impl InternalTextRenderer {
     pub fn draw_text(
         &mut self,
         text: &str,
-        font: FontHandle,
+        style: &TextStyle,
+        font_handle: FontHandle,
         position: TextDrawPosition,
         renderer: &Renderer,
     ) -> Result<DrawnTextPosition, TextRenderError> {
-        if !self.fonts[&font].string_models.contains_key(text) {
+        if !self.fonts[&font_handle].string_models.contains_key(text) {
             let text_model = self.create_text_model(
                 #[cfg(feature = "golem_rendering")]
                 renderer.get_context(),
-                font,
+                font_handle,
                 text
             )?;
-            self.fonts.get_mut(&font).expect("Font handle is valid").string_models.insert(text.to_string(), text_model);
+            self.fonts.get_mut(&font_handle).expect("Font handle is valid").string_models.insert(text.to_string(), text_model);
         }
 
-        self.draw_text_model(text, font, position, renderer)
+        self.draw_text_model(text, style, font_handle, position, renderer)
     }
 
     // This seems to be a reasonable value. Perhaps, I could improve it later
@@ -272,9 +288,9 @@ impl InternalTextRenderer {
 
 
     fn draw_text_model(
-        &mut self, text: &str, font: FontHandle, position: TextDrawPosition, renderer: &Renderer
+        &mut self, text: &str, style: &TextStyle, font_handle: FontHandle, position: TextDrawPosition, renderer: &Renderer
     ) -> Result<DrawnTextPosition, TextRenderError> {
-        let model = &self.fonts[&font].string_models[text];
+        let model = &self.fonts[&font_handle].string_models[text];
         debug_assert!(model.is_still_valid());
 
         let text_position = compute_text_position(
@@ -283,6 +299,16 @@ impl InternalTextRenderer {
         );
 
         let drawn_position = text_position.1;
+        if style.background_fill_mode == TextBackgroundFillMode::DrawnRegion {
+            renderer.push_scissor(drawn_position.min_x, drawn_position.min_y, drawn_position.max_x, drawn_position.max_y, || {
+                renderer.clear(style.background_color);
+            });
+        }
+        if style.background_fill_mode == TextBackgroundFillMode::EntireDomain {
+            renderer.push_scissor(position.min_x, position.min_y, position.max_x, position.max_y, || {
+                renderer.clear(style.background_color);
+            });
+        }
 
         #[cfg(feature = "golem_rendering")]
             {
@@ -290,7 +316,7 @@ impl InternalTextRenderer {
 
                 let texture_unit = self.texture_unit;
                 let my_fonts = &mut self.fonts;
-                let font_entry = my_fonts.get_mut(&font).expect("Valid model font handle");
+                let font_entry = my_fonts.get_mut(&font_handle).expect("Valid model font handle");
                 let atlas_group = &mut font_entry.atlas_group;
                 let uniform_position = text_position.0;
                 let model = &font_entry.string_models[text];
@@ -304,16 +330,21 @@ impl InternalTextRenderer {
                         uniform_position.scale_x, uniform_position.scale_y
                     ]))?;
                     shader.set_uniform("backgroundColor", UniformValue::Vector3([
-                        0.0, 0.0, 1.0
+                        style.background_color.get_red_float(),
+                        style.background_color.get_green_float(),
+                        style.background_color.get_blue_float()
                     ]))?;
                     shader.set_uniform("textColor", UniformValue::Vector3([
-                        1.0, 1.0, 0.0
+                        style.text_color.get_red_float(),
+                        style.text_color.get_green_float(),
+                        style.text_color.get_blue_float()
                     ]))?;
                     shader.set_uniform("image", UniformValue::Int(texture_unit.get() as i32))?;
 
                     for fragment in &model.fragments {
                         let gpu_texture = atlas_group.get_gpu_texture::<GolemError, _>(fragment.atlas_index, |texture| {
                             let mut golem_texture = Texture::new(renderer.get_context())?;
+
                             golem_texture.set_image(
                                 Some(&texture.create_pixel_buffer()),
                                 texture.get_width(),
@@ -355,6 +386,7 @@ pub struct DrawnTextPosition {
     pub max_y: f32,
 }
 
+#[derive(Copy, Clone, Debug)]
 pub struct TextDrawPosition {
     pub min_x: f32,
     pub min_y: f32,
@@ -487,10 +519,10 @@ fn create_text_model_fragments(
         ) {
 
             let atlas_pos = vertex.placement.get_position();
-            let min_tex_x = (atlas_pos.min_x as f32 + 0.5) / texture_width as f32;
-            let min_tex_y = (atlas_pos.min_y as f32 + 0.5) / texture_height as f32;
-            let max_tex_x = (atlas_pos.min_x as f32 + atlas_pos.width as f32 - 0.5) / texture_width as f32;
-            let max_tex_y = (atlas_pos.min_y as f32 + atlas_pos.height as f32 - 0.5) / texture_height as f32;
+            let min_tex_x = (atlas_pos.min_x as f32 + 2.5) / texture_width as f32;
+            let min_tex_y = (atlas_pos.min_y as f32 + 2.5) / texture_height as f32;
+            let max_tex_x = (atlas_pos.min_x as f32 + atlas_pos.width as f32 - 2.5) / texture_width as f32;
+            let max_tex_y = (atlas_pos.min_y as f32 + atlas_pos.height as f32 - 2.5) / texture_height as f32;
 
             let coordinates = [
                 (vertex.min_x, vertex.min_y, min_tex_x, min_tex_y),

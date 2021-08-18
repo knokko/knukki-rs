@@ -4,7 +4,7 @@ export function compute_metrics(grapheme, font) {
     ctx.font = font;
     const metrics = ctx.measureText(grapheme);
     return new CustomTextMetrics(
-        Math.floor(metrics.actualBoundingBoxLeft), Math.floor(metrics.actualBoundingBoxDescent),
+        Math.floor(metrics.actualBoundingBoxLeft), Math.ceil(metrics.actualBoundingBoxDescent),
         Math.ceil(metrics.actualBoundingBoxRight), Math.ceil(metrics.actualBoundingBoxAscent)
     );
 }

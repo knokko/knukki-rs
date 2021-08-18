@@ -63,16 +63,21 @@ impl Font for WebFont {
         // So I will have to provide some javascript to do the job
         let metrics = compute_metrics(grapheme, &font);
 
-        let width = (metrics.actual_right() + metrics.actual_left() + 1) as u32;
-        let height = (metrics.actual_ascent() + metrics.actual_descent() + 1) as u32;
+        let metrics_left: i32 = metrics.actual_left();
+        let metrics_right: i32 = metrics.actual_right();
+        let metrics_descent: i32 = metrics.actual_descent();
+        let metrics_ascent: i32 = metrics.actual_ascent();
+
+        let width = (metrics_right - metrics_left) as u32 + 6;
+        let height = (metrics_ascent + metrics_descent) as u32 + 6;
 
         // Handle whitespace characters
-        if width < 3 || height < 3 {
+        if width < 7 || height < 7 {
             return None;
         }
 
-        let offset_x = metrics.actual_left();
-        let offset_y = -metrics.actual_descent();
+        let offset_x = metrics_left + 3;
+        let offset_y = -metrics_descent - 3;
 
         let adjust_width = self.buffer_canvas.width() < width;
         let adjust_height = self.buffer_canvas.height() < height;

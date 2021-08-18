@@ -132,10 +132,10 @@ impl crate::Font for IncludedStaticFont {
             return None;
         }
 
-        let combined_offset_x = -combined_min_x;
-        let combined_offset_y = -combined_min_y;
-        let width = (combined_max_x - combined_min_x + 1) as u32;
-        let height = (combined_max_y - combined_min_y + 1) as u32;
+        let combined_offset_x = -combined_min_x + 3;
+        let combined_offset_y = -combined_min_y + 3;
+        let width = (combined_max_x + combined_offset_x + 4) as u32;
+        let height = (combined_max_y + combined_offset_y + 4) as u32;
 
         let mut grayscale = vec![0.0; (width * height) as usize];
 
