@@ -66,17 +66,70 @@ impl Component for TextButton {
 
         renderer.clear(Color::rgb(200, 0, 150));
 
+        let text_style = TextStyle {
+            font_id: self.style.font_id.clone(),
+            text_color,
+            background_color,
+            background_fill_mode: TextBackgroundFillMode::DoNot
+        };
+
+        let (text_width, text_height) = renderer.get_text_renderer().get_text_size(
+            &self.text, &text_style, renderer
+        )?;
+        let domain_ratio = renderer.get_viewport().get_aspect_ratio();
+
+        let (reserved_margin_x, reserved_margin_y) = {
+            let mut reserved_margin_x = 0.0;
+            let mut reserved_margin_y = 0.0;
+
+            // TODO This system is not sound, especially when margin is big (> 0.5)
+            for _counter in 0 .. 2 {
+                let compute_scales = |test_margin_x: f32, test_margin_y: f32| {
+                    let max_scale_x1 = (1.0 - 2.0 * test_margin_x) / text_width as f32;
+                    let max_scale_y1 = (1.0 - 2.0 * test_margin_y) / text_height as f32;
+                    let max_scale_x2 = max_scale_y1 / domain_ratio;
+                    let max_scale_y2 = max_scale_x1 * domain_ratio;
+                    if max_scale_x2 <= max_scale_x1 {
+                        (max_scale_x2, max_scale_y1)
+                    } else {
+                        (max_scale_x1, max_scale_y2)
+                    }
+                };
+
+                let (full_scale_x, full_scale_y) = compute_scales(0.0, 0.0);
+                let (_, trimmed_scale_y) = compute_scales(reserved_margin_x, reserved_margin_y);
+
+                let drawn_text_height = trimmed_scale_y * text_height as f32;
+                let margin_y = self.style.margin * drawn_text_height;
+                let margin_x = margin_y / domain_ratio;
+
+                let scaled_width = text_width as f32 * full_scale_x;
+                let scaled_height = text_height as f32 * full_scale_y;
+
+                let limit_x = 1.0 - 2.0 * margin_x;
+                let limit_y = 1.0 - 2.0 * margin_y;
+                reserved_margin_x = if scaled_width <= limit_x {
+                    0.0
+                } else {
+                    (scaled_width - limit_x) / 2.0
+                };
+                reserved_margin_y = if scaled_height <= limit_y {
+                    0.0
+                } else {
+                    (scaled_height - limit_y) / 2.0
+                };
+                println!("margins currently are ({}, {})", reserved_margin_x, reserved_margin_y);
+            }
+            println!("Finished");
+            (reserved_margin_x, reserved_margin_y)
+        };
+
         renderer.get_text_renderer().draw_text(
-            &self.text, &TextStyle {
-                font_id: self.style.font_id.clone(),
-                text_color,
-                background_color,
-                background_fill_mode: TextBackgroundFillMode::DoNot
-            }, TextDrawPosition {
-                min_x: self.style.margin / renderer.get_viewport().get_aspect_ratio(),
-                min_y: self.style.margin,
-                max_x: 1.0 - self.style.margin / renderer.get_viewport().get_aspect_ratio(),
-                max_y: 1.0 - self.style.margin,
+            &self.text, &text_style, TextDrawPosition {
+                min_x: reserved_margin_x,
+                min_y: reserved_margin_y,
+                max_x: 1.0 - reserved_margin_x,
+                max_y: 1.0 - reserved_margin_y,
                 horizontal_alignment: HorizontalTextAlignment::Center,
                 vertical_alignment: VerticalTextAlignment::Center
             }, renderer, Some(&mut |text_position: DrawnTextPosition| {
