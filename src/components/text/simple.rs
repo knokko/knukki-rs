@@ -26,15 +26,17 @@ impl Component for SimpleTextComponent {
 
     fn render(&mut self, renderer: &Renderer, _buddy: &mut dyn ComponentBuddy, _force: bool) -> RenderResult {
         let position = TextDrawPosition {
-            min_x: -1.0,
-            min_y: -1.0,
+            min_x: 0.0,
+            min_y: 0.0,
             max_x: 1.0,
             max_y: 1.0,
             horizontal_alignment: self.horizontal_alignment,
             vertical_alignment: self.vertical_alignment,
         };
 
-        let region = renderer.get_text_renderer().draw_text(&self.text, &self.style, position, renderer)?;
+        let region = renderer.get_text_renderer().draw_text(
+            &self.text, &self.style, position, renderer, None
+        )?;
 
         Ok(RenderResultStruct {
             drawn_region: Box::new(RectangularDrawnRegion::new(

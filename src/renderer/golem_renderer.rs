@@ -93,7 +93,7 @@ impl Renderer {
                     uniforms: &uniforms,
                     vertex_shader: "
                 void main() {
-                    innerPosition = vertexInnerPosition;
+                    innerPosition = 0.5 * vertexInnerPosition + 0.5;
                     vec2 bottomLeftBounds = vertexBounds.xy;
                     vec2 topRightBounds = vertexBounds.zw;
                     outerPosition = bottomLeftBounds + innerPosition * (topRightBounds - bottomLeftBounds);

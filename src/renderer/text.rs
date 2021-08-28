@@ -8,6 +8,8 @@ use std::collections::{
     HashSet,
 };
 
+pub type BeforeDraw<'a> = Option<&'a mut dyn FnMut(DrawnTextPosition)>;
+
 pub struct TextRenderer {
     internal: RefCell<InternalTextRenderer>,
     default_font_handle: FontHandle,
@@ -41,13 +43,14 @@ impl TextRenderer {
         style: &TextStyle,
         position: TextDrawPosition,
         renderer: &Renderer,
+        before_draw: BeforeDraw,
     ) -> Result<DrawnTextPosition, TextRenderError> {
         let font_handle = match &style.font_id {
             Some(font_id) => self.get_font(font_id).expect(&format!("Should be able to find font {}", font_id)),
             None => self.get_default_font()
         };
         let mut internal = self.internal.borrow_mut();
-        internal.draw_text(text, style, font_handle, position, renderer)
+        internal.draw_text(text, style, font_handle, position, renderer, before_draw)
     }
 }
 
@@ -95,6 +98,7 @@ impl InternalTextRenderer {
         font_handle: FontHandle,
         position: TextDrawPosition,
         renderer: &Renderer,
+        before_draw: BeforeDraw,
     ) -> Result<DrawnTextPosition, TextRenderError> {
         if !self.fonts[&font_handle].string_models.contains_key(text) {
             let text_model = self.create_text_model(
@@ -106,7 +110,7 @@ impl InternalTextRenderer {
             self.fonts.get_mut(&font_handle).expect("Font handle is valid").string_models.insert(text.to_string(), text_model);
         }
 
-        self.draw_text_model(text, style, font_handle, position, renderer)
+        self.draw_text_model(text, style, font_handle, position, renderer, before_draw)
     }
 
     // This seems to be a reasonable value. Perhaps, I could improve it later
@@ -271,7 +275,8 @@ impl InternalTextRenderer {
     }
 
     fn draw_text_model(
-        &mut self, text: &str, style: &TextStyle, font_handle: FontHandle, position: TextDrawPosition, renderer: &Renderer
+        &mut self, text: &str, style: &TextStyle, font_handle: FontHandle,
+        position: TextDrawPosition, renderer: &Renderer, before_draw: BeforeDraw,
     ) -> Result<DrawnTextPosition, TextRenderError> {
         let model = &self.fonts[&font_handle].string_models[text];
         debug_assert!(model.is_still_valid());
@@ -291,6 +296,10 @@ impl InternalTextRenderer {
             renderer.push_scissor(position.min_x, position.min_y, position.max_x, position.max_y, || {
                 renderer.clear(style.background_color);
             });
+        }
+
+        if let Some(has_before_draw) = before_draw {
+            has_before_draw(drawn_position);
         }
 
         #[cfg(feature = "golem_rendering")]
@@ -362,11 +371,19 @@ struct UniformTextDrawPosition {
 }
 
 fn compute_text_position(
-    model_width: f32, model_height: f32, position: TextDrawPosition, viewport: RenderRegion
+    model_width: f32, model_height: f32, gui_position: TextDrawPosition, viewport: RenderRegion
 ) -> (UniformTextDrawPosition, DrawnTextPosition) {
 
-    let local_max_width = position.max_x - position.min_x;
-    let local_max_height = position.max_y - position.min_y;
+    let gl_position = TextDrawPosition {
+        min_x: gui_position.min_x * 2.0 - 1.0,
+        min_y: gui_position.min_y * 2.0 - 1.0,
+        max_x: gui_position.max_x * 2.0 - 1.0,
+        max_y: gui_position.max_y * 2.0 - 1.0,
+        horizontal_alignment: gui_position.horizontal_alignment,
+        vertical_alignment: gui_position.vertical_alignment
+    };
+    let local_max_width = gl_position.max_x - gl_position.min_x;
+    let local_max_height = gl_position.max_y - gl_position.min_y;
 
     // Exceeding the max scale would cause the text to be rendered outside the given bounds
     let max_scale_x = local_max_width / model_width;
@@ -391,16 +408,16 @@ fn compute_text_position(
     let margin_x = local_max_width - draw_width;
     let margin_y = local_max_height - draw_height;
 
-    let offset_x = match position.horizontal_alignment {
-        HorizontalTextAlignment::Left => position.min_x,
-        HorizontalTextAlignment::Center => position.min_x + margin_x / 2.0,
-        HorizontalTextAlignment::Right => position.max_x - draw_width
+    let offset_x = match gl_position.horizontal_alignment {
+        HorizontalTextAlignment::Left => gl_position.min_x,
+        HorizontalTextAlignment::Center => gl_position.min_x + margin_x / 2.0,
+        HorizontalTextAlignment::Right => gl_position.max_x - draw_width
     };
 
-    let offset_y = match position.vertical_alignment {
-        VerticalTextAlignment::Bottom => position.min_y,
-        VerticalTextAlignment::Center => position.min_y + margin_y / 2.0,
-        VerticalTextAlignment::Top => position.max_y - draw_height
+    let offset_y = match gl_position.vertical_alignment {
+        VerticalTextAlignment::Bottom => gl_position.min_y,
+        VerticalTextAlignment::Center => gl_position.min_y + margin_y / 2.0,
+        VerticalTextAlignment::Top => gl_position.max_y - draw_height
     };
 
     let uniform_position = UniformTextDrawPosition {
@@ -772,9 +789,9 @@ mod tests {
     #[test]
     fn test_compute_text_position_bottom_left() {
         let draw_position = TextDrawPosition {
-            min_x: -0.5,
-            min_y: -0.75,
-            max_x: 0.75,
+            min_x: 0.25,
+            min_y: 0.125,
+            max_x: 0.875,
             max_y: 1.0,
             horizontal_alignment: HorizontalTextAlignment::Left,
             vertical_alignment: VerticalTextAlignment::Bottom
@@ -804,9 +821,9 @@ mod tests {
     #[test]
     fn test_compute_text_position_centered() {
         let draw_position = TextDrawPosition {
-            min_x: -0.5,
-            min_y: -0.75,
-            max_x: 0.75,
+            min_x: 0.25,
+            min_y: 0.125,
+            max_x: 0.875,
             max_y: 1.0,
             horizontal_alignment: HorizontalTextAlignment::Center,
             vertical_alignment: VerticalTextAlignment::Center
@@ -836,9 +853,9 @@ mod tests {
     #[test]
     fn test_compute_text_position_top_right() {
         let draw_position = TextDrawPosition {
-            min_x: -0.5,
-            min_y: -0.75,
-            max_x: 0.75,
+            min_x: 0.25,
+            min_y: 0.125,
+            max_x: 0.875,
             max_y: 1.0,
             horizontal_alignment: HorizontalTextAlignment::Right,
             vertical_alignment: VerticalTextAlignment::Top

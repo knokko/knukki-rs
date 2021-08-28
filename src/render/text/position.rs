@@ -8,6 +8,7 @@ pub struct DrawnTextPosition {
     pub max_y: f32,
 }
 
+// TODO Document this file!!
 #[derive(Copy, Clone, Debug)]
 pub struct TextDrawPosition {
     pub min_x: f32,
