@@ -17,8 +17,22 @@ impl Renderer {
     }
 
     /// Sets the color of all pixels within the current viewport and scissor to the given `Color`.
+    #[allow(unused_variables)]
     #[cfg(not(feature = "golem_rendering"))]
-    pub fn clear(&self, _color: Color) {
+    pub fn clear(&self, color: Color) {
+        // There is nothing to be done without a Golem context
+    }
+
+    /// Uses the given *FragmentOnlyShader* to fill the rectangular region defined by *min_x*,
+    /// *min_y*, *max_x*, and *max_y* (each of them should be between 0.0 and 1.0) using the given
+    /// *parameters* (typically uniform variables). If you don't want to draw on the entire
+    /// rectangular region, you can let the fragment shader *discard* those pixels.
+    #[allow(unused_variables)]
+    #[cfg(not(feature = "golem_rendering"))]
+    pub fn apply_fragment_shader(
+        &self, min_x: f32, min_y: f32, max_x: f32, max_y: f32,
+        shader: FragmentOnlyShader, parameters: FragmentOnlyDrawParameters
+    ) {
         // There is nothing to be done without a Golem context
     }
 
@@ -42,6 +56,8 @@ impl Renderer {
         *scissor_stack.last().expect("Scissor stack is never empty")
     }
 
+    /// Gets the `TextRenderer` of this `Renderer`. As the name suggests, the text renderer can be
+    /// used to draw text.
     pub fn get_text_renderer(&self) -> &TextRenderer {
         &self.text_renderer
     }

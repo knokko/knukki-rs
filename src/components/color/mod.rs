@@ -62,4 +62,8 @@ impl Color {
     pub fn get_alpha_float(&self) -> f32 {
         self.alpha as f32 / 255.0
     }
+
+    pub fn to_float_array(&self) -> [f32; 4] {
+        [self.get_red_float(), self.get_green_float(), self.get_blue_float(), self.get_alpha_float()]
+    }
 }

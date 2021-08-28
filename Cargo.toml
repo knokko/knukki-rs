@@ -15,8 +15,10 @@ wrapper = ["glutin", "glow", "wasm-bindgen", "web-sys", "console_error_panic_hoo
 [dependencies]
 golem = { git = "https://github.com/ryanisaacg/golem.git", optional = true }
 unicode-segmentation = "*"
+lazy_static = "*"
 ttf-parser = "*"
 ab_glyph = "*"
+sha2 = "*"
 log = "*"
 png = "*"
 

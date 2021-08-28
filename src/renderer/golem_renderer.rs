@@ -27,9 +27,136 @@ impl Renderer {
         self.context.clear();
     }
 
+    /// Uses the given *FragmentOnlyShader* to fill the rectangular region defined by *min_x*,
+    /// *min_y*, *max_x*, and *max_y* (each of them should be between 0.0 and 1.0) using the given
+    /// *parameters* (typically uniform variables). If you don't want to draw on the entire
+    /// rectangular region, you can let the fragment shader *discard* those pixels.
+    pub fn apply_fragment_shader(
+        &self, min_x: f32, min_y: f32, max_x: f32, max_y: f32,
+        shader: &FragmentOnlyShader, parameters: FragmentOnlyDrawParameters
+    ) {
+        let shader_name = format!("FragmentOnlyShader {:?}", shader.hash.as_slice());
+        self.use_cached_shader(
+            &ShaderId::from_strings("knukki".to_string(), shader_name),
+            |golem| {
+
+                let mut uniforms = Vec::new();
+                uniforms.push(Uniform::new(
+                    "vertexBounds",
+                    UniformType::Vector(NumberType::Float, Dimension::D4)
+                ));
+                for matrix_counter in 1 ..= shader.description.num_float_matrices {
+                    uniforms.push(Uniform::new(
+                        MATRIX_VARIABLE_NAMES[matrix_counter as usize],
+                        UniformType::Matrix(Dimension::D4)
+                    ));
+                }
+                for color_counter in 1 ..= shader.description.num_colors {
+                    uniforms.push(Uniform::new(
+                        COLOR_VARIABLE_NAMES[color_counter as usize],
+                        UniformType::Vector(NumberType::Float, Dimension::D4)
+                    ));
+                }
+                for vector_counter in 1 ..= shader.description.num_float_vectors {
+                    uniforms.push(Uniform::new(
+                        FLOAT_VECTOR_VARIABLE_NAMES[vector_counter as usize],
+                        UniformType::Vector(NumberType::Float, Dimension::D4)
+                    ));
+                }
+                for vector_counter in 1 ..= shader.description.num_int_vectors {
+                    uniforms.push(Uniform::new(
+                        INT_VECTOR_VARIABLE_NAMES[vector_counter as usize],
+                        UniformType::Vector(NumberType::Int, Dimension::D4)
+                    ));
+                }
+                for float_counter in 1 ..= shader.description.num_floats {
+                    uniforms.push(Uniform::new(
+                        FLOAT_VARIABLE_NAMES[float_counter as usize],
+                        UniformType::Scalar(NumberType::Float)
+                    ));
+                }
+                for int_counter in 1 ..= shader.description.num_ints {
+                    uniforms.push(Uniform::new(
+                        INT_VARIABLE_NAMES[int_counter as usize],
+                        UniformType::Scalar(NumberType::Int)
+                    ));
+                }
+
+                let shader_description = ShaderDescription {
+                    vertex_input: &[
+                        Attribute::new("vertexInnerPosition", AttributeType::Vector(Dimension::D2))
+                    ],
+                    fragment_input: &[
+                        Attribute::new("innerPosition", AttributeType::Vector(Dimension::D2)),
+                        Attribute::new("outerPosition", AttributeType::Vector(Dimension::D2))
+                    ],
+                    uniforms: &uniforms,
+                    vertex_shader: "
+                void main() {
+                    innerPosition = vertexInnerPosition;
+                    vec2 bottomLeftBounds = vertexBounds.xy;
+                    vec2 topRightBounds = vertexBounds.zw;
+                    outerPosition = bottomLeftBounds + innerPosition * (topRightBounds - bottomLeftBounds);
+                    gl_Position = vec4(2.0 * outerPosition - vec2(1.0, 1.0), 0.0, 1.0);
+                }
+            ",
+                    fragment_shader: &shader.description.source_code
+                };
+                ShaderProgram::new(golem, shader_description)
+            }, |shader_program| {
+                shader_program.set_uniform("vertexBounds", UniformValue::Vector4([min_x, min_y, max_x, max_y]))?;
+                for matrix_counter in 1 ..= shader.description.num_float_matrices {
+                    let _result = shader_program.set_uniform(
+                        &format!("matrix{}", matrix_counter),
+                        UniformValue::Matrix4(parameters.float_matrices[matrix_counter as usize - 1])
+                    );
+                }
+                for color_counter in 1 ..= shader.description.num_colors {
+                    let _result = shader_program.set_uniform(
+                        &format!("color{}", color_counter),
+                        UniformValue::Vector4(parameters.colors[color_counter as usize - 1].to_float_array())
+                    );
+                }
+                for vector_counter in 1 ..= shader.description.num_float_vectors {
+                    let _result = shader_program.set_uniform(
+                        &format!("floatVector{}", vector_counter),
+                        UniformValue::Vector4(parameters.float_vectors[vector_counter as usize - 1])
+                    );
+                }
+                for vector_counter in 1 ..= shader.description.num_int_vectors {
+                    let _result = shader_program.set_uniform(
+                        &format!("intVector{}", vector_counter),
+                        UniformValue::IVector4(parameters.int_vectors[vector_counter as usize - 1])
+                    );
+                }
+                for float_counter in 1 ..= shader.description.num_floats {
+                    let _result = shader_program.set_uniform(
+                        &format!("float{}", float_counter),
+                        UniformValue::Float(parameters.floats[float_counter as usize - 1])
+                    );
+                }
+                for int_counter in 1 ..= shader.description.num_ints {
+                    let _result = shader_program.set_uniform(
+                        &format!("int{}", int_counter),
+                        UniformValue::Int(parameters.ints[int_counter as usize - 1])
+                    );
+                }
+
+                unsafe {
+                    shader_program.draw(
+                        self.get_quad_vertices(),
+                        self.get_quad_indices(),
+                        0 .. self.get_num_quad_indices(),
+                        GeometryMode::Triangles
+                    )
+                }
+            }
+        ).expect("Shader shouldn't fail");
+    }
+
     /// Gets the golem `Context` of this `Renderer`. Use this context to perform drawing operations
-    /// that are not covered by the other methods of `Renderer` (currently, almost all components
-    /// will need this, because the `Renderer` struct doesn't have many methods yet).
+    /// that are not covered by the other methods of `Renderer`. Note that using this will damage
+    /// the portability of the application since this will only work when a Golem renderer is used.
     pub fn get_context(&self) -> &Context {
         &self.context
     }
