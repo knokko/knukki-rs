@@ -31,7 +31,7 @@ impl Renderer {
     #[cfg(not(feature = "golem_rendering"))]
     pub fn apply_fragment_shader(
         &self, min_x: f32, min_y: f32, max_x: f32, max_y: f32,
-        shader: FragmentOnlyShader, parameters: FragmentOnlyDrawParameters
+        shader: &FragmentOnlyShader, parameters: FragmentOnlyDrawParameters
     ) {
         // There is nothing to be done without a Golem context
     }
