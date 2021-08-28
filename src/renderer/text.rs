@@ -1,5 +1,7 @@
 use crate::*;
 
+// TODO Document this file!
+
 use unicode_segmentation::UnicodeSegmentation;
 
 use std::cell::RefCell;
@@ -51,6 +53,20 @@ impl TextRenderer {
         };
         let mut internal = self.internal.borrow_mut();
         internal.draw_text(text, style, font_handle, position, renderer, before_draw)
+    }
+
+    pub fn get_text_size(
+        &self,
+        text: &str,
+        style: &TextStyle,
+        renderer: &Renderer
+    ) -> Result<(u32, u32), TextRenderError> {
+        let font_handle = match &style.font_id {
+            Some(font_id) => self.get_font(font_id).expect(&format!("Should be able to find font {}", font_id)),
+            None => self.get_default_font()
+        };
+        let mut internal = self.internal.borrow_mut();
+        internal.get_text_size(text, font_handle, renderer)
     }
 }
 
@@ -111,6 +127,26 @@ impl InternalTextRenderer {
         }
 
         self.draw_text_model(text, style, font_handle, position, renderer, before_draw)
+    }
+
+    pub fn get_text_size(
+        &mut self,
+        text: &str,
+        font_handle: FontHandle,
+        renderer: &Renderer,
+    ) -> Result<(u32, u32), TextRenderError> {
+        if !self.fonts[&font_handle].string_models.contains_key(text) {
+            let text_model = self.create_text_model(
+                #[cfg(feature = "golem_rendering")]
+                    renderer.get_context(),
+                font_handle,
+                text
+            )?;
+            self.fonts.get_mut(&font_handle).expect("Font handle is valid").string_models.insert(text.to_string(), text_model);
+        }
+
+        let text_model = &self.fonts[&font_handle].string_models[text];
+        Ok((text_model.width, text_model.height))
     }
 
     // This seems to be a reasonable value. Perhaps, I could improve it later
