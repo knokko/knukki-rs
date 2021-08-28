@@ -1,6 +1,4 @@
 use crate::*;
-#[cfg(feature = "golem_rendering")]
-use golem::*;
 
 /// A component that will draw a simple circle at its position. It has a `base_color` and a
 /// `hover_color`. It will fill the circle with the `hover_color` while a `Mouse` is hovering over
@@ -8,11 +6,11 @@ use golem::*;
 ///
 /// This is clearly not a useful component in a real application, but it is a nice example because
 /// it demonstrates how to avoid distortion and how to use hover mechanics correctly.
+#[allow(dead_code)] // The fields are only used when golem rendering is enabled
 pub struct HoverColorCircleComponent {
-    #[allow(dead_code)] // Only used when golem rendering is enabled
     base_color: Color,
-    #[allow(dead_code)] // Only used when golem rendering is enabled
     hover_color: Color,
+    shader: FragmentOnlyShader
 }
 
 impl HoverColorCircleComponent {
@@ -20,42 +18,32 @@ impl HoverColorCircleComponent {
         Self {
             base_color,
             hover_color,
+            shader: create_fragment_only_shader()
         }
     }
 }
 
-#[cfg(feature = "golem_rendering")]
-#[rustfmt::skip]
-fn create_shader(golem: &Context) -> Result<ShaderProgram, GolemError> {
-    let description = ShaderDescription {
-        vertex_input: &[
-            Attribute::new("position", AttributeType::Vector(Dimension::D2))
-        ],
-        fragment_input: &[
-            Attribute::new("passPosition", AttributeType::Vector(Dimension::D2))
-        ],
-        uniforms: &[
-            Uniform::new("color", UniformType::Vector(NumberType::Float, Dimension::D3)),
-            Uniform::new("radius", UniformType::Vector(NumberType::Float, Dimension::D2)),
-        ],
-        vertex_shader: "
+fn create_fragment_only_shader() -> FragmentOnlyShader {
+    FragmentOnlyShader::new(FragmentOnlyShaderDescription {
+        source_code: "
             void main() {
-                gl_Position = vec4(position, 0.0, 1.0);
-                passPosition = position;
-            }",
-        fragment_shader: "
-            void main() {
-                float dx = passPosition.x / radius.x;
-                float dy = passPosition.y / radius.y;
+                vec2 radius = floatVector1.xy;
+                float dx = (innerPosition.x - 0.5) / radius.x;
+                float dy = (innerPosition.y - 0.5) / radius.y;
                 if (dx * dx + dy * dy <= 1.0) {
-                    gl_FragColor = vec4(color, 1.0);
+                    gl_FragColor = color1;
                 } else {
                     discard;
                 }
-            }",
-    };
-
-    ShaderProgram::new(golem, description)
+            }
+        ".to_string(),
+        num_float_matrices: 0,
+        num_colors: 1,
+        num_float_vectors: 1,
+        num_int_vectors: 0,
+        num_floats: 0,
+        num_ints: 0
+    })
 }
 
 impl Component for HoverColorCircleComponent {
@@ -74,55 +62,37 @@ impl Component for HoverColorCircleComponent {
         // The first challenge is to avoid distortion: if the *region* is rectangular rather than
         // square, we will ignore a part of it such that a square part remains, and use that.
         let ar = renderer.get_viewport().get_aspect_ratio();
-        let used_width = 1.0 / ar.max(1.0);
-        let used_height = 1.0 / (1.0 / ar).max(1.0);
+        let used_width = 0.5 / ar.max(1.0);
+        let used_height = 0.5 / (1.0 / ar).max(1.0);
 
         let drawn_region =
-            OvalDrawnRegion::new(Point::new(0.5, 0.5), used_width * 0.5, used_height * 0.5);
+            OvalDrawnRegion::new(Point::new(0.5, 0.5), used_width, used_height);
 
-        // If the golem rendering feature is enabled, we should also draw the circle
-        #[cfg(feature = "golem_rendering")]
-        {
-            // Now that we know the exact region in which we render, we can determine whether any mouse
-            // is hovering over that region
-            let is_hovering = buddy.get_local_mouses().iter().any(|mouse| {
-                match buddy.get_mouse_position(*mouse) {
-                    Some(position) => drawn_region.is_inside(position),
-                    None => {
-                        // Weird and shouldn't happen, but not a critical problem
-                        debug_assert!(false);
-                        false
-                    }
+        // Now that we know the exact region in which we render, we can determine whether any mouse
+        // is hovering over that region
+        let is_hovering = buddy.get_local_mouses().iter().any(|mouse| {
+            match buddy.get_mouse_position(*mouse) {
+                Some(position) => drawn_region.is_inside(position),
+                None => {
+                    // Weird and shouldn't happen, but not a critical problem
+                    debug_assert!(false);
+                    false
                 }
-            });
+            }
+        });
 
-            let color = match is_hovering {
-                true => self.hover_color,
-                false => self.base_color,
-            };
+        let color = match is_hovering {
+            true => self.hover_color,
+            false => self.base_color,
+        };
 
-            let shader_id = ShaderId::from_strs("knukki", "Simple.HoverColorCircle");
-            renderer.use_cached_shader(&shader_id, create_shader, |shader| {
-                shader.set_uniform(
-                    "color",
-                    UniformValue::Vector3([
-                        color.get_red_float(),
-                        color.get_green_float(),
-                        color.get_blue_float(),
-                    ]),
-                )?;
-                shader.set_uniform("radius", UniformValue::Vector2([used_width, used_height]))?;
-
-                unsafe {
-                    shader.draw(
-                        renderer.get_quad_vertices(),
-                        renderer.get_quad_indices(),
-                        0..renderer.get_num_quad_indices(),
-                        GeometryMode::Triangles,
-                    )
-                }
-            })?;
-        }
+        renderer.apply_fragment_shader(
+            0.0, 0.0, 1.0, 1.0, &self.shader, FragmentOnlyDrawParameters {
+                colors: &[color],
+                float_vectors: &[[used_width, used_height, 0.0, 0.0]],
+                ..FragmentOnlyDrawParameters::default()
+            }
+        );
 
         Ok(RenderResultStruct {
             drawn_region: Box::new(drawn_region),
